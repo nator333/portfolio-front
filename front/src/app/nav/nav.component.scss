@@ -3,6 +3,9 @@ h1 {
 }
 
 a.navbar-item {
-  font-weight: bold;
   font-family: 'Noto Sans', sans-serif;
+}
+
+a.navbar-item.subtitle.is-5 > a {
+  padding-right: 1rem
 }
