@@ -7,4 +7,13 @@ body {
   background-color: $black;
 }
 
+.container hr {
+  margin-right: 6%;
+  border: none;
+  background-color: $yellow;
+  width: 90%;
+  height: 0.25rem;
+}
+
+
 @import "~bulma";
