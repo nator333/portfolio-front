@@ -1,13 +1,15 @@
-<section class="hero is-black">
-  <div class="hero-body">
-    <div class="container">
-      <h1 class="title">
-        SKILLS
-      </h1>
-      <hr>
-      <h2 class="subtitle">
+<div app-hero></div>
 
-      </h2>
-    </div>
-  </div>
-</section>
+<p class='title'> Language </p>
+
+<div class='skillBox'>>
+  <app-skill-bar [symbol]="'Java'" [proficiencyPercentage]="90"></app-skill-bar>
+  <app-skill-bar [symbol]="'HTML5'" [proficiencyPercentage]="60"></app-skill-bar>
+  <app-skill-bar [symbol]="'SASS'" [proficiencyPercentage]="60"></app-skill-bar>
+</div>
+
+<p class='title'> Framework </p>
+
+<div class='skillBox'>
+  <app-skill-bar [symbol]="'Angular'" [proficiencyPercentage]="50"></app-skill-bar>
+</div>

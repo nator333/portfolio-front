@@ -1,15 +1,28 @@
 import { Component, OnInit } from '@angular/core';
+import {Location} from '@angular/common';
+import {Router} from '@angular/router';
 
 @Component({
-  selector: 'app-hero',
+  // tslint:disable-next-line:component-selector
+  selector: '[app-hero]',
   templateUrl: './hero.component.html',
   styleUrls: ['./hero.component.scss']
 })
 export class HeroComponent implements OnInit {
+  contentTitle: string;
 
-  constructor() { }
+  constructor(private location: Location, private router: Router) {
+  }
 
   ngOnInit() {
+    const urlAry = window.location.href.split('/');
+    this.contentTitle = urlAry[urlAry.length - 1];
+    this.router.events.subscribe(() => {
+      console.log(this.location.path(true));
+      if (this.location.path(true) !== '') {
+        this.contentTitle = this.location.path(false).substring(1);
+      }
+    });
   }
 
 }

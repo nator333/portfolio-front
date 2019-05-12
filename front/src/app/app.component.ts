@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {Router} from '@angular/router';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -7,7 +8,16 @@ import {Router} from '@angular/router';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  constructor(router: Router) {
-    router.navigate(['home']);
+  path: string;
+  isHome: boolean;
+
+  constructor(private location: Location, private router: Router) {
+    this.router.navigate(['skills']);
+    this.router.events.subscribe(() => {
+      if (this.location.path(true) !== '') {
+        this.path = this.location.path(false).substring(1);
+        this.isHome = this.path === 'home';
+      }
+    });
   }
 }

@@ -8,6 +8,7 @@
       </span>
   </div>
   <div id="navbarMenuHeroC" class="navbar-menu has-text-weight-bold" [class.is-active]="isActive">
+    <!-- Social -->
     <div class="navbar-start">
       <a class="navbar-item subtitle is-5">
         <a href="https://github.com/nator333"><i class="fa fa-github has-text-black" aria-hidden="true"></i></a>
@@ -15,27 +16,31 @@
         <a><i class="fa fa-twitter has-text-black" aria-hidden="true"></i></a>
       </a>
     </div>
+    <!-- Menus -->
     <div class="navbar-end">
       <hr class="navbar-divider">
-      <a class="navbar-item is-active" routerLink="home">
+      <a class="navbar-item is-active" routerLink="home" (click)="toggleIsActive()">
         Home
       </a>
       <hr class="navbar-divider">
-      <a class="navbar-item" routerLink="blog">
+      <!--<a class="navbar-item" routerLink="blog" (click)="toggleIsActive()">
         Blog
-      </a>
+      </a>-->
       <hr class="navbar-divider">
-      <a class="navbar-item" routerLink="skills">
+      <a class="navbar-item" routerLink="skills" (click)="toggleIsActive()">
         Skills
       </a>
       <hr class="navbar-divider">
-      <a class="navbar-item" routerLink="works">
+      <a class="navbar-item" routerLink="works" (click)="toggleIsActive()">
         Works
       </a>
       <hr class="navbar-divider">
-      <a class="navbar-item" routerLink="contact">
-        Contact
+      <a class="navbar-item is-active" routerLink="profile" (click)="toggleIsActive()">
+        Profile
       </a>
+      <!--<a class="navbar-item" routerLink="contact" (click)="toggleIsActive()">
+        Contact
+      </a>-->
     </div>
   </div>
 </div>
