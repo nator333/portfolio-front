@@ -15,51 +15,9 @@ a {
   }
 }
 
-@mixin skillAnimation($symbol, $proficiencyPercentage) {
-  $animationId: Animate-#{$symbol};
-  $duration: 3s;
-
-  @keyframes #{$animationId} {
-    from {
-      width: 0;
-    }
-    to {
-      width: $proficiencyPercentage - 5%;
-    }
-  }
-
-  -webkit-animation: $animationId $duration;
-  animation: $animationId $duration;
-  position: relative;
-  float: left;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  background-color: white;
-}
-
-@mixin skillBar($symbol, $proficiencyPercentage) {
-  $className: skill-#{$symbol};
-
-  .#{$className} {
-    @include skillAnimation($symbol, $proficiencyPercentage);
-  }
-
-}
-
 .skillBar {
   height: 35px;
   margin: 2px auto;
-
-  @include icon-colors(
-    $html5: #DD3b2d,
-    $css3: #0277bd,
-    $javascript: #e5a228,
-    $angular: #E42939,
-    $nodejs: #83CD29,
-    $wordpress: #008AC1,
-    $java: $white,
-    $sass: $red
-  );
 
   span {
     font-family: 'Lato', sans-serif;
@@ -70,17 +28,12 @@ a {
   .skillArea {
     width: 90%;
     position: relative;
-
-    @include skillBar(HTML5, 100%);
-    @include skillBar(Java, 90%);
-    @include skillBar(Angular, 50%);
-    @include skillBar(SASS, 50%);
   }
 }
 
 @include mobile {
   .skillBar {
-    width: 65%;
+    width: 90%;
     height: 35px;
     margin: 10px auto;
 
@@ -107,7 +60,7 @@ a {
 
 @include tablet {
   .skillBar {
-    width: 75%;
+    width: 90%;
     margin: 10px auto;
 
     .natorIcon {
