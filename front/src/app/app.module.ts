@@ -18,6 +18,9 @@ import { HeroComponent } from './hero/hero.component';
 import { ProfileComponent } from './profile/profile.component';
 import { BaseContentComponent } from './base-content/base-content.component';
 import { SkillBarComponent } from './skill-bar/skill-bar.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CarouselModule } from 'ngx-owl-carousel-o';
+import { ProjectComponent } from './project/project.component';
 
 @NgModule({
   declarations: [
@@ -32,12 +35,15 @@ import { SkillBarComponent } from './skill-bar/skill-bar.component';
     HeroComponent,
     ProfileComponent,
     BaseContentComponent,
-    SkillBarComponent
+    SkillBarComponent,
+    ProjectComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    BrowserAnimationsModule,
+    CarouselModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -6,7 +6,7 @@ div {
 }
 
 .mottoes {
-  @include tablet {
+  @include desktop {
     padding-bottom: 8rem;
     padding-top: 8rem;
     padding-left: 2rem;
@@ -21,7 +21,13 @@ div {
 
 .motto {
   color: $yellow;
-  margin-bottom: 3rem;
+  @include tablet {
+    margin-bottom: 3rem;
+  }
+
+  @include mobile {
+    margin-bottom: 1rem;
+  }
 }
 
 .motto:after {
@@ -29,6 +35,11 @@ div {
   display: block;
   border-top: 0.2rem double $white;
   margin-top: 0.1em;
+}
+
+.mention {
+  font-size: small;
+  color: #4a4a4a;
 }
 
 .introduction {

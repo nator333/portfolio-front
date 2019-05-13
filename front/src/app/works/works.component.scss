@@ -1,0 +1,11 @@
+@import "~bulma/sass/utilities/mixins";
+
+.container {
+  @include mobile {
+    margin-top: 1rem;
+  }
+
+  @include tablet {
+    margin-top: 3rem;
+  }
+}

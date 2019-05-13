@@ -1,0 +1,17 @@
+<div class="card">
+  <div class="card-image">
+    <figure class="image is-4by3">
+      <img [src]="project.imageSrc" alt="Placeholder image">
+    </figure>
+  </div>
+  <div class="card-content">
+    <p class="title is-4">{{project.title}}</p>
+    <span [ngClass]="['tag', 'is-6', getThemeColor()]">{{project.subtitle}}</span>
+    <ng-template [ngIf]="project.hasLinkUrl()">
+      <a class="is-pulled-right" [href]="project.url" target="_blank">
+        <i class="fas fa-external-link-alt"></i>
+      </a>
+    </ng-template>
+    <div class="content">{{project.description}}</div>
+  </div>
+</div>
