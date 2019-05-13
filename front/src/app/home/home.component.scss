@@ -1,0 +1,41 @@
+@import "~bulma/sass/utilities/initial-variables";
+@import "~bulma/sass/utilities/mixins";
+
+div {
+  font-family: 'Quantico', sans-serif;
+}
+
+.mottoes {
+  @include tablet {
+    padding-bottom: 8rem;
+    padding-top: 8rem;
+    padding-left: 2rem;
+  }
+
+  @include mobile {
+    padding-bottom: 1rem;
+    padding-top: 1rem;
+    padding-left: 0;
+  }
+}
+
+.motto {
+  color: $yellow;
+  margin-bottom: 3rem;
+}
+
+.motto:after {
+  content: '';
+  display: block;
+  border-top: 0.2rem double $white;
+  margin-top: 0.1em;
+}
+
+.introduction {
+  color: $white;
+  margin-bottom: 1rem;
+}
+
+hr {
+  margin-top: 0;
+}

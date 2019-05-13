@@ -6,6 +6,12 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  jobTitle = 'Backend Engineer';
+  mottoes = [
+    'Keep asking yourself why',
+    'Stay constructive',
+    'Represent 21st century world'
+  ];
 
   constructor() {
   }

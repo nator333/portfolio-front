@@ -1,8 +1,20 @@
 <div class="tile is-ancestor">
   <div class="tile is-vertical">
-    <div class="tile">
-      <div class="tile is-parent is-vertical is-6 content" app-left-tile></div>
-      <div class="tile is-parent is-vertical" app-right-tile [isHome]="true"></div>
+    <div class="tile is-parent">
+      <div class="tile is-child is-vertical is-6 content">
+        <div class="has-text-centered">
+          <img src="/assets/my_name_gold.png" alt="my name art">
+        </div>
+        <article class="tile is-child notification is-black has-text-centered">
+          <p class="title introduction">Hi, I'm Masahiro Nakamata</p>
+          <p class="subtitle introduction">{{jobTitle}}</p>
+        </article>
+      </div>
+      <div class="tile is-child is-vertical mottoes">
+        <ng-container *ngFor="let motto of mottoes">
+          <p class="title is-3 is-inline-block motto">{{motto | uppercase}}</p>
+        </ng-container>
+      </div>
     </div>
   </div>
 </div>

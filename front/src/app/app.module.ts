@@ -17,8 +17,6 @@ import { BlogComponent } from './blog/blog.component';
 import { HeroComponent } from './hero/hero.component';
 import { ProfileComponent } from './profile/profile.component';
 import { BaseContentComponent } from './base-content/base-content.component';
-import { LeftTileComponent } from './left-tile/left-tile.component';
-import { RightTileComponent } from './right-tile/right-tile.component';
 import { SkillBarComponent } from './skill-bar/skill-bar.component';
 
 @NgModule({
@@ -34,8 +32,6 @@ import { SkillBarComponent } from './skill-bar/skill-bar.component';
     HeroComponent,
     ProfileComponent,
     BaseContentComponent,
-    LeftTileComponent,
-    RightTileComponent,
     SkillBarComponent
   ],
   imports: [
