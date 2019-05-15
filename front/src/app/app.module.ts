@@ -19,8 +19,8 @@ import { ProfileComponent } from './profile/profile.component';
 import { BaseContentComponent } from './base-content/base-content.component';
 import { SkillBarComponent } from './skill-bar/skill-bar.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { CarouselModule } from 'ngx-owl-carousel-o';
 import { ProjectComponent } from './project/project.component';
+import { CarouselModule } from 'ngx-owl-carousel-o';
 
 @NgModule({
   declarations: [

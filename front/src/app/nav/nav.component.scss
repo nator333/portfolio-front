@@ -1,5 +1,13 @@
+@import "~bulma/sass/utilities/mixins";
+
 h1 {
   font-family: 'Quantico', sans-serif;
+  @include tablet {
+    font-size: 2rem;
+  }
+  @include mobile {
+    font-size: 1.6rem;
+  }
 }
 
 a.navbar-item {

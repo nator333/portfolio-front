@@ -50,3 +50,13 @@ div {
 hr {
   margin-top: 0;
 }
+
+.image {
+  @include desktop {
+    width: 500px;
+  }
+
+  @include mobile {
+    width: 250px;
+  }
+}

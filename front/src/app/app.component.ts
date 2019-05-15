@@ -12,7 +12,7 @@ export class AppComponent {
   isHome: boolean;
 
   constructor(private location: Location, private router: Router) {
-    this.router.navigate(['projects']);
+    this.router.navigate(['home']);
     this.router.events.subscribe(() => {
       if (this.location.path(true) !== '') {
         this.path = this.location.path(false).substring(1);

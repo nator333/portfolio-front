@@ -13,10 +13,10 @@ export class WorksComponent implements OnInit {
     mouseDrag: true,
     touchDrag: true,
     pullDrag: false,
-    dots: true,
+    dots: false,
     navSpeed: 700,
     nav: true,
-    navText: ['&lt;PREV', 'NEXT>'],
+    navText: [ '<i class="fa fa-chevron-left"></i>', '<i class="fa fa-chevron-right"></i>' ],
     responsive: {
       0: {
         items: 1
