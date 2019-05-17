@@ -18,7 +18,6 @@ export class HeroComponent implements OnInit {
     const urlAry = window.location.href.split('/');
     this.contentTitle = urlAry[urlAry.length - 1];
     this.router.events.subscribe(() => {
-      console.log(this.location.path(true));
       if (this.location.path(true) !== '') {
         this.contentTitle = this.location.path(false).substring(1);
       }
