@@ -34,35 +34,35 @@ export class WorksComponent implements OnInit {
 
   projects = [
     new Project(
-      'Silver Bullet',
-      'Java Group Project',
-      'Original 2 Player Desktop Game made by JavaFX, JDK12. Go check & please try in your PC!',
-      '/assets/projects/SilverBullet.png',
-      'https://github.com/cornerstone18aug/silver-bullet'),
+      'Tydier',
+      'iOS Team Project',
+      'Automatic bookmarks organizer using Natural Language Processing API. Waiting for Apple\'s approval to publish!',
+      '/assets/projects/Tydier.jpg',
+      ''),
     new Project(
       'Longman Bubble',
       'Chrome Extension',
-      'English-English dictionary pop-up for all ESL people, using pure JavaScript.',
-      '/assets/projects/longman.png',
+      'English-English dictionary pop-up for all ESL people. Written by pure JavaScript. Being used by more than 1,000 people!!🎊㊗️🎊',
+      '/assets/projects/Longman.png',
       'https://chrome.google.com/webstore/detail/longman-dictionary-bubble/cajklhanpcgcpkikgpcnogpdndpjdjjn?hl=en'),
+    new Project(
+      'Silver Bullet',
+      'Java Group Project',
+      'Original 2 Player Desktop Game made by JavaFX, JDK12. Go check & try in your PC right away!🎮👾🎮',
+      '/assets/projects/SilverBullet.png',
+      'https://github.com/cornerstone18aug/silver-bullet'),
     new Project(
       'ElementsCPR Website',
       'Corporate Website',
-      'Used Kusanagi framework(WordPress) with Docker on GCE using a public theme.',
+      'Used Kusanagi framework(WordPress) with Docker on GCE using a paid theme.',
       '/assets/projects/elementscpr.png',
       'https://elementscpr.com'),
     new Project(
       'Nakamata.Tech',
       'Portfolio Website',
-      'Built by Angular7, Bulma, Hosted by Firebase Hosting.',
+      'Built with Angular7, Bulma, Hosted by Firebase Hosting. Also enabled email forwarding using AWS.',
       '/assets/projects/portfolio.png',
-      ''),
-    new Project(
-      'Bookmanager',
-      'iOS Group Project',
-      'Organizing Bookmarks using AI (Natural Language Processing API). Releasing on AppStore by August',
-      '/assets/projects/WIP.png',
-      ''),
+      'https://github.com/nator333/kotlin-ses-forward'),
   ];
 
   constructor() {
