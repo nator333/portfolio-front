@@ -6,6 +6,6 @@
 front
 
 frontend/node_modules
-modern-portfolio/node_modules/
+front/node_modules/
 
-modern-portfolio/.angular/
+front/.angular/

@@ -1,8 +1,0 @@
-<div app-hero></div>
-<div class="container is-fluid">
-  <owl-carousel-o [options]="customOptions">
-    <ng-template carouselSlide *ngFor="let project of projects; let i = index">
-      <app-project [project]="project" [colorIndex]="i"></app-project>
-    </ng-template>
-  </owl-carousel-o>
-</div>

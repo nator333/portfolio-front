@@ -1,29 +1,75 @@
-/* You can add global styles to this file, and also import other style files */
-@import "~bulma/sass/utilities/initial-variables";
-@import "~bulma/sass/utilities/derived-variables";
-@import '~ngx-owl-carousel-o/lib/styles/scss/owl.carousel';
+@import 'bulma/css/bulma.css';
+@import 'animate.css/animate.min.css';
+
+/* Global Styles */
+html {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
 body {
-  background-color: $black;
+  margin: 0;
+  background-color: #000000;
+  color: #ffffff;
 }
 
-.hero-body hr {
-  border: none;
-  background-color: $yellow;
-  height: 0.25rem;
+/* Portfolio Specific Styles */
+.hero {
+  background-color: #000000 !important;
+  min-height: 100vh;
 }
 
-$nav-color: $black !default;
-$nav-color-hover: $black !default;
-$nav-font-size: 20px !default;
-$nav-rounded: 3px !default;
-$nav-margin: 0.8rem !default;
-$nav-padding: 4px 7px !default;
-$nav-background: $warning !default;
-$nav-background-hover: #ffe57f !default;
-$nav-disabled-opacity: 0.5 !default;
+.skill-section {
+  padding: 4rem 1.5rem;
+  background-color: #000000;
+}
 
-$dot-background: #ffe57f !default;
-$dot-background-active: $warning !default;
+.skillBox {
+  background-color: #1a1a1a;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border: 1px solid #333;
+}
 
-@import '~ngx-owl-carousel-o/lib/styles/scss/owl.theme.default';
+.project-card {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Navigation Styles */
+.navbar {
+  background-color: #FFD700 !important;
+  border-bottom: 1px solid #FFD700;
+}
+
+.navbar-item {
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.navbar-item:hover {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  color: #000000 !important;
+}
+
+.navbar-brand .navbar-item {
+  color: #000000 !important;
+  font-weight: 700;
+}
+
+/* Gold accent color for headings and important text */
+.gold-text {
+  color: #FFD700;
+}
+
+.gold-underline {
+  border-bottom: 2px solid #FFD700;
+  display: inline-block;
+}
