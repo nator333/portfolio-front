@@ -32,7 +32,7 @@ import { CommonModule } from '@angular/common';
                   <h3 class="profile-name">Hi, I'm Masahiro Nakamata</h3>
                   <p class="profile-title">Backend Engineer</p>
                   <p class="credit-line">
-                    The name art was made by <a href="#" class="artist-link">@ToshimuX</a>
+                    The name art was made by <a href="#" class="artist-link">&#64;ToshimuX</a>
                   </p>
                 </div>
               </div>
