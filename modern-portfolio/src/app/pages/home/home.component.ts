@@ -1,43 +1,46 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HeroComponent } from '../../components/hero/hero.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, HeroComponent],
+  imports: [CommonModule],
   template: `
-    <app-hero 
-      title="KEEP ASKING YOURSELF WHY" 
-      subtitle="Backend Engineer"
-      [showContent]="true">
-      <div class="home-content">
-        <div class="columns is-vcentered">
-          <div class="column is-half">
-            <div class="content is-large">
-              <p class="is-size-4 has-text-weight-semibold gold-text gold-underline">
-                STAY CONSTRUCTIVE
-              </p>
-              <p class="is-size-4 has-text-weight-semibold gold-text gold-underline">
-                REPRESENT 21ST CENTURY WORLD
-              </p>
+    <section class="hero is-fullheight">
+      <div class="hero-body">
+        <div class="container">
+          <div class="columns is-vcentered">
+            <!-- Left Column - Text Content -->
+            <div class="column is-half">
+              <div class="motto-section">
+                <h1 class="motto-line">KEEP ASKING YOURSELF WHY</h1>
+                <h2 class="motto-line">STAY CONSTRUCTIVE</h2>
+                <h3 class="motto-line">REPRESENT 21ST CENTURY WORLD</h3>
+              </div>
             </div>
-          </div>
-          <div class="column is-half has-text-centered">
-            <div class="signature-container">
-              <img src="https://nakamata.tech/assets/home/my_name_gold.png" alt="Masahiro Nakamata Signature" class="signature" />
-            </div>
-            <div class="profile-info">
-              <h3 class="is-size-3 has-text-white">Hi, I'm Masahiro Nakamata</h3>
-              <p class="is-size-5 has-text-white-ter">Backend Engineer</p>
-              <p class="is-size-6 has-text-grey-light">
-                The name art was made by <a href="#" class="has-text-warning">&#64;ToshimuX</a>
-              </p>
+            
+            <!-- Right Column - Signature and Profile -->
+            <div class="column is-half">
+              <div class="profile-section has-text-centered">
+                <div class="signature-container">
+                  <img src="https://nakamata.tech/assets/home/my_name_gold.png" 
+                       alt="Masahiro Nakamata Signature" 
+                       class="signature-image" />
+                </div>
+                
+                <div class="profile-info">
+                  <h3 class="profile-name">Hi, I'm Masahiro Nakamata</h3>
+                  <p class="profile-title">Backend Engineer</p>
+                  <p class="credit-line">
+                    The name art was made by <a href="#" class="artist-link">@ToshimuX</a>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </app-hero>
+    </section>
   `,
   styleUrl: './home.component.scss'
 })
