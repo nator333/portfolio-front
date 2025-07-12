@@ -3,9 +3,9 @@
     margin: 2rem 0;
     
     .signature {
-      max-width: 300px;
+      max-width: 400px;
+      width: 100%;
       height: auto;
-      filter: brightness(1.2);
     }
   }
   
@@ -14,6 +14,7 @@
     
     h3 {
       margin-bottom: 0.5rem;
+      color: #ffffff;
     }
     
     p {
@@ -31,15 +32,18 @@
   }
   
   .content p {
-    margin-bottom: 1rem;
-    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
     color: #FFD700;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    
-    &.is-size-4 {
-      text-decoration: underline;
-      text-decoration-color: #FFD700;
-    }
+    text-decoration: underline;
+    text-decoration-color: #FFD700;
+    text-underline-offset: 8px;
+  }
+  
+  .columns {
+    align-items: center;
+    min-height: 60vh;
   }
 }
