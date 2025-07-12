@@ -1,16 +1,18 @@
 import { Component, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faGithub, faFacebook, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterLinkActive, CommonModule, FaIconComponent],
   template: `
-    <nav class="navbar is-dark is-fixed-top" role="navigation" aria-label="main navigation">
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
-        <a class="navbar-item" routerLink="/home">
-          <strong class="has-text-white">NAKAMATA.TECH</strong>
+        <a class="navbar-item brand-text" routerLink="/home">
+          <strong>NAKAMATA.TECH</strong>
         </a>
         <a 
           role="button" 
@@ -27,14 +29,29 @@ import { CommonModule } from '@angular/common';
       </div>
 
       <div id="navbarBasicExample" class="navbar-menu" [class.is-active]="isMenuOpen()">
+        <div class="navbar-start">
+          <!-- Social Media Icons -->
+          <div class="navbar-item social-icons">
+            <a href="https://github.com" target="_blank" class="social-link">
+              <fa-icon [icon]="githubIcon"></fa-icon>
+            </a>
+            <a href="https://facebook.com" target="_blank" class="social-link">
+              <fa-icon [icon]="facebookIcon"></fa-icon>
+            </a>
+            <a href="https://twitter.com" target="_blank" class="social-link">
+              <fa-icon [icon]="twitterIcon"></fa-icon>
+            </a>
+          </div>
+        </div>
+        
         <div class="navbar-end">
-          <a class="navbar-item" routerLink="/home" routerLinkActive="has-text-primary">
+          <a class="navbar-item nav-link" routerLink="/home" routerLinkActive="is-active">
             Home
           </a>
-          <a class="navbar-item" routerLink="/projects" routerLinkActive="has-text-primary">
+          <a class="navbar-item nav-link" routerLink="/projects" routerLinkActive="is-active">
             Projects
           </a>
-          <a class="navbar-item" routerLink="/profile" routerLinkActive="has-text-primary">
+          <a class="navbar-item nav-link" routerLink="/profile" routerLinkActive="is-active">
             Profile
           </a>
         </div>
@@ -45,6 +62,11 @@ import { CommonModule } from '@angular/common';
 })
 export class NavigationComponent {
   isMenuOpen = signal(false);
+  
+  // FontAwesome icons
+  githubIcon = faGithub;
+  facebookIcon = faFacebook;
+  twitterIcon = faXTwitter;
 
   constructor(private router: Router) {}
 
