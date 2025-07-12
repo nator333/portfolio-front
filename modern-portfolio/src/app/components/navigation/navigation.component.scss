@@ -1,29 +1,103 @@
+/* Exact recreation of original NAKAMATA.TECH navigation */
+
 .navbar {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background-color: #FFD700 !important;
+  border-bottom: 3px dashed #000000;
+  box-shadow: none;
+  height: 3.25rem;
   
-  .navbar-item {
-    font-weight: 500;
-    transition: all 0.3s ease;
-    
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
+  .navbar-brand {
+    .brand-text {
+      color: #000000 !important;
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-decoration: none;
+      
+      &:hover {
+        color: #000000 !important;
+        background-color: rgba(0, 0, 0, 0.05);
+      }
     }
-    
-    &.has-text-primary {
-      background-color: rgba(102, 126, 234, 0.2);
-    }
-  }
-  
-  .navbar-brand .navbar-item {
-    font-size: 1.25rem;
-    font-weight: 700;
   }
   
   .navbar-burger {
-    color: white;
+    color: #000000;
     
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    &.is-active {
+      color: #000000;
+    }
+  }
+  
+  .navbar-menu {
+    background-color: #FFD700;
+    box-shadow: none;
+    
+    .navbar-start {
+      .social-icons {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0 1rem;
+        
+        .social-link {
+          color: #000000;
+          font-size: 1.1rem;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            color: #333333;
+            transform: scale(1.1);
+          }
+          
+          fa-icon {
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+    }
+    
+    .navbar-end {
+      .nav-link {
+        color: #000000 !important;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.05) !important;
+          color: #000000 !important;
+        }
+        
+        &.is-active {
+          background-color: rgba(0, 0, 0, 0.1) !important;
+          color: #000000 !important;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+}
+
+/* Mobile styles */
+@media screen and (max-width: 1023px) {
+  .navbar-menu {
+    &.is-active {
+      background-color: #FFD700;
+      border-top: 1px dashed #000000;
+    }
+    
+    .navbar-start {
+      .social-icons {
+        justify-content: center;
+        padding: 1rem;
+        border-bottom: 1px dashed #000000;
+        margin-bottom: 0.5rem;
+      }
     }
   }
 }
