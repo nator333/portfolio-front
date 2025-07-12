@@ -2,6 +2,7 @@
 
 .navbar {
   background-color: #FFD700 !important;
+  border-top: 3px dashed #000000;
   border-bottom: 3px dashed #000000;
   box-shadow: none;
   height: 3.25rem;
@@ -9,7 +10,7 @@
   .navbar-brand {
     .brand-text {
       color: #000000 !important;
-      font-size: 1.25rem;
+      font-size: 1.6rem; /* Increased by 5pt (approximately 0.35rem) */
       font-weight: 700;
       text-decoration: none;
       
