@@ -1,0 +1,62 @@
+@import "~bulma/sass/utilities/initial-variables";
+@import "~bulma/sass/utilities/mixins";
+
+div {
+  font-family: 'Quantico', sans-serif;
+}
+
+.mottoes {
+  @include desktop {
+    padding-bottom: 8rem;
+    padding-top: 8rem;
+    padding-left: 2rem;
+  }
+
+  @include mobile {
+    padding-bottom: 1rem;
+    padding-top: 1rem;
+    padding-left: 0;
+  }
+}
+
+.motto {
+  color: $yellow;
+  @include tablet {
+    margin-bottom: 3rem;
+  }
+
+  @include mobile {
+    margin-bottom: 1rem;
+  }
+}
+
+.motto:after {
+  content: '';
+  display: block;
+  border-top: 0.2rem double $white;
+  margin-top: 0.1em;
+}
+
+.mention {
+  font-size: small;
+  color: #4a4a4a;
+}
+
+.introduction {
+  color: $white;
+  margin-bottom: 1rem;
+}
+
+hr {
+  margin-top: 0;
+}
+
+.image {
+  @include desktop {
+    width: 500px;
+  }
+
+  @include mobile {
+    width: 250px;
+  }
+}
