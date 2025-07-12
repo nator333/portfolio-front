@@ -6,7 +6,7 @@
     "start": "ng serve --host 0.0.0.0 --port 3000 --poll 2000",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "vitest"
   },
   "engines": {
     "node": ">=20.19.0",
