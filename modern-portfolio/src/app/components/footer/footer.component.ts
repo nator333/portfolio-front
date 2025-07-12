@@ -31,7 +31,7 @@ import { CommonModule } from '@angular/common';
             </a>
           </div>
         </div>
-        <p class="has-text-grey-light">
+        <p class="has-text-warning">
           © {{ currentYear }} Masahiro Nakamata. All rights reserved.
         </p>
       </div>
