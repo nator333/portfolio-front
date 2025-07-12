@@ -1,49 +1,120 @@
-.home-content {
-  .signature-container {
-    margin: 2rem 0;
+/* Exact recreation of original NAKAMATA.TECH design */
+
+.hero {
+  background-color: #000000;
+  padding-top: 3.25rem; // Account for fixed navbar
+}
+
+.hero-body {
+  display: flex;
+  align-items: center;
+  min-height: calc(100vh - 3.25rem);
+  padding: 3rem 1.5rem;
+}
+
+.container {
+  max-width: 1200px;
+}
+
+.columns {
+  margin: 0 !important;
+  align-items: center;
+}
+
+/* Left Column - Motto Text */
+.motto-section {
+  padding-left: 2rem;
+  
+  .motto-line {
+    color: #FFD700;
+    font-size: 2.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    text-decoration: underline;
+    text-decoration-color: #FFD700;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 8px;
     
-    .signature {
-      max-width: 400px;
-      width: 100%;
-      height: auto;
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+  }
+}
+
+/* Right Column - Profile Section */
+.profile-section {
+  padding: 2rem;
+}
+
+.signature-container {
+  margin-bottom: 3rem;
+  
+  .signature-image {
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    max-height: 300px;
+  }
+}
+
+.profile-info {
+  .profile-name {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
     }
   }
   
-  .profile-info {
-    margin-top: 2rem;
+  .profile-title {
+    color: #cccccc;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
     
-    h3 {
-      margin-bottom: 0.5rem;
-      color: #ffffff;
+    @media (max-width: 768px) {
+      font-size: 1rem;
     }
+  }
+  
+  .credit-line {
+    color: #999999;
+    font-size: 0.9rem;
     
-    p {
-      margin-bottom: 0.25rem;
+    .artist-link {
+      color: #FFD700;
+      text-decoration: none;
       
-      a {
-        text-decoration: none;
-        color: #FFD700;
-        
-        &:hover {
-          text-decoration: underline;
-        }
+      &:hover {
+        text-decoration: underline;
       }
     }
   }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .hero-body {
+    padding: 2rem 1rem;
+  }
   
-  .content p {
-    margin-bottom: 1.5rem;
-    line-height: 1.4;
-    color: #FFD700;
-    font-size: 1.5rem;
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: #FFD700;
-    text-underline-offset: 8px;
+  .motto-section {
+    padding-left: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .profile-section {
+    padding: 1rem;
   }
   
   .columns {
-    align-items: center;
-    min-height: 60vh;
+    flex-direction: column;
+    
+    .column {
+      width: 100% !important;
+    }
   }
 }
