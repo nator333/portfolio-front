@@ -15,10 +15,10 @@ import { HeroComponent } from '../../components/hero/hero.component';
         <div class="columns is-vcentered">
           <div class="column is-half">
             <div class="content is-large">
-              <p class="is-size-4 has-text-weight-semibold">
+              <p class="is-size-4 has-text-weight-semibold gold-text gold-underline">
                 STAY CONSTRUCTIVE
               </p>
-              <p class="is-size-4 has-text-weight-semibold">
+              <p class="is-size-4 has-text-weight-semibold gold-text gold-underline">
                 REPRESENT 21ST CENTURY WORLD
               </p>
             </div>
