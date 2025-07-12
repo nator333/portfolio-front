@@ -1,0 +1,48 @@
+.section {
+  background-color: #0a0a0a;
+  min-height: 80vh;
+}
+
+.project-card {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  transition: all 0.3s ease;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+  }
+  
+  .card-image img {
+    object-fit: cover;
+  }
+  
+  .card-content {
+    background-color: #1a1a1a;
+  }
+  
+  .card-footer {
+    background-color: #1a1a1a;
+    border-top: 1px solid #333;
+    
+    .card-footer-item {
+      color: #667eea;
+      transition: color 0.3s ease;
+      
+      &:hover {
+        color: #764ba2;
+        background-color: rgba(102, 126, 234, 0.1);
+      }
+    }
+  }
+  
+  .tags {
+    margin-top: 1rem;
+    
+    .tag {
+      margin: 0.25rem 0.25rem 0.25rem 0;
+    }
+  }
+}

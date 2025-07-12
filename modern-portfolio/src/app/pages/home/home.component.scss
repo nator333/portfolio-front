@@ -1,0 +1,36 @@
+.home-content {
+  .signature-container {
+    margin: 2rem 0;
+    
+    .signature {
+      max-width: 300px;
+      height: auto;
+      filter: brightness(1.2);
+    }
+  }
+  
+  .profile-info {
+    margin-top: 2rem;
+    
+    h3 {
+      margin-bottom: 0.5rem;
+    }
+    
+    p {
+      margin-bottom: 0.25rem;
+      
+      a {
+        text-decoration: none;
+        
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+  
+  .content p {
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+}
