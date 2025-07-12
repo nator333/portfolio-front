@@ -1,0 +1,20 @@
+.footer {
+  margin-top: auto;
+  border-top: 1px solid #FFD700;
+  background-color: #000000 !important;
+  
+  .social-link {
+    color: #FFD700;
+    transition: color 0.3s ease;
+    
+    &:hover {
+      color: #ffffff;
+    }
+  }
+  
+  p {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #FFD700;
+  }
+}
