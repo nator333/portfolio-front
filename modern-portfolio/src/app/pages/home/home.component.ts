@@ -25,7 +25,7 @@ import { HeroComponent } from '../../components/hero/hero.component';
           </div>
           <div class="column is-half has-text-centered">
             <div class="signature-container">
-              <img src="/assets/signature.png" alt="Masahiro Nakamata Signature" class="signature" />
+              <img src="https://nakamata.tech/assets/home/my_name_gold.png" alt="Masahiro Nakamata Signature" class="signature" />
             </div>
             <div class="profile-info">
               <h3 class="is-size-3 has-text-white">Hi, I'm Masahiro Nakamata</h3>
