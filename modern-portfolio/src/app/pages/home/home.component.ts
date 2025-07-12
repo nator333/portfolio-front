@@ -31,7 +31,7 @@ import { HeroComponent } from '../../components/hero/hero.component';
               <h3 class="is-size-3 has-text-white">Hi, I'm Masahiro Nakamata</h3>
               <p class="is-size-5 has-text-white-ter">Backend Engineer</p>
               <p class="is-size-6 has-text-grey-light">
-                The name art was made by <a href="#" class="has-text-primary">@ToshimuX</a>
+                The name art was made by <a href="#" class="has-text-primary">&#64;ToshimuX</a>
               </p>
             </div>
           </div>
