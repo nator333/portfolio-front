@@ -60,6 +60,6 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
     "typescript": "~3.2.2",
-    "node-sass": "^4.14.1"
+    "sass": "^1.81.1"
   }
 }
