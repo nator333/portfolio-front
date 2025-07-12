@@ -1,0 +1,21 @@
+<div class="tile is-ancestor">
+  <div class="tile is-vertical">
+    <div class="tile is-parent">
+      <div class="tile is-child is-vertical mottoes">
+        <ng-container *ngFor="let motto of mottoes">
+          <p class="title is-3 is-inline-block motto">{{motto | uppercase}}</p>
+        </ng-container>
+      </div>
+      <div class="tile is-child is-vertical is-6 content">
+        <figure class="has-text-centered image">
+          <img src="/assets/home/my_name_gold.png" alt="my name art">
+        </figure>
+        <article class="tile is-child notification is-black has-text-centered">
+          <p class="title introduction">Hi, I'm Masahiro Nakamata</p>
+          <p class="subtitle introduction">{{jobTitle}}</p>
+          <p class="mention">The name art was made by <a href="https://toshifumik.com" target="_blank">©Toshifumi K</a></p>
+        </article>
+      </div>
+    </div>
+  </div>
+</div>
