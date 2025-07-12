@@ -8,11 +8,17 @@
   height: 3.25rem;
   
   .navbar-brand {
+    display: flex;
+    align-items: center; /* Vertically center the brand */
+    
     .brand-text {
       color: #000000 !important;
-      font-size: 1.6rem; /* Increased by 5pt (approximately 0.35rem) */
+      font-size: 1.95rem; /* Increased by another 5pt (approximately 0.35rem) */
       font-weight: 700;
       text-decoration: none;
+      display: flex;
+      align-items: center; /* Ensure text is vertically centered */
+      height: 100%;
       
       &:hover {
         color: #000000 !important;
@@ -68,6 +74,8 @@
         font-weight: 600;
         font-size: 1rem;
         transition: all 0.3s ease;
+        display: flex;
+        align-items: center; /* Vertically center navigation links */
         
         &:hover {
           background-color: rgba(0, 0, 0, 0.05) !important;
