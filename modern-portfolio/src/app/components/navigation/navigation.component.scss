@@ -1,0 +1,29 @@
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  
+  .navbar-item {
+    font-weight: 500;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    &.has-text-primary {
+      background-color: rgba(102, 126, 234, 0.2);
+    }
+  }
+  
+  .navbar-brand .navbar-item {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  
+  .navbar-burger {
+    color: white;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
