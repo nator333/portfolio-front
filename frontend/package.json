@@ -28,7 +28,7 @@
     "animate.css": "^4.1.1",
     "bulma": "^1.0.2",
     "bulma-carousel": "^4.0.24",
-    "core-js": "^3.39.0",
+    "core-js": "^2.6.12",
     "devicons": "^1.8.0",
     "firebase-tools": "^13.29.1",
     "font-awesome": "^4.7.0",
