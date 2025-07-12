@@ -1,5 +1,5 @@
 .section {
-  background-color: #0a0a0a;
+  background-color: #000000;
   min-height: 80vh;
 }
 
@@ -11,8 +11,8 @@
   
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(102, 126, 234, 0.2);
-    border-color: #667eea;
+    box-shadow: 0 8px 15px rgba(255, 215, 0, 0.2);
+    border-color: #FFD700;
   }
   
   .card-image img {
@@ -28,12 +28,12 @@
     border-top: 1px solid #333;
     
     .card-footer-item {
-      color: #667eea;
+      color: #FFD700;
       transition: color 0.3s ease;
       
       &:hover {
-        color: #764ba2;
-        background-color: rgba(102, 126, 234, 0.1);
+        color: #ffffff;
+        background-color: rgba(255, 215, 0, 0.1);
       }
     }
   }
@@ -43,6 +43,8 @@
     
     .tag {
       margin: 0.25rem 0.25rem 0.25rem 0;
+      background-color: #FFD700;
+      color: #000000;
     }
   }
 }
