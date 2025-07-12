@@ -8,23 +8,23 @@ html {
 
 body {
   margin: 0;
-  background-color: #0a0a0a;
+  background-color: #000000;
   color: #ffffff;
 }
 
 /* Portfolio Specific Styles */
 .hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: #000000 !important;
   min-height: 100vh;
 }
 
 .skill-section {
   padding: 4rem 1.5rem;
-  background-color: #1a1a1a;
+  background-color: #000000;
 }
 
 .skillBox {
-  background-color: #2a2a2a;
+  background-color: #1a1a1a;
   padding: 1rem;
   border-radius: 8px;
   margin: 1rem 0;
@@ -32,7 +32,7 @@ body {
 }
 
 .project-card {
-  background-color: #2a2a2a;
+  background-color: #1a1a1a;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
@@ -45,15 +45,31 @@ body {
 
 /* Navigation Styles */
 .navbar {
-  background-color: #1a1a1a !important;
-  border-bottom: 1px solid #333;
+  background-color: #FFD700 !important;
+  border-bottom: 1px solid #FFD700;
 }
 
 .navbar-item {
-  color: #ffffff !important;
+  color: #000000 !important;
+  font-weight: 600;
 }
 
 .navbar-item:hover {
-  background-color: #333 !important;
-  color: #667eea !important;
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  color: #000000 !important;
+}
+
+.navbar-brand .navbar-item {
+  color: #000000 !important;
+  font-weight: 700;
+}
+
+/* Gold accent color for headings and important text */
+.gold-text {
+  color: #FFD700;
+}
+
+.gold-underline {
+  border-bottom: 2px solid #FFD700;
+  display: inline-block;
 }
