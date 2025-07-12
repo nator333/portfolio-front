@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
     <section class="hero is-fullheight" [class]="heroClass()">
       <div class="hero-body">
         <div class="container has-text-centered">
-          <h1 class="title is-1 has-text-white">
+          <h1 class="title is-1 has-text-white gold-text gold-underline">
             {{ title() }}
           </h1>
           @if (subtitle()) {
