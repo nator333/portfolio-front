@@ -1,0 +1,31 @@
+@import "~bulma/sass/utilities/mixins";
+
+.container {
+  padding-top: 1rem;
+}
+
+hr {
+  border: none;
+  background-color: currentColor;
+  height: 0.25rem;
+  margin: 1rem 0;
+}
+
+.title {
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  margin-bottom: 0.5rem;
+}
+
+.indented {
+  text-indent: 5px;
+}
+
+.subtitle:after {
+  content: '';
+  display: block;
+  border-top: 0.1rem solid currentColor;
+  margin-top: 0.1em;
+}

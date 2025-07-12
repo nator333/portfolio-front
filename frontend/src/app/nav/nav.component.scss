@@ -1,0 +1,28 @@
+@import "~bulma/sass/utilities/mixins";
+
+h1 {
+  font-family: 'Quantico', sans-serif;
+  @include tablet {
+    font-size: 2rem;
+  }
+  @include mobile {
+    font-size: 1.6rem;
+  }
+}
+
+a.navbar-item {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+a.navbar-item.subtitle.is-5 > a {
+  padding-right: 1rem
+}
+
+div.navbar {
+  border-top-width: 0.2rem;
+  border-top-color: black;
+  border-top-style: dashed;
+  border-bottom-width: 0.2rem;
+  border-bottom-color: black;
+  border-bottom-style: dashed;
+}
