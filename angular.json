@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "modern-portfolio": {
+    "portfolio-front": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -83,10 +83,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "modern-portfolio:build:production"
+              "buildTarget": "portfolio-front:build:production"
             },
             "development": {
-              "buildTarget": "modern-portfolio:build:development"
+              "buildTarget": "portfolio-front:build:development"
             }
           },
           "defaultConfiguration": "development"
