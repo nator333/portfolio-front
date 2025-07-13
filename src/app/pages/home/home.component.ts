@@ -25,13 +25,13 @@ import { CommonModule } from "@angular/common";
                 <div class="signature-container">
                   <img
                     src="assets/home/my_name_gold.png"
-                    alt="Masahiro Nakamata Signature"
+                    alt="Hiro Nakamata Signature"
                     class="signature-image"
                   />
                 </div>
 
                 <div class="profile-info">
-                  <h3 class="profile-name">Hi, I'm Masahiro Nakamata</h3>
+                  <h3 class="profile-name">Hi, I'm Hiro Nakamata</h3>
                   <p class="profile-title">Backend Engineer</p>
                   <p class="credit-line">
                     The name art was made by

@@ -32,7 +32,7 @@ import { CommonModule } from "@angular/common";
           </div>
         </div>
         <p class="has-text-warning">
-          © {{ currentYear }} Masahiro Nakamata. All rights reserved.
+          © {{ currentYear }} Hiro Nakamata. All rights reserved.
         </p>
       </div>
     </footer>

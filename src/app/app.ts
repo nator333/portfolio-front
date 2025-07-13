@@ -19,5 +19,5 @@ import { FooterComponent } from "./components/footer/footer.component";
   styleUrl: "./app.scss",
 })
 export class AppComponent {
-  title = "Masahiro Nakamata Portfolio";
+  title = "Hiro Nakamata Portfolio";
 }

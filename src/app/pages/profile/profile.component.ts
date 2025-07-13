@@ -7,7 +7,7 @@ import { HeroComponent } from "../../components/hero/hero.component";
   standalone: true,
   imports: [CommonModule, HeroComponent],
   template: `
-    <app-hero title="Profile" subtitle="About Masahiro Nakamata"> </app-hero>
+    <app-hero title="Profile" subtitle="About Hiro Nakamata"> </app-hero>
 
     <section class="section skills-section">
       <div class="container">
