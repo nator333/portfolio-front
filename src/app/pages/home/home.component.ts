@@ -18,16 +18,16 @@ import { CommonModule } from '@angular/common';
                 <h3 class="motto-line">REPRESENT 21ST CENTURY WORLD</h3>
               </div>
             </div>
-            
+
             <!-- Right Column - Signature and Profile -->
             <div class="column is-half">
               <div class="profile-section has-text-centered">
                 <div class="signature-container">
-                  <img src="https://nakamata.tech/assets/home/my_name_gold.png" 
+                  <img src="assets/public/home/my_name_gold.png" 
                        alt="Masahiro Nakamata Signature" 
                        class="signature-image" />
                 </div>
-                
+
                 <div class="profile-info">
                   <h3 class="profile-name">Hi, I'm Masahiro Nakamata</h3>
                   <p class="profile-title">Backend Engineer</p>

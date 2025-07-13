@@ -9,7 +9,7 @@ import { HeroComponent } from '../../components/hero/hero.component';
   template: `
     <app-hero title="Projects" subtitle="My Work & Contributions">
     </app-hero>
-    
+
     <section class="section">
       <div class="container">
         <div class="columns is-multiline">
@@ -66,7 +66,7 @@ export class ProjectsComponent {
       title: 'E-Commerce Platform',
       tech: 'Spring Boot, React, PostgreSQL',
       description: 'A full-stack e-commerce solution with microservices architecture.',
-      image: 'https://via.placeholder.com/400x300',
+      image: 'assets/public/projects/elementscpr.png',
       tags: ['Java', 'Spring Boot', 'React', 'PostgreSQL'],
       liveUrl: 'https://example.com',
       githubUrl: 'https://github.com'
@@ -76,7 +76,7 @@ export class ProjectsComponent {
       title: 'Real-time Chat Application',
       tech: 'Node.js, Socket.io, MongoDB',
       description: 'A real-time messaging app with WebSocket connectivity.',
-      image: 'https://via.placeholder.com/400x300',
+      image: 'assets/public/projects/SilverBullet.png',
       tags: ['Node.js', 'Socket.io', 'MongoDB', 'WebSockets'],
       liveUrl: 'https://example.com',
       githubUrl: 'https://github.com'
@@ -86,7 +86,7 @@ export class ProjectsComponent {
       title: 'API Gateway Service',
       tech: 'Kotlin, Ktor, Redis',
       description: 'High-performance API gateway with rate limiting and caching.',
-      image: 'https://via.placeholder.com/400x300',
+      image: 'assets/public/projects/portfolio.png',
       tags: ['Kotlin', 'Ktor', 'Redis', 'Microservices'],
       githubUrl: 'https://github.com'
     }
