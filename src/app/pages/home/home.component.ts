@@ -24,7 +24,7 @@ import { CommonModule } from "@angular/common";
               <div class="profile-section has-text-centered">
                 <div class="signature-container">
                   <img
-                    src="assets/public/home/my_name_gold.png"
+                    src="assets/home/my_name_gold.png"
                     alt="Masahiro Nakamata Signature"
                     class="signature-image"
                   />

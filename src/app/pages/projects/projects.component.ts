@@ -78,7 +78,7 @@ export class ProjectsComponent {
       tech: "Spring Boot, React, PostgreSQL",
       description:
         "A full-stack e-commerce solution with microservices architecture.",
-      image: "assets/public/projects/elementscpr.png",
+      image: "assets/projects/elementscpr.png",
       tags: ["Java", "Spring Boot", "React", "PostgreSQL"],
       liveUrl: "https://example.com",
       githubUrl: "https://github.com",
@@ -88,7 +88,7 @@ export class ProjectsComponent {
       title: "Real-time Chat Application",
       tech: "Node.js, Socket.io, MongoDB",
       description: "A real-time messaging app with WebSocket connectivity.",
-      image: "assets/public/projects/SilverBullet.png",
+      image: "assets/projects/SilverBullet.png",
       tags: ["Node.js", "Socket.io", "MongoDB", "WebSockets"],
       liveUrl: "https://example.com",
       githubUrl: "https://github.com",
@@ -99,7 +99,7 @@ export class ProjectsComponent {
       tech: "Kotlin, Ktor, Redis",
       description:
         "High-performance API gateway with rate limiting and caching.",
-      image: "assets/public/projects/portfolio.png",
+      image: "assets/projects/portfolio.png",
       tags: ["Kotlin", "Ktor", "Redis", "Microservices"],
       githubUrl: "https://github.com",
     },
