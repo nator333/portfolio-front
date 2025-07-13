@@ -1,8 +1,8 @@
-import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input } from "@angular/core";
+import { CommonModule } from "@angular/common";
 
 @Component({
-  selector: 'app-hero',
+  selector: "app-hero",
   standalone: true,
   imports: [CommonModule],
   template: `
@@ -26,11 +26,11 @@ import { CommonModule } from '@angular/common';
       </div>
     </section>
   `,
-  styleUrl: './hero.component.scss'
+  styleUrl: "./hero.component.scss",
 })
 export class HeroComponent {
-  title = input<string>('');
-  subtitle = input<string>('');
-  heroClass = input<string>('is-primary');
+  title = input<string>("");
+  subtitle = input<string>("");
+  heroClass = input<string>("is-primary");
   showContent = input<boolean>(false);
 }

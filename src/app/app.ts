@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { NavigationComponent } from './components/navigation/navigation.component';
-import { FooterComponent } from './components/footer/footer.component';
+import { Component } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
+import { NavigationComponent } from "./components/navigation/navigation.component";
+import { FooterComponent } from "./components/footer/footer.component";
 
 @Component({
-  selector: 'app-root',
+  selector: "app-root",
   standalone: true,
   imports: [RouterOutlet, NavigationComponent, FooterComponent],
   template: `
@@ -16,8 +16,8 @@ import { FooterComponent } from './components/footer/footer.component';
       <app-footer></app-footer>
     </div>
   `,
-  styleUrl: './app.scss'
+  styleUrl: "./app.scss",
 })
 export class AppComponent {
-  title = 'Masahiro Nakamata Portfolio';
+  title = "Masahiro Nakamata Portfolio";
 }

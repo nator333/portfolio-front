@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component } from "@angular/core";
+import { CommonModule } from "@angular/common";
 
 @Component({
-  selector: 'app-home',
+  selector: "app-home",
   standalone: true,
   imports: [CommonModule],
   template: `
@@ -23,16 +23,19 @@ import { CommonModule } from '@angular/common';
             <div class="column is-half">
               <div class="profile-section has-text-centered">
                 <div class="signature-container">
-                  <img src="assets/public/home/my_name_gold.png" 
-                       alt="Masahiro Nakamata Signature" 
-                       class="signature-image" />
+                  <img
+                    src="assets/public/home/my_name_gold.png"
+                    alt="Masahiro Nakamata Signature"
+                    class="signature-image"
+                  />
                 </div>
 
                 <div class="profile-info">
                   <h3 class="profile-name">Hi, I'm Masahiro Nakamata</h3>
                   <p class="profile-title">Backend Engineer</p>
                   <p class="credit-line">
-                    The name art was made by <a href="#" class="artist-link">&#64;ToshimuX</a>
+                    The name art was made by
+                    <a href="#" class="artist-link">&#64;ToshimuX</a>
                   </p>
                 </div>
               </div>
@@ -42,6 +45,6 @@ import { CommonModule } from '@angular/common';
       </div>
     </section>
   `,
-  styleUrl: './home.component.scss'
+  styleUrl: "./home.component.scss",
 })
 export class HomeComponent {}

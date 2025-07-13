@@ -1,24 +1,24 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { HeroComponent } from '../../components/hero/hero.component';
+import { Component } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { HeroComponent } from "../../components/hero/hero.component";
 
 @Component({
-  selector: 'app-profile',
+  selector: "app-profile",
   standalone: true,
   imports: [CommonModule, HeroComponent],
   template: `
-    <app-hero title="Profile" subtitle="About Masahiro Nakamata">
-    </app-hero>
-    
+    <app-hero title="Profile" subtitle="About Masahiro Nakamata"> </app-hero>
+
     <section class="section skills-section">
       <div class="container">
-        
         <!-- Languages Section -->
         <div class="skill-category">
           <h2 class="title is-3 has-text-centered has-text-white">Languages</h2>
           <div class="columns">
             <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">Frontend</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                Frontend
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of frontendLanguages; track skill) {
@@ -28,7 +28,9 @@ import { HeroComponent } from '../../components/hero/hero.component';
               </div>
             </div>
             <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">Mobile & Backend</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                Mobile & Backend
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of backendLanguages; track skill) {
@@ -42,10 +44,14 @@ import { HeroComponent } from '../../components/hero/hero.component';
 
         <!-- Frameworks Section -->
         <div class="skill-category">
-          <h2 class="title is-3 has-text-centered has-text-white">Frameworks</h2>
+          <h2 class="title is-3 has-text-centered has-text-white">
+            Frameworks
+          </h2>
           <div class="columns">
             <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">Frontend</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                Frontend
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of frontendFrameworks; track skill) {
@@ -55,7 +61,9 @@ import { HeroComponent } from '../../components/hero/hero.component';
               </div>
             </div>
             <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">Server Side</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                Server Side
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of backendFrameworks; track skill) {
@@ -69,10 +77,14 @@ import { HeroComponent } from '../../components/hero/hero.component';
 
         <!-- Cloud Computing Section -->
         <div class="skill-category">
-          <h2 class="title is-3 has-text-centered has-text-white">Cloud Computing Platform</h2>
+          <h2 class="title is-3 has-text-centered has-text-white">
+            Cloud Computing Platform
+          </h2>
           <div class="columns">
             <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">AWS</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                AWS
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of awsSkills; track skill) {
@@ -82,7 +94,9 @@ import { HeroComponent } from '../../components/hero/hero.component';
               </div>
             </div>
             <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">GCP</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                GCP
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of gcpSkills; track skill) {
@@ -111,7 +125,9 @@ import { HeroComponent } from '../../components/hero/hero.component';
           <h2 class="title is-3 has-text-centered has-text-white">Tools</h2>
           <div class="columns is-multiline">
             <div class="column is-half">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">Package Manager</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                Package Manager
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of packageManagers; track skill) {
@@ -121,7 +137,9 @@ import { HeroComponent } from '../../components/hero/hero.component';
               </div>
             </div>
             <div class="column is-half">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">Virtualization</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                Virtualization
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of virtualization; track skill) {
@@ -131,7 +149,9 @@ import { HeroComponent } from '../../components/hero/hero.component';
               </div>
             </div>
             <div class="column is-half">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">IDE</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                IDE
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of ides; track skill) {
@@ -141,7 +161,9 @@ import { HeroComponent } from '../../components/hero/hero.component';
               </div>
             </div>
             <div class="column is-half">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">Other</h3>
+              <h3 class="subtitle is-4 has-text-centered has-text-white">
+                Other
+              </h3>
               <div class="skillBox">
                 <div class="skill-list">
                   @for (skill of otherTools; track skill) {
@@ -152,26 +174,49 @@ import { HeroComponent } from '../../components/hero/hero.component';
             </div>
           </div>
         </div>
-        
       </div>
     </section>
   `,
-  styleUrl: './profile.component.scss'
+  styleUrl: "./profile.component.scss",
 })
 export class ProfileComponent {
-  frontendLanguages = ['HTML5', 'SASS', 'TypeScript', 'JavaScript'];
-  backendLanguages = ['Kotlin', 'Java', 'C', 'Objective-C', 'Swift', 'Perl', 'PHP', 'Lua', '.NET VB', '.NET VBA'];
-  
-  frontendFrameworks = ['Angular', 'React', 'Vue.js', 'Node.js'];
-  backendFrameworks = ['Play Framework', 'Spring Boot', 'Ktor', 'Serverless Framework'];
-  
-  awsSkills = ['EC2', 'S3', 'Lambda', 'API Gateway', 'Kinesis', 'Redshift', 'Cloud Formation'];
-  gcpSkills = ['GCE', 'Firebase'];
-  
-  databases = ['MySQL', 'PostgreSQL', 'SQLite', 'Neo4j'];
-  
-  packageManagers = ['npm', 'CocoaPods', 'Gradle', 'Maven'];
-  virtualization = ['Docker', 'Docker Compose'];
-  ides = ['IntelliJ Ultimate', 'WebStorm', 'Visual Studio Code'];
-  otherTools = ['Git', 'CircleCI'];
+  frontendLanguages = ["HTML5", "SASS", "TypeScript", "JavaScript"];
+  backendLanguages = [
+    "Kotlin",
+    "Java",
+    "C",
+    "Objective-C",
+    "Swift",
+    "Perl",
+    "PHP",
+    "Lua",
+    ".NET VB",
+    ".NET VBA",
+  ];
+
+  frontendFrameworks = ["Angular", "React", "Vue.js", "Node.js"];
+  backendFrameworks = [
+    "Play Framework",
+    "Spring Boot",
+    "Ktor",
+    "Serverless Framework",
+  ];
+
+  awsSkills = [
+    "EC2",
+    "S3",
+    "Lambda",
+    "API Gateway",
+    "Kinesis",
+    "Redshift",
+    "Cloud Formation",
+  ];
+  gcpSkills = ["GCE", "Firebase"];
+
+  databases = ["MySQL", "PostgreSQL", "SQLite", "Neo4j"];
+
+  packageManagers = ["npm", "CocoaPods", "Gradle", "Maven"];
+  virtualization = ["Docker", "Docker Compose"];
+  ides = ["IntelliJ Ultimate", "WebStorm", "Visual Studio Code"];
+  otherTools = ["Git", "CircleCI"];
 }

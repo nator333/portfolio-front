@@ -1,59 +1,75 @@
 # Hiro's Portfolio
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.0.
+A personal portfolio website built with Angular 20.1.0.
 
-## Development server
+Visit the site: [GitHub Pages](https://nator333.github.io/portfolio-front) | [Firebase-Hosted Domain](https://nakamata.tech)
 
-To start a local development server, run:
+## Technologies Used
 
-```bash
-ng serve
-```
+- **Framework**: Angular 20.1.0
+- **CSS Framework**: Bulma 1.0.4
+- **Icons**: Font Awesome
+- **Animations**: animate.css
+- **Hosting**: Firebase and GitHub Pages
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Prerequisites
 
-## Code scaffolding
+- Node.js >= 20.19.0
+- npm >= 10.0.0
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Development
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+### Setup
 
 ```bash
-ng build
+# Install dependencies
+npm ci
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### Development Server
 
 ```bash
-ng test
+# Start the development server
+npm start
 ```
 
-## Running end-to-end tests
+This will start a development server at `http://localhost:3000`. The application will automatically reload when you make changes to the source files.
 
-For end-to-end (e2e) testing, run:
+### Building
 
 ```bash
-ng e2e
+# Build for production
+npm run build
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+The build artifacts will be stored in the `dist/portfolio-front/browser/` directory.
+
+### Code Formatting
+
+```bash
+# Format README.md file
+npm run prettify-readme
+
+# Format all TypeScript files
+npm run prettify-ts
+```
+
+These scripts use Prettier to format files according to consistent styling rules:
+- `prettify-readme`: Formats the README.md file
+- `prettify-ts`: Formats all TypeScript files in the src directory
+
+## Deployment
+
+The project is automatically deployed to both Firebase Hosting and GitHub Pages when changes are pushed to the master branch.
+
+### Firebase Hosting
+
+Deployment to Firebase is handled by a GitHub Action defined in `.github/workflows/firebase-hosting-merge.yml`.
+
+### GitHub Pages
+
+Deployment to GitHub Pages is handled by a GitHub Action defined in `.github/workflows/static.yml`.
 
 ## Additional Resources
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+For more information on Angular development, visit the [Angular documentation](https://angular.dev/).
