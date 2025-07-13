@@ -45,3 +45,5 @@ Thumbs.db
 front
 
 firebase-debug.log
+
+.firebase/
