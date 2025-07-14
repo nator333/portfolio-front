@@ -1,50 +1,31 @@
 import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
 
+/**
+ * Home component that displays the main landing page with personal motto and profile information.
+ * The component shows a series of motto lines with different heading levels and a profile section.
+ */
 @Component({
   selector: "app-home",
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <section class="hero is-fullheight">
-      <div class="hero-body">
-        <div class="container">
-          <div class="columns is-vcentered">
-            <!-- Left Column - Text Content -->
-            <div class="column is-half">
-              <div class="motto-section">
-                <h1 class="motto-line">KEEP ASKING YOURSELF WHY</h1>
-                <h2 class="motto-line">STAY CONSTRUCTIVE</h2>
-                <h3 class="motto-line">REPRESENT 21ST CENTURY WORLD</h3>
-              </div>
-            </div>
-
-            <!-- Right Column - Signature and Profile -->
-            <div class="column is-half">
-              <div class="profile-section has-text-centered">
-                <div class="signature-container">
-                  <img
-                    src="assets/home/my_name_gold.png"
-                    alt="Hiro Nakamata Signature"
-                    class="signature-image"
-                  />
-                </div>
-
-                <div class="profile-info">
-                  <h3 class="profile-name">Hi, I'm Hiro Nakamata</h3>
-                  <p class="profile-title">Backend Engineer</p>
-                  <p class="credit-line">
-                    The name art was made by
-                    <a href="#" class="artist-link">&#64;ToshimuX</a>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  `,
+  templateUrl: "./home.component.html",
   styleUrl: "./home.component.scss",
 })
-export class HomeComponent {}
+export class HomeComponent {
+  readonly mottoes: string[] = [
+    "Scream Dependencies",
+    "Hide Complexities",
+    "Embrace Criticism",
+    "Yet, Seek Connections",
+  ];
+  readonly profile: string[] = ["Hi, I'm Hiro Nakamata", "Software Engineer"];
+  readonly kappiInfo: string[] = [
+    "https://www.instagram.com/f_spiritt?utm_source=ig_web_button_share_sheet&igsh=MTZyZXIxaG12cW0xZQ==",
+    "Toshifumi Kakiuchi",
+  ];
+  readonly sighInfo: string[] = [
+    "assets/home/my_name_gold.png",
+    "Hiro Nakamata Signature",
+  ];
+}

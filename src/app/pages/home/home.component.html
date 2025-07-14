@@ -1,0 +1,53 @@
+<section class="hero is-fullheight">
+  <div class="hero-body">
+    <div class="container">
+      <div class="columns is-vcentered">
+        <!-- Left Column - Text Content -->
+        <div class="column is-half">
+          <div class="motto-section">
+            @for (motto of mottoes; track motto; let i = $index) {
+              @switch (i) {
+                @case (0) {
+                  <h1 class="motto-line">{{ motto }}</h1>
+                }
+                @case (1) {
+                  <h2 class="motto-line">{{ motto }}</h2>
+                }
+                @case (2) {
+                  <h3 class="motto-line">{{ motto }}</h3>
+                }
+                @case (3) {
+                  <h4 class="motto-line">{{ motto }}</h4>
+                }
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Right Column - Signature and Profile -->
+        <div class="column is-half">
+          <div class="profile-section has-text-centered">
+            <div class="signature-container">
+              <img
+                [src]="sighInfo[0]"
+                [alt]="sighInfo[1]"
+                class="signature-image"
+              />
+            </div>
+
+            <div class="profile-info">
+              <h3 class="profile-name">{{ profile[0] }}</h3>
+              <p class="profile-title">{{ profile[1] }}</p>
+              <p class="credit-line">
+                The name art was made by
+                <a href="{{ kappiInfo[0] }}" class="artist-link">{{
+                  kappiInfo[1]
+                }}</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
