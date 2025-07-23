@@ -70,6 +70,29 @@ Deployment to Firebase is handled by a GitHub Action defined in `.github/workflo
 
 Deployment to GitHub Pages is handled by a GitHub Action defined in `.github/workflows/static.yml`.
 
+# Blog Post Images
+
+This directory contains eye-catch images for blog posts. Each image should have the same name as its corresponding markdown file (without the .md extension).
+
+For example:
+- For a blog post with filename `getting-started-with-angular.md`, the eye-catch image should be `getting-started-with-angular.jpg`.
+
+## Demo Images
+
+For demonstration purposes, random images are generated using the ImageGeneratorService. In a production environment, you would replace these with actual images stored in this directory.
+
+The random images are generated based on the blog post title, using the Unsplash API to fetch relevant images.
+
+## Image Guidelines
+
+When adding your own images, consider the following guidelines:
+
+1. Use high-quality images with a resolution of at least 1200x800 pixels
+2. Optimize images for web (compress them to reduce file size)
+3. Use descriptive filenames that match the blog post filename
+4. Consider using images that are relevant to the blog post content
+5. Maintain a consistent aspect ratio (16:9 is recommended)
+
 ## Additional Resources
 
 For more information on Angular development, visit the [Angular documentation](https://angular.dev/).

@@ -1,0 +1,161 @@
+.section {
+  background-color: #000000;
+  min-height: 80vh;
+}
+
+.blog-post-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.blog-post-header {
+  margin-bottom: 2rem;
+
+  .title {
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    margin-bottom: 1rem;
+  }
+
+  .tags {
+    margin-top: 1rem;
+
+    .tag {
+      margin: 0.25rem 0.25rem 0.25rem 0;
+      background-color: #FFD700;
+      color: #000000;
+    }
+  }
+}
+
+.blog-post-image {
+  margin-bottom: 2rem;
+
+  figure {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .eye-catch-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+  }
+}
+
+.blog-post-content {
+  line-height: 1.8;
+  font-size: 1.1rem;
+
+  // Styles for ngx-markdown component
+  ::ng-deep markdown {
+    color: #ffffff;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
+
+  p {
+    margin-bottom: 1.5rem;
+  }
+
+  ul, ol {
+    margin-left: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+
+  code {
+    background-color: #1a1a1a;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+
+  pre {
+    background-color: #1a1a1a;
+    padding: 1rem;
+    border-radius: 5px;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+
+    code {
+      padding: 0;
+      background-color: transparent;
+    }
+  }
+
+  blockquote {
+    border-left: 4px solid #FFD700;
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 1.5rem;
+    color: #cccccc;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    margin: 1.5rem 0;
+    border-radius: 5px;
+  }
+
+  a {
+    color: #FFD700;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+
+    th, td {
+      border: 1px solid #333;
+      padding: 0.5rem;
+    }
+
+    th {
+      background-color: #1a1a1a;
+    }
+  }
+}
+
+.mt-6 {
+  margin-top: 3rem;
+}

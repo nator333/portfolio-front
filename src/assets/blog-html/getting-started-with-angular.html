@@ -1,0 +1,58 @@
+<h2>Introduction</h2>
+<p>Angular is a powerful platform for building web applications. This guide will help you get started with Angular development, from installation to creating your first component.</p>
+<h2>Prerequisites</h2>
+<p>Before you begin, make sure you have:</p>
+<ul>
+<li>Node.js (version 16.x or higher)</li>
+<li>npm (usually comes with Node.js)</li>
+<li>A code editor (VS Code recommended)</li>
+</ul>
+<h2>Installation</h2>
+<p>First, install the Angular CLI globally:</p>
+<pre class="line-numbers" data-user="user" data-host="localhost" class="command-line"><code class="language-bash">npm install -g @angular/cli</code></pre><p>Verify the installation:</p>
+<pre class="line-numbers" data-user="user" data-host="localhost" class="command-line"><code class="language-bash">ng version</code></pre><h2>Creating Your First Project</h2>
+<p>Create a new Angular project:</p>
+<pre class="line-numbers" data-line="2"><code class="language-bash">ng new my-first-app
+# This will create a new Angular project</code></pre><p>During setup, you&#39;ll be asked about:</p>
+<ul>
+<li>Whether to include Angular routing (recommended: Yes)</li>
+<li>Which CSS preprocessor to use (options: CSS, SCSS, SASS, LESS)</li>
+</ul>
+<p>Navigate to your project directory:</p>
+<pre class="line-numbers"><code class="language-bash">cd my-first-app</code></pre><p>Start the development server:</p>
+<pre class="line-numbers" data-user="user" data-host="localhost" class="command-line"><code class="language-bash">ng serve --open</code></pre><p>The <code>--open</code> flag automatically opens your browser to <code>http://localhost:4200/</code>.</p>
+<h2>Understanding the Project Structure</h2>
+<p>Key files and directories:</p>
+<ul>
+<li><strong>src/app</strong>: Contains your application code</li>
+<li><strong>src/assets</strong>: For static files like images</li>
+<li><strong>src/environments</strong>: Configuration for different environments</li>
+<li><strong>angular.json</strong>: Angular workspace configuration</li>
+<li><strong>package.json</strong>: Dependencies and scripts</li>
+</ul>
+<h2>Creating Components</h2>
+<p>Generate a new component:</p>
+<pre class="line-numbers" class="line-numbers" data-line="1,3-5"><code class="language-bash">ng generate component hello-world
+# This command will:
+# 1. Create a new component directory
+# 2. Generate all necessary component files
+# 3. Update the module to include the component</code></pre><p>This creates:</p>
+<ul>
+<li>A component class (hello-world.component.ts)</li>
+<li>An HTML template (hello-world.component.html)</li>
+<li>A CSS file (hello-world.component.css)</li>
+<li>A test file (hello-world.component.spec.ts)</li>
+</ul>
+<h2>Next Steps</h2>
+<p>After mastering the basics, explore:</p>
+<ul>
+<li>Services and dependency injection</li>
+<li>Routing and navigation</li>
+<li>Forms (template-driven and reactive)</li>
+<li>HTTP client for API communication</li>
+<li>State management</li>
+</ul>
+<h2>Conclusion</h2>
+<p>Angular provides a comprehensive framework for building scalable web applications. With its component-based architecture and powerful features, you can create robust, maintainable applications.</p>
+<h2>Tags</h2>
+<p>Angular, Web Development, TypeScript</p>

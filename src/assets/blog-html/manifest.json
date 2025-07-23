@@ -1,0 +1,61 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "title": "Building a Portfolio with Angular",
+      "date": "2024-01-15T00:00:00.000Z",
+      "summary": "How to create a professional developer portfolio using Angular and modern web technologies.",
+      "tags": [
+        "Angular",
+        "Portfolio",
+        "Career",
+        "Frontend"
+      ],
+      "url": "/blog/building-portfolio-with-angular",
+      "filename": "building-portfolio-with-angular.html",
+      "originalFilename": "building-portfolio-with-angular.md"
+    },
+    {
+      "id": 3,
+      "title": "Introduction to Microservices",
+      "date": "2023-12-10T00:00:00.000Z",
+      "summary": "Understanding the basics of microservices architecture and its benefits.",
+      "tags": [
+        "Microservices",
+        "Architecture",
+        "Backend"
+      ],
+      "url": "/blog/intro-to-microservices",
+      "filename": "intro-to-microservices.html",
+      "originalFilename": "intro-to-microservices.md"
+    },
+    {
+      "id": 4,
+      "title": "Mastering CSS Grid Layout",
+      "date": "2023-11-05T00:00:00.000Z",
+      "summary": "Learn how to create complex layouts easily with CSS Grid.",
+      "tags": [
+        "CSS",
+        "Web Design",
+        "Frontend"
+      ],
+      "url": "/blog/mastering-css-grid",
+      "filename": "mastering-css-grid.html",
+      "originalFilename": "mastering-css-grid.md"
+    },
+    {
+      "id": 2,
+      "title": "Getting Started with Angular",
+      "date": "2023-10-15T00:00:00.000Z",
+      "summary": "A beginner's guide to setting up and building your first Angular application.",
+      "tags": [
+        "Angular",
+        "Web Development",
+        "TypeScript"
+      ],
+      "url": "/blog/getting-started-with-angular",
+      "filename": "getting-started-with-angular.html",
+      "originalFilename": "getting-started-with-angular.md"
+    }
+  ]
+}
