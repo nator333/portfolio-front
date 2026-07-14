@@ -54,10 +54,6 @@
               <label class="label">Phone</label>
               <input class="input" type="text" formControlName="phone" />
             </div>
-            <div class="field">
-              <label class="label">Location</label>
-              <input class="input" type="text" formControlName="location" />
-            </div>
             <div formGroupName="links" class="columns">
               <div class="column">
                 <label class="label">Website</label>
@@ -75,8 +71,50 @@
           </div>
 
           <div class="box">
-            <h2 class="title is-4">Summary</h2>
+            <h2 class="title is-4">Professional Summary</h2>
             <textarea class="textarea" rows="4" formControlName="summary"></textarea>
+          </div>
+
+          <div class="box">
+            <div class="level">
+              <div class="level-left"><h2 class="title is-4">Technical Skills</h2></div>
+              <div class="level-right">
+                <button class="button is-small" type="button" (click)="addSkillCategory()">
+                  + Add category
+                </button>
+              </div>
+            </div>
+            @for (group of skillCategoryControls; track $index) {
+              <div class="entry" [formGroup]="group">
+                <div class="columns">
+                  <div class="column is-one-third">
+                    <label class="label">Category</label>
+                    <input
+                      class="input"
+                      type="text"
+                      formControlName="category"
+                      placeholder="Languages"
+                    />
+                  </div>
+                  <div class="column">
+                    <label class="label">Skills (comma-separated)</label>
+                    <input
+                      class="input"
+                      type="text"
+                      formControlName="skills"
+                      placeholder="TypeScript, Kotlin, Java"
+                    />
+                  </div>
+                </div>
+                <button
+                  class="button is-small is-danger is-light entry-remove"
+                  type="button"
+                  (click)="removeSkillCategory($index)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
           </div>
 
           <div class="box">
@@ -103,23 +141,73 @@
                 <div class="columns">
                   <div class="column">
                     <label class="label">Start date</label>
-                    <input class="input" type="text" formControlName="startDate" />
+                    <input
+                      class="input"
+                      type="text"
+                      formControlName="startDate"
+                      placeholder="January 2022"
+                    />
                   </div>
                   <div class="column">
                     <label class="label">End date</label>
-                    <input class="input" type="text" formControlName="endDate" />
-                  </div>
-                  <div class="column">
-                    <label class="label">Location</label>
-                    <input class="input" type="text" formControlName="location" />
+                    <input
+                      class="input"
+                      type="text"
+                      formControlName="endDate"
+                      placeholder="Present"
+                    />
                   </div>
                 </div>
                 <label class="label">Bullets (one per line)</label>
                 <textarea class="textarea" rows="3" formControlName="bullets"></textarea>
+                <label class="label">Techstack (comma-separated)</label>
+                <input
+                  class="input"
+                  type="text"
+                  formControlName="techstack"
+                  placeholder="TypeScript, Angular, AWS CDK"
+                />
                 <button
                   class="button is-small is-danger is-light entry-remove"
                   type="button"
                   (click)="removeExperience($index)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="box">
+            <div class="level">
+              <div class="level-left"><h2 class="title is-4">Qualifications Summary</h2></div>
+              <div class="level-right">
+                <button class="button is-small" type="button" (click)="addQualification()">
+                  + Add
+                </button>
+              </div>
+            </div>
+            @for (group of qualificationControls; track $index) {
+              <div class="entry" [formGroup]="group">
+                <div class="columns">
+                  <div class="column is-one-third">
+                    <label class="label">Label</label>
+                    <input class="input" type="text" formControlName="label" placeholder="Java" />
+                  </div>
+                  <div class="column">
+                    <label class="label">Text</label>
+                    <input
+                      class="input"
+                      type="text"
+                      formControlName="text"
+                      placeholder="11 years of experience in backend development"
+                    />
+                  </div>
+                </div>
+                <button
+                  class="button is-small is-danger is-light entry-remove"
+                  type="button"
+                  (click)="removeQualification($index)"
                 >
                   Remove
                 </button>
@@ -167,12 +255,6 @@
                 </button>
               </div>
             }
-          </div>
-
-          <div class="box">
-            <h2 class="title is-4">Skills</h2>
-            <label class="label">Comma-separated</label>
-            <input class="input" type="text" formControlName="skills" />
           </div>
 
           <div class="field is-grouped">

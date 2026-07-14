@@ -1,10 +1,25 @@
+export interface CvSkillCategory {
+  /** Subsection label under Technical Skills, e.g. "Languages", "Cloud & DevOps". */
+  category: string;
+  skills: string[];
+}
+
 export interface CvExperienceEntry {
   company: string;
   role: string;
+  /** Freeform, e.g. "January 2022". Rendered verbatim as "start – end". */
   startDate: string;
   endDate: string;
-  location: string;
   bullets: string[];
+  /** Rendered as a trailing "Techstack: ..." paragraph. */
+  techstack: string;
+}
+
+export interface CvQualificationEntry {
+  /** Bold lead-in, e.g. "Java". */
+  label: string;
+  /** e.g. "11 years of experience in backend development...". */
+  text: string;
 }
 
 export interface CvEducationEntry {
@@ -20,7 +35,6 @@ export interface CvData {
     title: string;
     email: string;
     phone: string;
-    location: string;
     links: {
       website?: string;
       github?: string;
@@ -28,9 +42,10 @@ export interface CvData {
     };
   };
   summary: string;
+  technicalSkills: CvSkillCategory[];
   experience: CvExperienceEntry[];
+  qualifications: CvQualificationEntry[];
   education: CvEducationEntry[];
-  skills: string[];
 }
 
 export const EMPTY_CV_DATA: CvData = {
@@ -39,11 +54,11 @@ export const EMPTY_CV_DATA: CvData = {
     title: '',
     email: '',
     phone: '',
-    location: '',
     links: {},
   },
   summary: '',
+  technicalSkills: [],
   experience: [],
+  qualifications: [],
   education: [],
-  skills: [],
 };
