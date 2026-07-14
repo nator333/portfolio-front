@@ -3,27 +3,20 @@
 <section class="section">
   <div class="container">
     @if (!isAuthenticated) {
-      <form class="box login-box" (ngSubmit)="login()" [formGroup]="loginForm">
+      <div class="box login-box has-text-centered">
         <h2 class="title is-4">Sign in</h2>
         @if (errorMessage) {
           <p class="has-text-danger">{{ errorMessage }}</p>
         }
-        <div class="field">
-          <label class="label">Username</label>
-          <div class="control">
-            <input class="input" type="text" formControlName="username" />
-          </div>
-        </div>
-        <div class="field">
-          <label class="label">Password</label>
-          <div class="control">
-            <input class="input" type="password" formControlName="password" />
-          </div>
-        </div>
-        <button class="button is-primary" type="submit" [disabled]="loginForm.invalid">
-          Sign in
-        </button>
-      </form>
+        @if (signingIn) {
+          <p>Completing sign-in...</p>
+        } @else {
+          <button class="button is-primary" type="button" (click)="signInWithGoogle()">
+            <span class="icon"><i class="fab fa-google"></i></span>
+            <span>Sign in with Google</span>
+          </button>
+        }
+      </div>
     } @else {
       <div class="level">
         <div class="level-left"></div>
