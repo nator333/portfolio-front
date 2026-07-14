@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HeroComponent } from '../../components/hero/hero.component';
 import { AuthService } from '../../services/auth.service';
 import { CvService } from '../../services/cv.service';
@@ -18,17 +19,15 @@ export class CvEditorComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private cvService = inject(CvService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   isAuthenticated = false;
   loading = false;
   saving = false;
+  signingIn = false;
   errorMessage = '';
   successMessage = '';
-
-  loginForm: FormGroup = this.fb.group({
-    username: ['', Validators.required],
-    password: ['', Validators.required],
-  });
 
   cvForm: FormGroup = this.fb.group({
     personalInfo: this.fb.group({
@@ -56,6 +55,23 @@ export class CvEditorComponent implements OnInit {
         this.loadCv();
       }
     });
+
+    // Returning from the Cognito hosted domain after Google sign-in.
+    const code = this.route.snapshot.queryParamMap.get('code');
+    if (code && !this.authService.isAuthenticated()) {
+      this.signingIn = true;
+      this.authService.handleRedirectCallback(code).subscribe({
+        next: () => {
+          this.signingIn = false;
+          this.router.navigate([], { queryParams: {}, replaceUrl: true });
+        },
+        error: () => {
+          this.signingIn = false;
+          this.errorMessage = 'Sign-in failed. Please try again.';
+          this.router.navigate([], { queryParams: {}, replaceUrl: true });
+        },
+      });
+    }
   }
 
   get experienceControls(): FormGroup[] {
@@ -66,17 +82,9 @@ export class CvEditorComponent implements OnInit {
     return (this.cvForm.get('education') as FormArray).controls as FormGroup[];
   }
 
-  login(): void {
-    if (this.loginForm.invalid) {
-      return;
-    }
+  signInWithGoogle(): void {
     this.errorMessage = '';
-    const { username, password } = this.loginForm.value;
-    this.authService.login(username, password).subscribe({
-      error: () => {
-        this.errorMessage = 'Login failed. Check your username and password.';
-      },
-    });
+    this.authService.signInWithGoogle();
   }
 
   logout(): void {
