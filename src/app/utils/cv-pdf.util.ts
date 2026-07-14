@@ -9,27 +9,44 @@ pdfMake.addVirtualFileSystem(pdfFonts);
 const INK = '#1a1a1a';
 const BRAND_YELLOW = '#f8d948';
 const AMBER = '#b8860b';
-const MUTED = '#666666';
+const MUTED = '#444444';
 
 const PAGE_WIDTH = 595.28; // A4 portrait, points
 const MARGIN_X = 40;
-const HEADER_HEIGHT = 110;
+const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_X * 2;
+const HEADER_HEIGHT = 96;
 
 type PdfMargin = [number, number, number, number];
 
 function formatContactLine(info: CvData['personalInfo']): string {
-  return [info.email, info.phone, info.location].filter(Boolean).join('   |   ');
+  return [info.phone && `Phone: ${info.phone}`, info.email && `Email: ${info.email}`]
+    .filter(Boolean)
+    .join(' | ');
 }
 
-/** Section title with a short brand-yellow underline. */
+/** Major section heading with a full-width brand-yellow rule above, as in the reference CV. */
 function sectionHeader(title: string) {
   return [
-    { text: title.toUpperCase(), style: 'sectionHeader' },
     {
-      canvas: [
-        { type: 'line', x1: 0, y1: 0, x2: 36, y2: 0, lineWidth: 2.5, lineColor: BRAND_YELLOW },
+      // Kept unbreakable so a page break can't strand the rule without its heading.
+      unbreakable: true,
+      stack: [
+        {
+          canvas: [
+            {
+              type: 'line',
+              x1: 0,
+              y1: 0,
+              x2: CONTENT_WIDTH,
+              y2: 0,
+              lineWidth: 1,
+              lineColor: BRAND_YELLOW,
+            },
+          ],
+          margin: [0, 10, 0, 0] as PdfMargin,
+        },
+        { text: title.toUpperCase(), style: 'sectionHeader' },
       ],
-      margin: [0, 0, 0, 8] as PdfMargin,
     },
   ];
 }
@@ -48,91 +65,127 @@ function pageBackground(currentPage: number) {
 }
 
 export function buildDocDefinition(data: CvData) {
-  const { personalInfo, summary, experience, education, skills } = data;
+  const { personalInfo, summary, technicalSkills, experience, qualifications, education } = data;
 
   return {
     pageSize: 'A4',
-    pageMargins: [MARGIN_X, HEADER_HEIGHT + 34, MARGIN_X, 40] as PdfMargin,
+    pageMargins: [MARGIN_X, HEADER_HEIGHT + 26, MARGIN_X, 40] as PdfMargin,
     background: pageBackground,
     header: (currentPage: number) =>
       currentPage === 1
         ? {
             stack: [
-              { text: personalInfo.fullName, style: 'name' },
+              { text: personalInfo.fullName.toUpperCase(), style: 'name' },
               { text: personalInfo.title, style: 'title' },
               { text: formatContactLine(personalInfo), style: 'contact' },
             ],
-            margin: [MARGIN_X, 24, MARGIN_X, 0] as PdfMargin,
+            margin: [MARGIN_X, 20, MARGIN_X, 0] as PdfMargin,
           }
         : undefined,
     content: [
       ...(summary
-        ? [...sectionHeader('Summary'), { text: summary, margin: [0, 0, 0, 12] as PdfMargin }]
+        ? [
+            ...sectionHeader('Professional Summary'),
+            { text: summary, margin: [0, 0, 0, 2] as PdfMargin },
+          ]
+        : []),
+
+      ...(technicalSkills.length
+        ? [
+            ...sectionHeader('Technical Skills'),
+            {
+              ul: technicalSkills.map((entry) => ({
+                text: [
+                  { text: `${entry.category}: `, bold: true },
+                  { text: entry.skills.join(', ') },
+                ],
+                margin: [0, 0, 0, 2] as PdfMargin,
+              })),
+              markerColor: AMBER,
+              margin: [4, 0, 0, 2] as PdfMargin,
+            },
+          ]
         : []),
 
       ...(experience.length
         ? [
-            ...sectionHeader('Experience'),
-            ...experience.flatMap((entry) => [
+            ...sectionHeader('Professional Experience'),
+            ...experience.flatMap((entry, index) => [
               {
-                columns: [
-                  { text: `${entry.role}, ${entry.company}`, style: 'entryTitle' },
-                  { text: `${entry.startDate} – ${entry.endDate}`, style: 'entryDates', alignment: 'right' as const },
+                text: [
+                  { text: entry.company.toUpperCase(), bold: true },
+                  { text: ' | ', color: AMBER },
+                  { text: entry.role },
                 ],
+                style: 'entryTitle',
+                margin: [0, index === 0 ? 0 : 10, 0, 1] as PdfMargin,
               },
-              { text: entry.location, style: 'entrySubtitle' },
+              {
+                text: `${entry.startDate} – ${entry.endDate}`,
+                style: 'entryDates',
+              },
               {
                 ul: entry.bullets,
                 markerColor: AMBER,
-                margin: [0, 2, 0, 12] as PdfMargin,
+                margin: [4, 3, 0, 4] as PdfMargin,
               },
+              ...(entry.techstack
+                ? [
+                    {
+                      text: [
+                        { text: 'Techstack: ', bold: true, color: AMBER },
+                        { text: entry.techstack, color: MUTED },
+                      ],
+                      fontSize: 10,
+                      margin: [4, 0, 0, 4] as PdfMargin,
+                    },
+                  ]
+                : []),
             ]),
+          ]
+        : []),
+
+      ...(qualifications.length
+        ? [
+            ...sectionHeader('Qualifications Summary'),
+            ...qualifications.map((entry) => ({
+              text: [
+                { text: `${entry.label}: `, bold: true },
+                { text: entry.text },
+              ],
+              margin: [0, 0, 0, 3] as PdfMargin,
+            })),
           ]
         : []),
 
       ...(education.length
         ? [
             ...sectionHeader('Education'),
-            ...education.map((entry) => ({
-              columns: [
-                { text: `${entry.degree}, ${entry.institution}`, style: 'entryTitle' },
-                { text: `${entry.startDate} – ${entry.endDate}`, style: 'entryDates', alignment: 'right' as const },
-              ],
-              margin: [0, 0, 0, 8] as PdfMargin,
-            })),
-          ]
-        : []),
-
-      ...(skills.length
-        ? [
-            ...sectionHeader('Skills'),
             {
-              text: skills
-                .flatMap((skill) => [
-                  { text: skill, color: INK },
-                  { text: '  •  ', color: AMBER },
-                ])
-                .slice(0, -1),
+              ul: education.map((entry) => ({
+                text: `${entry.degree}, ${entry.institution} (${entry.startDate} – ${entry.endDate})`,
+                margin: [0, 0, 0, 2] as PdfMargin,
+              })),
+              markerColor: AMBER,
+              margin: [4, 0, 0, 0] as PdfMargin,
             },
           ]
         : []),
     ],
     styles: {
-      name: { fontSize: 24, bold: true, color: BRAND_YELLOW },
-      title: { fontSize: 13, color: '#ffffff', margin: [0, 3, 0, 3] as PdfMargin },
-      contact: { fontSize: 9.5, color: '#cccccc' },
+      name: { fontSize: 21, bold: true, color: BRAND_YELLOW },
+      title: { fontSize: 12, color: '#ffffff', margin: [0, 3, 0, 3] as PdfMargin },
+      contact: { fontSize: 10, color: '#cccccc' },
       sectionHeader: {
-        fontSize: 12,
+        fontSize: 15,
         bold: true,
         color: INK,
-        characterSpacing: 1,
-        margin: [0, 12, 0, 3] as PdfMargin,
+        margin: [0, 6, 0, 6] as PdfMargin,
       },
-      entryTitle: { fontSize: 11, bold: true, color: INK },
-      entryDates: { fontSize: 10, color: AMBER, bold: true },
-      entrySubtitle: { fontSize: 10, italics: true, color: MUTED },
+      entryTitle: { fontSize: 11, color: INK },
+      entryDates: { fontSize: 10.5, italics: true, color: AMBER },
     },
-    defaultStyle: { fontSize: 10.5, color: '#2a2a2a', lineHeight: 1.15 },
+    defaultStyle: { fontSize: 10.5, color: '#2a2a2a', lineHeight: 1.2 },
   };
 }
 

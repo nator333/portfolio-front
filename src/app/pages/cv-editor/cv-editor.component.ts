@@ -35,7 +35,6 @@ export class CvEditorComponent implements OnInit {
       title: [''],
       email: [''],
       phone: [''],
-      location: [''],
       links: this.fb.group({
         website: [''],
         github: [''],
@@ -43,9 +42,10 @@ export class CvEditorComponent implements OnInit {
       }),
     }),
     summary: [''],
+    technicalSkills: this.fb.array([]),
     experience: this.fb.array([]),
+    qualifications: this.fb.array([]),
     education: this.fb.array([]),
-    skills: [''],
   });
 
   ngOnInit(): void {
@@ -74,8 +74,16 @@ export class CvEditorComponent implements OnInit {
     }
   }
 
+  get skillCategoryControls(): FormGroup[] {
+    return (this.cvForm.get('technicalSkills') as FormArray).controls as FormGroup[];
+  }
+
   get experienceControls(): FormGroup[] {
     return (this.cvForm.get('experience') as FormArray).controls as FormGroup[];
+  }
+
+  get qualificationControls(): FormGroup[] {
+    return (this.cvForm.get('qualifications') as FormArray).controls as FormGroup[];
   }
 
   get educationControls(): FormGroup[] {
@@ -91,14 +99,28 @@ export class CvEditorComponent implements OnInit {
     this.authService.logout();
   }
 
+  private createSkillCategoryGroup(entry?: CvData['technicalSkills'][number]): FormGroup {
+    return this.fb.group({
+      category: [entry?.category ?? ''],
+      skills: [entry?.skills?.join(', ') ?? ''],
+    });
+  }
+
   private createExperienceGroup(entry?: CvData['experience'][number]): FormGroup {
     return this.fb.group({
       company: [entry?.company ?? ''],
       role: [entry?.role ?? ''],
       startDate: [entry?.startDate ?? ''],
       endDate: [entry?.endDate ?? ''],
-      location: [entry?.location ?? ''],
       bullets: [entry?.bullets?.join('\n') ?? ''],
+      techstack: [entry?.techstack ?? ''],
+    });
+  }
+
+  private createQualificationGroup(entry?: CvData['qualifications'][number]): FormGroup {
+    return this.fb.group({
+      label: [entry?.label ?? ''],
+      text: [entry?.text ?? ''],
     });
   }
 
@@ -111,12 +133,28 @@ export class CvEditorComponent implements OnInit {
     });
   }
 
+  addSkillCategory(): void {
+    (this.cvForm.get('technicalSkills') as FormArray).push(this.createSkillCategoryGroup());
+  }
+
+  removeSkillCategory(index: number): void {
+    (this.cvForm.get('technicalSkills') as FormArray).removeAt(index);
+  }
+
   addExperience(): void {
     (this.cvForm.get('experience') as FormArray).push(this.createExperienceGroup());
   }
 
   removeExperience(index: number): void {
     (this.cvForm.get('experience') as FormArray).removeAt(index);
+  }
+
+  addQualification(): void {
+    (this.cvForm.get('qualifications') as FormArray).push(this.createQualificationGroup());
+  }
+
+  removeQualification(index: number): void {
+    (this.cvForm.get('qualifications') as FormArray).removeAt(index);
   }
 
   addEducation(): void {
@@ -145,16 +183,31 @@ export class CvEditorComponent implements OnInit {
     this.cvForm.patchValue({
       personalInfo: data.personalInfo,
       summary: data.summary,
-      skills: data.skills.join(', '),
     });
+
+    const skillsArray = this.cvForm.get('technicalSkills') as FormArray;
+    skillsArray.clear();
+    (data.technicalSkills ?? []).forEach((entry) =>
+      skillsArray.push(this.createSkillCategoryGroup(entry)),
+    );
 
     const experienceArray = this.cvForm.get('experience') as FormArray;
     experienceArray.clear();
-    data.experience.forEach((entry) => experienceArray.push(this.createExperienceGroup(entry)));
+    (data.experience ?? []).forEach((entry) =>
+      experienceArray.push(this.createExperienceGroup(entry)),
+    );
+
+    const qualificationsArray = this.cvForm.get('qualifications') as FormArray;
+    qualificationsArray.clear();
+    (data.qualifications ?? []).forEach((entry) =>
+      qualificationsArray.push(this.createQualificationGroup(entry)),
+    );
 
     const educationArray = this.cvForm.get('education') as FormArray;
     educationArray.clear();
-    data.education.forEach((entry) => educationArray.push(this.createEducationGroup(entry)));
+    (data.education ?? []).forEach((entry) =>
+      educationArray.push(this.createEducationGroup(entry)),
+    );
   }
 
   private buildCvData(): CvData {
@@ -162,6 +215,15 @@ export class CvEditorComponent implements OnInit {
     return {
       personalInfo: value.personalInfo,
       summary: value.summary,
+      technicalSkills: value.technicalSkills.map(
+        (entry: { category: string; skills: string }) => ({
+          category: entry.category,
+          skills: entry.skills
+            .split(',')
+            .map((skill) => skill.trim())
+            .filter(Boolean),
+        }),
+      ),
       experience: value.experience.map((entry: { bullets: string; [key: string]: unknown }) => ({
         ...entry,
         bullets: entry.bullets
@@ -169,11 +231,8 @@ export class CvEditorComponent implements OnInit {
           .map((bullet) => bullet.trim())
           .filter(Boolean),
       })),
+      qualifications: value.qualifications,
       education: value.education,
-      skills: (value.skills as string)
-        .split(',')
-        .map((skill) => skill.trim())
-        .filter(Boolean),
     };
   }
 
