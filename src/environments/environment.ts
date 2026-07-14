@@ -4,9 +4,9 @@
 //   aws apigateway get-api-key --include-value --api-key <ApiKeyId output>
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://REPLACE_WITH_DEV_API_ID.execute-api.us-west-1.amazonaws.com/dev',
-  apiKey: 'REPLACE_WITH_DEV_API_KEY_VALUE',
+  apiBaseUrl: 'https://ok1kkskdy2.execute-api.us-west-1.amazonaws.com/dev',
+  apiKey: 'ALHgc7ND7S3S49ToIyC1eaZARblavmFP4VSFI3Rv',
   cognitoRegion: 'us-west-1',
-  cognitoUserPoolId: 'REPLACE_WITH_DEV_USER_POOL_ID',
-  cognitoClientId: 'REPLACE_WITH_DEV_USER_POOL_CLIENT_ID',
+  cognitoUserPoolId: 'us-west-1_efoIbyHv5',
+  cognitoClientId: '112nreirub0suduqr1kqj34npf',
 };
