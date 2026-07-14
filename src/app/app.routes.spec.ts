@@ -1,4 +1,6 @@
 import { TestBed } from "@angular/core/testing";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter, Router } from "@angular/router";
 import { RouterTestingHarness } from "@angular/router/testing";
 import { routes } from "./app.routes";
@@ -31,7 +33,11 @@ describe("routes (navigation behavior)", () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [provideRouter(routes)],
+      providers: [
+        provideRouter(routes),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     });
     harness = await RouterTestingHarness.create();
     router = TestBed.inject(Router);

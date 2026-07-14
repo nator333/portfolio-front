@@ -74,6 +74,13 @@ import {
           </a>
           <a
             class="navbar-item nav-link"
+            routerLink="/blog"
+            routerLinkActive="is-active"
+          >
+            Blog
+          </a>
+          <a
+            class="navbar-item nav-link"
             routerLink="/profile"
             routerLinkActive="is-active"
           >

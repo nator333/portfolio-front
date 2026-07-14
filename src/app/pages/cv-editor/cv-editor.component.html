@@ -1,0 +1,201 @@
+<app-hero title="CV Editor" subtitle="Manage your CV data"></app-hero>
+
+<section class="section">
+  <div class="container">
+    @if (!isAuthenticated) {
+      <form class="box login-box" (ngSubmit)="login()" [formGroup]="loginForm">
+        <h2 class="title is-4">Sign in</h2>
+        @if (errorMessage) {
+          <p class="has-text-danger">{{ errorMessage }}</p>
+        }
+        <div class="field">
+          <label class="label">Username</label>
+          <div class="control">
+            <input class="input" type="text" formControlName="username" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Password</label>
+          <div class="control">
+            <input class="input" type="password" formControlName="password" />
+          </div>
+        </div>
+        <button class="button is-primary" type="submit" [disabled]="loginForm.invalid">
+          Sign in
+        </button>
+      </form>
+    } @else {
+      <div class="level">
+        <div class="level-left"></div>
+        <div class="level-right">
+          <button class="button is-light" type="button" (click)="logout()">Sign out</button>
+        </div>
+      </div>
+
+      @if (loading) {
+        <p>Loading CV data...</p>
+      } @else {
+        <form [formGroup]="cvForm" (ngSubmit)="save()">
+          @if (errorMessage) {
+            <p class="has-text-danger">{{ errorMessage }}</p>
+          }
+          @if (successMessage) {
+            <p class="has-text-success">{{ successMessage }}</p>
+          }
+
+          <div class="box" formGroupName="personalInfo">
+            <h2 class="title is-4">Personal Info</h2>
+            <div class="field">
+              <label class="label">Full name</label>
+              <input class="input" type="text" formControlName="fullName" />
+            </div>
+            <div class="field">
+              <label class="label">Title</label>
+              <input class="input" type="text" formControlName="title" />
+            </div>
+            <div class="field">
+              <label class="label">Email</label>
+              <input class="input" type="email" formControlName="email" />
+            </div>
+            <div class="field">
+              <label class="label">Phone</label>
+              <input class="input" type="text" formControlName="phone" />
+            </div>
+            <div class="field">
+              <label class="label">Location</label>
+              <input class="input" type="text" formControlName="location" />
+            </div>
+            <div formGroupName="links" class="columns">
+              <div class="column">
+                <label class="label">Website</label>
+                <input class="input" type="text" formControlName="website" />
+              </div>
+              <div class="column">
+                <label class="label">GitHub</label>
+                <input class="input" type="text" formControlName="github" />
+              </div>
+              <div class="column">
+                <label class="label">LinkedIn</label>
+                <input class="input" type="text" formControlName="linkedin" />
+              </div>
+            </div>
+          </div>
+
+          <div class="box">
+            <h2 class="title is-4">Summary</h2>
+            <textarea class="textarea" rows="4" formControlName="summary"></textarea>
+          </div>
+
+          <div class="box">
+            <div class="level">
+              <div class="level-left"><h2 class="title is-4">Experience</h2></div>
+              <div class="level-right">
+                <button class="button is-small" type="button" (click)="addExperience()">
+                  + Add
+                </button>
+              </div>
+            </div>
+            @for (group of experienceControls; track $index) {
+              <div class="entry" [formGroup]="group">
+                <div class="columns">
+                  <div class="column">
+                    <label class="label">Company</label>
+                    <input class="input" type="text" formControlName="company" />
+                  </div>
+                  <div class="column">
+                    <label class="label">Role</label>
+                    <input class="input" type="text" formControlName="role" />
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <label class="label">Start date</label>
+                    <input class="input" type="text" formControlName="startDate" />
+                  </div>
+                  <div class="column">
+                    <label class="label">End date</label>
+                    <input class="input" type="text" formControlName="endDate" />
+                  </div>
+                  <div class="column">
+                    <label class="label">Location</label>
+                    <input class="input" type="text" formControlName="location" />
+                  </div>
+                </div>
+                <label class="label">Bullets (one per line)</label>
+                <textarea class="textarea" rows="3" formControlName="bullets"></textarea>
+                <button
+                  class="button is-small is-danger is-light entry-remove"
+                  type="button"
+                  (click)="removeExperience($index)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="box">
+            <div class="level">
+              <div class="level-left"><h2 class="title is-4">Education</h2></div>
+              <div class="level-right">
+                <button class="button is-small" type="button" (click)="addEducation()">
+                  + Add
+                </button>
+              </div>
+            </div>
+            @for (group of educationControls; track $index) {
+              <div class="entry" [formGroup]="group">
+                <div class="columns">
+                  <div class="column">
+                    <label class="label">Institution</label>
+                    <input class="input" type="text" formControlName="institution" />
+                  </div>
+                  <div class="column">
+                    <label class="label">Degree</label>
+                    <input class="input" type="text" formControlName="degree" />
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <label class="label">Start date</label>
+                    <input class="input" type="text" formControlName="startDate" />
+                  </div>
+                  <div class="column">
+                    <label class="label">End date</label>
+                    <input class="input" type="text" formControlName="endDate" />
+                  </div>
+                </div>
+                <button
+                  class="button is-small is-danger is-light entry-remove"
+                  type="button"
+                  (click)="removeEducation($index)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="box">
+            <h2 class="title is-4">Skills</h2>
+            <label class="label">Comma-separated</label>
+            <input class="input" type="text" formControlName="skills" />
+          </div>
+
+          <div class="field is-grouped">
+            <div class="control">
+              <button class="button is-primary" type="submit" [disabled]="saving">
+                Save
+              </button>
+            </div>
+            <div class="control">
+              <button class="button" type="button" (click)="downloadPdf()">
+                Download PDF
+              </button>
+            </div>
+          </div>
+        </form>
+      }
+    }
+  </div>
+</section>
