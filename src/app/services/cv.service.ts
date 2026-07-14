@@ -18,12 +18,15 @@ export class CvService {
   ) {}
 
   getCv(): Observable<CvData> {
-    return this.http.get<CvData>(`${environment.apiBaseUrl}/cv`);
+    const headers = new HttpHeaders({ 'X-Api-Key': environment.apiKey });
+    return this.http.get<CvData>(`${environment.apiBaseUrl}/cv`, { headers });
   }
 
   updateCv(data: CvData): Observable<CvData> {
     const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.authService.getIdToken()}`,
+      'X-Api-Key': environment.apiKey,
+      // REST API Cognito authorizers expect the raw JWT, not a Bearer-prefixed value.
+      Authorization: this.authService.getIdToken(),
     });
     return this.http.put<CvData>(`${environment.apiBaseUrl}/cv`, data, { headers });
   }
