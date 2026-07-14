@@ -1,8 +1,32 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HeroComponent } from "../../components/hero/hero.component";
 import { CvService } from "../../services/cv.service";
+import { CvSkillCategory } from "../../models/cv-data";
 import { downloadCvPdf } from "../../utils/cv-pdf.util";
+
+// Shown when the CV API is unavailable (e.g. monthly quota exhausted), so the
+// page never renders empty.
+const FALLBACK_SUMMARY = "";
+const FALLBACK_SKILLS: CvSkillCategory[] = [
+  {
+    category: "Languages",
+    skills: ["HTML5", "SASS", "TypeScript", "JavaScript", "Kotlin", "Java", "Swift", "Objective-C"],
+  },
+  {
+    category: "Frameworks",
+    skills: ["Angular", "React", "Vue.js", "Node.js", "Spring Boot", "Ktor"],
+  },
+  {
+    category: "Cloud Computing Platform",
+    skills: ["EC2", "S3", "Lambda", "API Gateway", "Kinesis", "Redshift", "GCE", "Firebase"],
+  },
+  { category: "Database", skills: ["MySQL", "PostgreSQL", "SQLite", "Neo4j", "DynamoDB"] },
+  {
+    category: "Tools",
+    skills: ["npm", "Gradle", "Maven", "Docker", "IntelliJ Ultimate", "Visual Studio Code", "Git"],
+  },
+];
 
 @Component({
   selector: "app-profile",
@@ -23,181 +47,58 @@ import { downloadCvPdf } from "../../utils/cv-pdf.util";
       }
     </app-hero>
 
+    @if (summary) {
+      <section class="section summary-section">
+        <div class="container">
+          <div class="skill-category">
+            <h2 class="title is-3 has-text-centered has-text-white">Summary</h2>
+            <p class="has-text-centered has-text-white summary-text">{{ summary }}</p>
+          </div>
+        </div>
+      </section>
+    }
+
     <section class="section skills-section">
       <div class="container">
-        <!-- Languages Section -->
-        <div class="skill-category">
-          <h2 class="title is-3 has-text-centered has-text-white">Languages</h2>
-          <div class="columns">
-            <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                Frontend
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of frontendLanguages; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-            <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                Mobile & Backend
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of backendLanguages; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
+        @for (category of skillCategories; track category.category) {
+          <div class="skill-category">
+            <h2 class="title is-3 has-text-centered has-text-white">
+              {{ category.category }}
+            </h2>
+            <div class="skillBox has-text-centered">
+              <div class="skill-list">
+                @for (skill of category.skills; track skill) {
+                  <span class="skill-tag">{{ skill }}</span>
+                }
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Frameworks Section -->
-        <div class="skill-category">
-          <h2 class="title is-3 has-text-centered has-text-white">
-            Frameworks
-          </h2>
-          <div class="columns">
-            <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                Frontend
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of frontendFrameworks; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-            <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                Server Side
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of backendFrameworks; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Cloud Computing Section -->
-        <div class="skill-category">
-          <h2 class="title is-3 has-text-centered has-text-white">
-            Cloud Computing Platform
-          </h2>
-          <div class="columns">
-            <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                AWS
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of awsSkills; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-            <div class="column">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                GCP
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of gcpSkills; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Database Section -->
-        <div class="skill-category">
-          <h2 class="title is-3 has-text-centered has-text-white">Database</h2>
-          <div class="skillBox has-text-centered">
-            <div class="skill-list">
-              @for (skill of databases; track skill) {
-                <span class="skill-tag">{{ skill }}</span>
-              }
-            </div>
-          </div>
-        </div>
-
-        <!-- Tools Section -->
-        <div class="skill-category">
-          <h2 class="title is-3 has-text-centered has-text-white">Tools</h2>
-          <div class="columns is-multiline">
-            <div class="column is-half">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                Package Manager
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of packageManagers; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-            <div class="column is-half">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                Virtualization
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of virtualization; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-            <div class="column is-half">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                IDE
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of ides; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-            <div class="column is-half">
-              <h3 class="subtitle is-4 has-text-centered has-text-white">
-                Other
-              </h3>
-              <div class="skillBox">
-                <div class="skill-list">
-                  @for (skill of otherTools; track skill) {
-                    <span class="skill-tag">{{ skill }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        }
       </div>
     </section>
   `,
   styleUrl: "./profile.component.scss",
 })
-export class ProfileComponent {
+export class ProfileComponent implements OnInit {
   downloadingCv = false;
   downloadError = "";
+  summary = FALLBACK_SUMMARY;
+  skillCategories: CvSkillCategory[] = FALLBACK_SKILLS;
 
   constructor(private cvService: CvService) {}
+
+  ngOnInit(): void {
+    this.cvService.getCv().subscribe({
+      next: (data) => {
+        if (data.technicalSkills?.length) {
+          this.skillCategories = data.technicalSkills;
+        }
+        this.summary = data.summary || FALLBACK_SUMMARY;
+      },
+      // Keep the fallback content on error.
+      error: () => undefined,
+    });
+  }
 
   downloadCv(): void {
     this.downloadingCv = true;
@@ -212,44 +113,4 @@ export class ProfileComponent {
       },
     });
   }
-
-  frontendLanguages = ["HTML5", "SASS", "TypeScript", "JavaScript"];
-  backendLanguages = [
-    "Kotlin",
-    "Java",
-    "C",
-    "Objective-C",
-    "Swift",
-    "Perl",
-    "PHP",
-    "Lua",
-    ".NET VB",
-    ".NET VBA",
-  ];
-
-  frontendFrameworks = ["Angular", "React", "Vue.js", "Node.js"];
-  backendFrameworks = [
-    "Play Framework",
-    "Spring Boot",
-    "Ktor",
-    "Serverless Framework",
-  ];
-
-  awsSkills = [
-    "EC2",
-    "S3",
-    "Lambda",
-    "API Gateway",
-    "Kinesis",
-    "Redshift",
-    "Cloud Formation",
-  ];
-  gcpSkills = ["GCE", "Firebase"];
-
-  databases = ["MySQL", "PostgreSQL", "SQLite", "Neo4j"];
-
-  packageManagers = ["npm", "CocoaPods", "Gradle", "Maven"];
-  virtualization = ["Docker", "Docker Compose"];
-  ides = ["IntelliJ Ultimate", "WebStorm", "Visual Studio Code"];
-  otherTools = ["Git", "CircleCI"];
 }

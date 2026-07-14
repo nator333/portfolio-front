@@ -1,9 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CvData } from '../models/cv-data';
 import { AuthService } from './auth.service';
+
+const CACHE_KEY = 'cv-cache-v1';
+// Reads count against the API's 100 req/month usage-plan quota, so profile
+// visits within the TTL are served from sessionStorage instead.
+const CACHE_TTL_MS = 60 * 60 * 1000;
+
+interface CachedCv {
+  storedAt: number;
+  data: CvData;
+}
 
 /**
  * Service for fetching and persisting CV data through the portfolio-api backend
@@ -18,8 +28,14 @@ export class CvService {
   ) {}
 
   getCv(): Observable<CvData> {
+    const cached = this.readCache();
+    if (cached) {
+      return of(cached);
+    }
     const headers = new HttpHeaders({ 'X-Api-Key': environment.apiKey });
-    return this.http.get<CvData>(`${environment.apiBaseUrl}/cv`, { headers });
+    return this.http
+      .get<CvData>(`${environment.apiBaseUrl}/cv`, { headers })
+      .pipe(tap((data) => this.writeCache(data)));
   }
 
   updateCv(data: CvData): Observable<CvData> {
@@ -28,6 +44,34 @@ export class CvService {
       // REST API Cognito authorizers expect the raw JWT, not a Bearer-prefixed value.
       Authorization: this.authService.getIdToken(),
     });
-    return this.http.put<CvData>(`${environment.apiBaseUrl}/cv`, data, { headers });
+    return this.http
+      .put<CvData>(`${environment.apiBaseUrl}/cv`, data, { headers })
+      .pipe(tap((saved) => this.writeCache(saved)));
+  }
+
+  private readCache(): CvData | null {
+    try {
+      const raw = sessionStorage.getItem(CACHE_KEY);
+      if (!raw) {
+        return null;
+      }
+      const cached: CachedCv = JSON.parse(raw);
+      if (Date.now() - cached.storedAt > CACHE_TTL_MS) {
+        sessionStorage.removeItem(CACHE_KEY);
+        return null;
+      }
+      return cached.data;
+    } catch {
+      return null;
+    }
+  }
+
+  private writeCache(data: CvData): void {
+    try {
+      const cached: CachedCv = { storedAt: Date.now(), data };
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(cached));
+    } catch {
+      // Cache is best-effort; a full or unavailable sessionStorage is fine.
+    }
   }
 }
