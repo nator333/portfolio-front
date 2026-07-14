@@ -1,13 +1,27 @@
 import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HeroComponent } from "../../components/hero/hero.component";
+import { CvService } from "../../services/cv.service";
+import { downloadCvPdf } from "../../utils/cv-pdf.util";
 
 @Component({
   selector: "app-profile",
   standalone: true,
   imports: [CommonModule, HeroComponent],
   template: `
-    <app-hero title="Profile" subtitle="About Hiro Nakamata"> </app-hero>
+    <app-hero title="Profile" subtitle="About Hiro Nakamata" [showContent]="true">
+      <button
+        class="button is-primary"
+        type="button"
+        [disabled]="downloadingCv"
+        (click)="downloadCv()"
+      >
+        Download CV (PDF)
+      </button>
+      @if (downloadError) {
+        <p class="has-text-danger">{{ downloadError }}</p>
+      }
+    </app-hero>
 
     <section class="section skills-section">
       <div class="container">
@@ -180,6 +194,25 @@ import { HeroComponent } from "../../components/hero/hero.component";
   styleUrl: "./profile.component.scss",
 })
 export class ProfileComponent {
+  downloadingCv = false;
+  downloadError = "";
+
+  constructor(private cvService: CvService) {}
+
+  downloadCv(): void {
+    this.downloadingCv = true;
+    this.downloadError = "";
+    this.cvService.getCv().subscribe({
+      next: (data) => {
+        downloadCvPdf(data).finally(() => (this.downloadingCv = false));
+      },
+      error: () => {
+        this.downloadError = "Could not download CV right now.";
+        this.downloadingCv = false;
+      },
+    });
+  }
+
   frontendLanguages = ["HTML5", "SASS", "TypeScript", "JavaScript"];
   backendLanguages = [
     "Kotlin",
