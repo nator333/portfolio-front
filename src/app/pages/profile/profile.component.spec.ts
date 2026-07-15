@@ -27,7 +27,12 @@ describe("ProfileComponent", () => {
     sessionStorage.clear();
   });
 
-  function flushCv(technicalSkills: unknown, summary = ""): void {
+  function flushCv(overrides: {
+    technicalSkills?: unknown;
+    summary?: string;
+    experience?: unknown;
+    education?: unknown;
+  }): void {
     httpMock.expectOne(`${environment.apiBaseUrl}/cv`).flush({
       personalInfo: {
         fullName: "Hiro Nakamata",
@@ -36,31 +41,39 @@ describe("ProfileComponent", () => {
         phone: "",
         links: {},
       },
-      summary,
-      technicalSkills,
-      experience: [],
+      summary: overrides.summary ?? "",
+      technicalSkills: overrides.technicalSkills ?? [],
+      experience: overrides.experience ?? [],
       qualifications: [],
-      education: [],
+      education: overrides.education ?? [],
     });
     fixture.detectChanges();
   }
 
+  function sectionTitles(): (string | undefined)[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll(".profile-block > .title"),
+    ).map((h) => (h as HTMLElement).textContent?.trim());
+  }
+
   it("should render the hero with the Profile title", () => {
-    flushCv([]);
+    flushCv({});
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector("app-hero h1")?.textContent).toContain("Profile");
   });
 
   it("should render skill categories from the CV API", () => {
-    flushCv([
-      { category: "Languages", skills: ["TypeScript", "Kotlin"] },
-      { category: "Cloud & DevOps", skills: ["AWS", "Terraform"] },
-    ]);
+    flushCv({
+      technicalSkills: [
+        { category: "Languages", skills: ["TypeScript", "Kotlin"] },
+        { category: "Cloud & DevOps", skills: ["AWS", "Terraform"] },
+      ],
+    });
 
-    const headings = Array.from(
-      fixture.nativeElement.querySelectorAll(".skill-category .title"),
+    const categoryNames = Array.from(
+      fixture.nativeElement.querySelectorAll(".skillBox .subtitle"),
     ).map((h) => (h as HTMLElement).textContent?.trim());
-    expect(headings).toEqual(["Languages", "Cloud & DevOps"]);
+    expect(categoryNames).toEqual(["Languages", "Cloud & DevOps"]);
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? "";
     for (const skill of ["TypeScript", "Kotlin", "AWS", "Terraform"]) {
@@ -69,9 +82,58 @@ describe("ProfileComponent", () => {
   });
 
   it("should render the summary section when the CV has one", () => {
-    flushCv([], "Engineer who ships end to end.");
+    flushCv({ summary: "Engineer who ships end to end." });
     const text = (fixture.nativeElement as HTMLElement).textContent ?? "";
     expect(text).toContain("Engineer who ships end to end.");
+  });
+
+  it("should render experience entries with bullets and techstack", () => {
+    flushCv({
+      experience: [
+        {
+          company: "Example Corp",
+          role: "Senior Engineer",
+          startDate: "January 2022",
+          endDate: "Present",
+          bullets: ["Led a migration", "Cut costs 40%"],
+          techstack: "TypeScript, AWS",
+        },
+      ],
+    });
+
+    expect(sectionTitles()).toContain("Experience");
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? "";
+    expect(text).toContain("Senior Engineer");
+    expect(text).toContain("Example Corp");
+    expect(text).toContain("January 2022 – Present");
+    expect(text).toContain("Led a migration");
+    expect(text).toContain("TypeScript, AWS");
+  });
+
+  it("should render education entries", () => {
+    flushCv({
+      education: [
+        {
+          institution: "Example University",
+          degree: "B.S. Computer Science",
+          startDate: "2014",
+          endDate: "2018",
+        },
+      ],
+    });
+
+    expect(sectionTitles()).toContain("Education");
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? "";
+    expect(text).toContain("B.S. Computer Science");
+    expect(text).toContain("Example University");
+    expect(text).toContain("2014 – 2018");
+  });
+
+  it("should omit experience and education sections when the CV has none", () => {
+    flushCv({});
+    const titles = sectionTitles();
+    expect(titles).not.toContain("Experience");
+    expect(titles).not.toContain("Education");
   });
 
   it("should fall back to static skill categories when the API fails", () => {
@@ -80,20 +142,20 @@ describe("ProfileComponent", () => {
       .flush({ message: "quota exceeded" }, { status: 429, statusText: "Too Many Requests" });
     fixture.detectChanges();
 
-    const headings = Array.from(
-      fixture.nativeElement.querySelectorAll(".skill-category .title"),
+    const categoryNames = Array.from(
+      fixture.nativeElement.querySelectorAll(".skillBox .subtitle"),
     ).map((h) => (h as HTMLElement).textContent?.trim());
-    expect(headings).toContain("Languages");
-    expect(headings).toContain("Database");
-    expect(headings).toContain("Tools");
+    expect(categoryNames).toContain("Languages");
+    expect(categoryNames).toContain("Database");
+    expect(categoryNames).toContain("Tools");
   });
 
   it("should keep fallback categories when the CV has no technical skills yet", () => {
-    flushCv([]);
-    const headings = Array.from(
-      fixture.nativeElement.querySelectorAll(".skill-category .title"),
+    flushCv({});
+    const categoryNames = Array.from(
+      fixture.nativeElement.querySelectorAll(".skillBox .subtitle"),
     ).map((h) => (h as HTMLElement).textContent?.trim());
-    expect(headings).toContain("Languages");
-    expect(headings).toContain("Tools");
+    expect(categoryNames).toContain("Languages");
+    expect(categoryNames).toContain("Tools");
   });
 });
