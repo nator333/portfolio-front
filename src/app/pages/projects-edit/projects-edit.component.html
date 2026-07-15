@@ -1,0 +1,129 @@
+<app-hero title="Projects Editor" subtitle="Manage your projects"></app-hero>
+
+<section class="section">
+  <div class="container">
+    @if (!isAuthenticated) {
+      <div class="box login-box has-text-centered">
+        <h2 class="title is-4">Sign in</h2>
+        @if (errorMessage) {
+          <p class="has-text-danger">{{ errorMessage }}</p>
+        }
+        @if (signingIn) {
+          <p>Completing sign-in...</p>
+        } @else {
+          <button class="button is-primary" type="button" (click)="signInWithGoogle()">
+            <span class="icon"><i class="fab fa-google"></i></span>
+            <span>Sign in with Google</span>
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="level">
+        <div class="level-left"></div>
+        <div class="level-right">
+          <button class="button is-light" type="button" (click)="logout()">Sign out</button>
+        </div>
+      </div>
+
+      @if (loading) {
+        <p>Loading projects...</p>
+      } @else {
+        <form [formGroup]="projectsForm" (ngSubmit)="save()">
+          @if (errorMessage) {
+            <p class="has-text-danger">{{ errorMessage }}</p>
+          }
+          @if (successMessage) {
+            <p class="has-text-success">{{ successMessage }}</p>
+          }
+
+          <div class="box">
+            <div class="level">
+              <div class="level-left"><h2 class="title is-4">Projects</h2></div>
+              <div class="level-right">
+                <button class="button is-small" type="button" (click)="addProject()">
+                  + Add project
+                </button>
+              </div>
+            </div>
+            @for (group of projectControls; track $index) {
+              <div class="entry" [formGroup]="group">
+                <div class="columns">
+                  <div class="column">
+                    <label class="label">Title</label>
+                    <input class="input" type="text" formControlName="title" />
+                  </div>
+                  <div class="column">
+                    <label class="label">Tech (short line)</label>
+                    <input
+                      class="input"
+                      type="text"
+                      formControlName="tech"
+                      placeholder="Spring Boot, React, PostgreSQL"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Description</label>
+                  <textarea class="textarea" rows="2" formControlName="description"></textarea>
+                </div>
+                <div class="field">
+                  <label class="label">Image URL or asset path</label>
+                  <input
+                    class="input"
+                    type="text"
+                    formControlName="image"
+                    placeholder="assets/projects/foo.png or https://..."
+                  />
+                </div>
+                <div class="field">
+                  <label class="label">Tags (comma-separated)</label>
+                  <input
+                    class="input"
+                    type="text"
+                    formControlName="tags"
+                    placeholder="Java, Spring Boot, React"
+                  />
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <label class="label">Live URL</label>
+                    <input
+                      class="input"
+                      type="text"
+                      formControlName="liveUrl"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div class="column">
+                    <label class="label">GitHub URL</label>
+                    <input
+                      class="input"
+                      type="text"
+                      formControlName="githubUrl"
+                      placeholder="https://github.com/..."
+                    />
+                  </div>
+                </div>
+                <button
+                  class="button is-small is-danger is-light entry-remove"
+                  type="button"
+                  (click)="removeProject($index)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="field is-grouped">
+            <div class="control">
+              <button class="button is-primary" type="submit" [disabled]="saving">
+                Save
+              </button>
+            </div>
+          </div>
+        </form>
+      }
+    }
+  </div>
+</section>
