@@ -1,0 +1,155 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { HeroComponent } from '../../components/hero/hero.component';
+import { AuthService } from '../../services/auth.service';
+import { ProjectsService } from '../../services/projects.service';
+import { ProjectEntry, ProjectsData } from '../../models/project-data';
+
+@Component({
+  selector: 'app-projects-edit',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, HeroComponent],
+  templateUrl: './projects-edit.component.html',
+  styleUrl: './projects-edit.component.scss',
+})
+export class ProjectsEditComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private projectsService = inject(ProjectsService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  isAuthenticated = false;
+  loading = false;
+  saving = false;
+  signingIn = false;
+  errorMessage = '';
+  successMessage = '';
+
+  projectsForm: FormGroup = this.fb.group({
+    projects: this.fb.array([]),
+  });
+
+  ngOnInit(): void {
+    this.authService.isAuthenticated$.subscribe((authenticated) => {
+      this.isAuthenticated = authenticated;
+      if (authenticated) {
+        this.loadProjects();
+      }
+    });
+
+    // Returning from the Cognito hosted domain after Google sign-in.
+    const code = this.route.snapshot.queryParamMap.get('code');
+    if (code && !this.authService.isAuthenticated()) {
+      this.signingIn = true;
+      this.authService.handleRedirectCallback(code).subscribe({
+        next: () => {
+          this.signingIn = false;
+          this.router.navigate([], { queryParams: {}, replaceUrl: true });
+        },
+        error: () => {
+          this.signingIn = false;
+          this.errorMessage = 'Sign-in failed. Please try again.';
+          this.router.navigate([], { queryParams: {}, replaceUrl: true });
+        },
+      });
+    }
+  }
+
+  get projectControls(): FormGroup[] {
+    return (this.projectsForm.get('projects') as FormArray).controls as FormGroup[];
+  }
+
+  signInWithGoogle(): void {
+    this.errorMessage = '';
+    this.authService.signInWithGoogle();
+  }
+
+  logout(): void {
+    this.authService.logout();
+  }
+
+  private createProjectGroup(entry?: ProjectEntry): FormGroup {
+    return this.fb.group({
+      title: [entry?.title ?? ''],
+      tech: [entry?.tech ?? ''],
+      description: [entry?.description ?? ''],
+      image: [entry?.image ?? ''],
+      tags: [entry?.tags?.join(', ') ?? ''],
+      liveUrl: [entry?.liveUrl ?? ''],
+      githubUrl: [entry?.githubUrl ?? ''],
+    });
+  }
+
+  addProject(): void {
+    (this.projectsForm.get('projects') as FormArray).push(this.createProjectGroup());
+  }
+
+  removeProject(index: number): void {
+    (this.projectsForm.get('projects') as FormArray).removeAt(index);
+  }
+
+  private loadProjects(): void {
+    this.loading = true;
+    this.projectsService.getProjects().subscribe({
+      next: (data) => {
+        const projectsArray = this.projectsForm.get('projects') as FormArray;
+        projectsArray.clear();
+        (data.projects ?? []).forEach((entry) =>
+          projectsArray.push(this.createProjectGroup(entry)),
+        );
+        this.loading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Could not load existing projects.';
+        this.loading = false;
+      },
+    });
+  }
+
+  private buildProjectsData(): ProjectsData {
+    const value = this.projectsForm.value as {
+      projects: {
+        title: string;
+        tech: string;
+        description: string;
+        image: string;
+        tags: string;
+        liveUrl: string;
+        githubUrl: string;
+      }[];
+    };
+    return {
+      projects: value.projects.map((entry) => ({
+        title: entry.title,
+        tech: entry.tech,
+        description: entry.description,
+        image: entry.image,
+        tags: entry.tags
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+        liveUrl: entry.liveUrl,
+        githubUrl: entry.githubUrl,
+      })),
+    };
+  }
+
+  save(): void {
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.projectsService.updateProjects(this.buildProjectsData()).subscribe({
+      next: () => {
+        this.saving = false;
+        this.successMessage = 'Projects saved.';
+      },
+      error: () => {
+        this.saving = false;
+        this.errorMessage = 'Could not save projects.';
+      },
+    });
+  }
+}

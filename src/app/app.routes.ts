@@ -29,5 +29,12 @@ export const routes: Routes = [
         (m) => m.CvEditorComponent,
       ),
   },
+  {
+    path: "projects-edit",
+    loadComponent: () =>
+      import("./pages/projects-edit/projects-edit.component").then(
+        (m) => m.ProjectsEditComponent,
+      ),
+  },
   { path: "**", redirectTo: "/home" },
 ];
