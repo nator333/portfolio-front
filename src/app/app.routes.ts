@@ -36,5 +36,12 @@ export const routes: Routes = [
         (m) => m.ProjectsEditComponent,
       ),
   },
+  {
+    path: "cv-agent",
+    loadComponent: () =>
+      import("./pages/cv-agent/cv-agent.component").then(
+        (m) => m.CvAgentComponent,
+      ),
+  },
   { path: "**", redirectTo: "/home" },
 ];
