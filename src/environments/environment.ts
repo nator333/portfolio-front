@@ -6,6 +6,8 @@ export const environment = {
   production: false,
   apiBaseUrl: 'https://ok1kkskdy2.execute-api.us-west-1.amazonaws.com/dev',
   apiKey: 'ALHgc7ND7S3S49ToIyC1eaZARblavmFP4VSFI3Rv',
+  // Chat has its own key + usage plan (500 req/month); fetch with the ChatApiKeyId output.
+  chatApiKey: 'Fug9rKYn3594hps8O8H1B7Gbnrj4YPc85tFfcPP1',
   cognitoDomain: 'https://nakamata-cv-dev.auth.us-west-1.amazoncognito.com',
   cognitoClientId: '112nreirub0suduqr1kqj34npf',
 };
