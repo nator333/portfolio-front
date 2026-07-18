@@ -4,8 +4,14 @@
     {
       "name": "portfolio-front-dev",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["ng", "serve", "--port", "4200"],
-      "port": 4200
+      "runtimeArgs": ["ng", "serve", "--port", "4300"],
+      "port": 4300
+    },
+    {
+      "name": "portfolio-front-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["ng", "serve", "--configuration", "production", "--port", "4301"],
+      "port": 4301
     }
   ]
 }
