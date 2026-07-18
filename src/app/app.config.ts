@@ -1,10 +1,20 @@
 import {
   ApplicationConfig,
+  inject,
   provideBrowserGlobalErrorListeners,
+  provideEnvironmentInitializer,
   provideZoneChangeDetection,
 } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { provideHttpClient } from "@angular/common/http";
+import { initializeApp, provideFirebaseApp } from "@angular/fire/app";
+import {
+  getAnalytics,
+  provideAnalytics,
+  ScreenTrackingService,
+} from "@angular/fire/analytics";
+
+import { environment } from "../environments/environment";
 import 'prismjs';
 import 'prismjs/components/prism-typescript.min.js';
 import 'prismjs/components/prism-css.min.js';
@@ -25,5 +35,18 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(),
+    // ScreenTrackingService logs a page view on every router navigation,
+    // which a plain gtag snippet would miss in an SPA.
+    ...(environment.analyticsEnabled
+      ? [
+          provideFirebaseApp(() => initializeApp(environment.firebase)),
+          provideAnalytics(() => getAnalytics()),
+          ScreenTrackingService,
+          // provideAnalytics only registers providers; without this eager
+          // injection ScreenTrackingService is never constructed and no
+          // events are sent.
+          provideEnvironmentInitializer(() => inject(ScreenTrackingService)),
+        ]
+      : []),
   ],
 };
