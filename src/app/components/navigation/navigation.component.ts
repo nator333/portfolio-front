@@ -1,6 +1,8 @@
-import { Component, signal } from "@angular/core";
-import { Router, RouterLink, RouterLinkActive } from "@angular/router";
+import { Component, inject, signal } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
+import { AuthService } from "../../services/auth.service";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import {
   faGithub,
@@ -86,6 +88,29 @@ import {
           >
             Profile
           </a>
+          @if (isAuthenticated()) {
+            <a
+              class="navbar-item nav-link"
+              routerLink="/cv-editor"
+              routerLinkActive="is-active"
+            >
+              CV Editor
+            </a>
+            <a
+              class="navbar-item nav-link"
+              routerLink="/projects-edit"
+              routerLinkActive="is-active"
+            >
+              Projects Edit
+            </a>
+            <a
+              class="navbar-item nav-link"
+              routerLink="/cv-agent"
+              routerLinkActive="is-active"
+            >
+              CV Agent
+            </a>
+          }
         </div>
       </div>
     </nav>
@@ -93,14 +118,17 @@ import {
   styleUrl: "./navigation.component.scss",
 })
 export class NavigationComponent {
+  private authService = inject(AuthService);
+
   isMenuOpen = signal(false);
+  isAuthenticated = toSignal(this.authService.isAuthenticated$, {
+    initialValue: false,
+  });
 
   // FontAwesome icons
   githubIcon = faGithub;
   facebookIcon = faFacebook;
   twitterIcon = faXTwitter;
-
-  constructor(private router: Router) {}
 
   toggleMenu(): void {
     this.isMenuOpen.update((value) => !value);
