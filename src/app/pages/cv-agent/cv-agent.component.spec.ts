@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
-import { provideRouter } from "@angular/router";
-import { BehaviorSubject, of } from "rxjs";
+import { of } from "rxjs";
 import { CvAgentComponent } from "./cv-agent.component";
-import { AuthService } from "../../services/auth.service";
 import { AgentService } from "../../services/agent.service";
 import { CvService } from "../../services/cv.service";
 import { ProjectsService } from "../../services/projects.service";
@@ -11,7 +9,6 @@ import { CvData } from "../../models/cv-data";
 describe("CvAgentComponent", () => {
   let fixture: ComponentFixture<CvAgentComponent>;
   let component: CvAgentComponent;
-  let authenticated$: BehaviorSubject<boolean>;
   let agentService: jasmine.SpyObj<AgentService>;
   let cvService: jasmine.SpyObj<CvService>;
   let projectsService: jasmine.SpyObj<ProjectsService>;
@@ -19,7 +16,6 @@ describe("CvAgentComponent", () => {
   const proposedCv = { summary: "Shorter." } as unknown as CvData;
 
   beforeEach(async () => {
-    authenticated$ = new BehaviorSubject<boolean>(true);
     agentService = jasmine.createSpyObj<AgentService>("AgentService", ["sendMessage"]);
     cvService = jasmine.createSpyObj<CvService>("CvService", ["updateCv"]);
     projectsService = jasmine.createSpyObj<ProjectsService>("ProjectsService", [
@@ -29,16 +25,6 @@ describe("CvAgentComponent", () => {
     await TestBed.configureTestingModule({
       imports: [CvAgentComponent],
       providers: [
-        provideRouter([]),
-        {
-          provide: AuthService,
-          useValue: {
-            isAuthenticated$: authenticated$.asObservable(),
-            isAuthenticated: () => authenticated$.value,
-            signInWithGoogle: () => undefined,
-            getIdToken: () => "token",
-          },
-        },
         { provide: AgentService, useValue: agentService },
         { provide: CvService, useValue: cvService },
         { provide: ProjectsService, useValue: projectsService },
@@ -48,13 +34,6 @@ describe("CvAgentComponent", () => {
     fixture = TestBed.createComponent(CvAgentComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
-
-  it("should show the sign-in box when not authenticated", () => {
-    authenticated$.next(false);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector(".login-box")).toBeTruthy();
-    expect(fixture.nativeElement.querySelector(".agent-input")).toBeFalsy();
   });
 
   it("should render the reply for a plain conversational turn", fakeAsync(() => {

@@ -2,6 +2,7 @@ import { Routes } from "@angular/router";
 import { HomeComponent } from "./pages/home/home.component";
 import { ProjectsComponent } from "./pages/projects/projects.component";
 import { BlogComponent } from "./pages/blog/blog.component";
+import { authGuard } from "./guards/auth.guard";
 
 export const routes: Routes = [
   { path: "", redirectTo: "/home", pathMatch: "full" },
@@ -23,7 +24,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "login",
+    loadComponent: () =>
+      import("./pages/login/login.component").then((m) => m.LoginComponent),
+  },
+  {
     path: "cv-editor",
+    canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/cv-editor/cv-editor.component").then(
         (m) => m.CvEditorComponent,
@@ -31,6 +38,7 @@ export const routes: Routes = [
   },
   {
     path: "projects-edit",
+    canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/projects-edit/projects-edit.component").then(
         (m) => m.ProjectsEditComponent,
@@ -38,6 +46,7 @@ export const routes: Routes = [
   },
   {
     path: "cv-agent",
+    canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/cv-agent/cv-agent.component").then(
         (m) => m.CvAgentComponent,

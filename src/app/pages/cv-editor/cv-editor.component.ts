@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HeroComponent } from '../../components/hero/hero.component';
 import { AuthService } from '../../services/auth.service';
@@ -19,13 +19,10 @@ export class CvEditorComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private cvService = inject(CvService);
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  isAuthenticated = false;
   loading = false;
   saving = false;
-  signingIn = false;
   errorMessage = '';
   successMessage = '';
 
@@ -49,29 +46,7 @@ export class CvEditorComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.authService.isAuthenticated$.subscribe((authenticated) => {
-      this.isAuthenticated = authenticated;
-      if (authenticated) {
-        this.loadCv();
-      }
-    });
-
-    // Returning from the Cognito hosted domain after Google sign-in.
-    const code = this.route.snapshot.queryParamMap.get('code');
-    if (code && !this.authService.isAuthenticated()) {
-      this.signingIn = true;
-      this.authService.handleRedirectCallback(code).subscribe({
-        next: () => {
-          this.signingIn = false;
-          this.router.navigate([], { queryParams: {}, replaceUrl: true });
-        },
-        error: () => {
-          this.signingIn = false;
-          this.errorMessage = 'Sign-in failed. Please try again.';
-          this.router.navigate([], { queryParams: {}, replaceUrl: true });
-        },
-      });
-    }
+    this.loadCv();
   }
 
   get skillCategoryControls(): FormGroup[] {
@@ -90,13 +65,9 @@ export class CvEditorComponent implements OnInit {
     return (this.cvForm.get('education') as FormArray).controls as FormGroup[];
   }
 
-  signInWithGoogle(): void {
-    this.errorMessage = '';
-    this.authService.signInWithGoogle();
-  }
-
   logout(): void {
     this.authService.logout();
+    this.router.navigateByUrl('/home');
   }
 
   private createSkillCategoryGroup(entry?: CvData['technicalSkills'][number]): FormGroup {

@@ -1,11 +1,9 @@
-import { Component, ElementRef, inject, OnInit, signal, ViewChild } from "@angular/core";
+import { Component, ElementRef, inject, signal, ViewChild } from "@angular/core";
 import { Observable } from "rxjs";
 import { CommonModule } from "@angular/common";
-import { ActivatedRoute, Router } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { HeroComponent } from "../../components/hero/hero.component";
-import { AuthService } from "../../services/auth.service";
 import { AgentService } from "../../services/agent.service";
 import { CvService } from "../../services/cv.service";
 import { ProjectsService } from "../../services/projects.service";
@@ -28,23 +26,7 @@ interface AgentTurn extends AgentMessage {
 
     <section class="section">
       <div class="container agent-container">
-        @if (!isAuthenticated) {
-          <div class="box login-box has-text-centered">
-            <p class="mb-4">Sign in to work on your CV with the agent.</p>
-            <button
-              class="button is-primary"
-              type="button"
-              [disabled]="signingIn"
-              (click)="signInWithGoogle()"
-            >
-              {{ signingIn ? "Signing in…" : "Sign in with Google" }}
-            </button>
-            @if (errorMessage) {
-              <p class="agent-error mt-3">{{ errorMessage }}</p>
-            }
-          </div>
-        } @else {
-          <div class="agent-chat" #conversation>
+        <div class="agent-chat" #conversation>
             @if (turns().length === 0) {
               <p class="agent-hint">
                 Ask me to rewrite, tighten, or extend your CV or projects —
@@ -107,25 +89,19 @@ interface AgentTurn extends AgentMessage {
               Send
             </button>
           </form>
-        }
       </div>
     </section>
   `,
   styleUrl: "./cv-agent.component.scss",
 })
-export class CvAgentComponent implements OnInit {
-  private authService = inject(AuthService);
+export class CvAgentComponent {
   private agentService = inject(AgentService);
   private cvService = inject(CvService);
   private projectsService = inject(ProjectsService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
 
   @ViewChild("conversation") private conversation?: ElementRef<HTMLDivElement>;
 
   maxMessageChars = AGENT_MAX_MESSAGE_CHARS;
-  isAuthenticated = false;
-  signingIn = false;
   errorMessage = "";
   successMessage = "";
   draft = "";
@@ -133,34 +109,6 @@ export class CvAgentComponent implements OnInit {
   turns = signal<AgentTurn[]>([]);
   isLoading = signal(false);
   applying = signal(false);
-
-  ngOnInit(): void {
-    this.authService.isAuthenticated$.subscribe((authenticated) => {
-      this.isAuthenticated = authenticated;
-    });
-
-    // Returning from the Cognito hosted domain after Google sign-in.
-    const code = this.route.snapshot.queryParamMap.get("code");
-    if (code && !this.authService.isAuthenticated()) {
-      this.signingIn = true;
-      this.authService.handleRedirectCallback(code).subscribe({
-        next: () => {
-          this.signingIn = false;
-          this.router.navigate([], { queryParams: {}, replaceUrl: true });
-        },
-        error: () => {
-          this.signingIn = false;
-          this.errorMessage = "Sign-in failed. Please try again.";
-          this.router.navigate([], { queryParams: {}, replaceUrl: true });
-        },
-      });
-    }
-  }
-
-  signInWithGoogle(): void {
-    this.signingIn = true;
-    this.authService.signInWithGoogle();
-  }
 
   send(): void {
     const question = this.draft.trim();
