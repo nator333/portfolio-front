@@ -27,11 +27,13 @@ import { BlogService, BlogPost } from "../../services/blog.service";
             @for (post of blogPosts; track post.id) {
               <div class="column is-one-third">
                 <div class="card blog-card">
-                  <div class="card-image">
-                    <figure class="image is-4by3">
-                      <img [src]="post.image" [alt]="post.title" />
-                    </figure>
-                  </div>
+                  @if (post.image) {
+                    <div class="card-image">
+                      <figure class="image is-4by3">
+                        <img [src]="post.image" [alt]="post.title" />
+                      </figure>
+                    </div>
+                  }
                   <div class="card-content">
                     <div class="media">
                       <div class="media-content">
