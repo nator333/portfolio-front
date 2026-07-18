@@ -37,12 +37,13 @@ import * as Prism from 'prismjs';
               </div>
             </div>
 
-            <!-- Eye-catch image -->
-            <div class="blog-post-image">
-              <figure class="image is-16by9">
-                <img [src]="post.image" [alt]="post.title" class="eye-catch-image" />
-              </figure>
-            </div>
+            @if (post.image) {
+              <div class="blog-post-image">
+                <figure class="image is-16by9">
+                  <img [src]="post.image" [alt]="post.title" class="eye-catch-image" />
+                </figure>
+              </div>
+            }
 
             <div class="blog-post-content has-text-white-bis">
               <!-- Using innerHTML to render pre-generated HTML content -->
