@@ -2,23 +2,7 @@
 
 <section class="section">
   <div class="container">
-    @if (!isAuthenticated) {
-      <div class="box login-box has-text-centered">
-        <h2 class="title is-4">Sign in</h2>
-        @if (errorMessage) {
-          <p class="has-text-danger">{{ errorMessage }}</p>
-        }
-        @if (signingIn) {
-          <p>Completing sign-in...</p>
-        } @else {
-          <button class="button is-primary" type="button" (click)="signInWithGoogle()">
-            <span class="icon"><i class="fab fa-google"></i></span>
-            <span>Sign in with Google</span>
-          </button>
-        }
-      </div>
-    } @else {
-      <div class="level">
+    <div class="level">
         <div class="level-left"></div>
         <div class="level-right">
           <button class="button is-light" type="button" (click)="logout()">Sign out</button>
@@ -271,6 +255,5 @@
           </div>
         </form>
       }
-    }
   </div>
 </section>

@@ -1,20 +1,20 @@
 import { inject } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivateFn } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 /**
- * Guards the admin edit pages. The guarded URLs double as the registered
- * Cognito OAuth callbacks, so a ?code= redirect must pass through for the
- * page to finish the token exchange. Anyone else is sent straight to the
- * Cognito hosted Google sign-in; only the admin email can complete it.
+ * Guards the admin edit pages: unauthenticated visitors are sent to the
+ * /login page, which brings them back here after Google sign-in.
  */
-export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+export const authGuard: CanActivateFn = (_route, state) => {
   const authService = inject(AuthService);
+  const router = inject(Router);
 
-  if (authService.isAuthenticated() || route.queryParamMap.has('code')) {
+  if (authService.isAuthenticated()) {
     return true;
   }
 
-  authService.signInWithGoogle();
-  return false;
+  return router.createUrlTree(['/login'], {
+    queryParams: { returnUrl: state.url },
+  });
 };

@@ -31,9 +31,9 @@ export class AuthService {
     return token && !isExpired(token) ? token : null;
   }
 
-  /** The registered OAuth callback: the /cv-editor URL the app is served on. */
+  /** The registered OAuth callback: the app's /login page, base-href aware. */
   private redirectUri(): string {
-    return `${location.origin}${location.pathname}`;
+    return new URL('login', document.baseURI).toString();
   }
 
   /** Kicks off Google sign-in by redirecting to the Cognito hosted domain. */

@@ -1,52 +1,50 @@
 import { TestBed } from "@angular/core/testing";
 import {
   ActivatedRouteSnapshot,
+  Router,
   RouterStateSnapshot,
-  convertToParamMap,
+  UrlTree,
+  provideRouter,
 } from "@angular/router";
 import { authGuard } from "./auth.guard";
 import { AuthService } from "../services/auth.service";
 
 describe("authGuard", () => {
   let authService: jasmine.SpyObj<AuthService>;
+  let router: Router;
 
   beforeEach(() => {
     authService = jasmine.createSpyObj<AuthService>("AuthService", [
       "isAuthenticated",
-      "signInWithGoogle",
     ]);
     TestBed.configureTestingModule({
-      providers: [{ provide: AuthService, useValue: authService }],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: authService },
+      ],
     });
+    router = TestBed.inject(Router);
   });
 
-  const runGuard = (queryParams: Record<string, string> = {}): boolean => {
-    const route = {
-      queryParamMap: convertToParamMap(queryParams),
-    } as ActivatedRouteSnapshot;
-    return TestBed.runInInjectionContext(() =>
-      authGuard(route, {} as RouterStateSnapshot),
-    ) as boolean;
-  };
+  const runGuard = (url: string): boolean | UrlTree =>
+    TestBed.runInInjectionContext(() =>
+      authGuard({} as ActivatedRouteSnapshot, { url } as RouterStateSnapshot),
+    ) as boolean | UrlTree;
 
   it("should allow access when authenticated", () => {
     authService.isAuthenticated.and.returnValue(true);
 
-    expect(runGuard()).toBeTrue();
-    expect(authService.signInWithGoogle).not.toHaveBeenCalled();
+    expect(runGuard("/cv-editor")).toBeTrue();
   });
 
-  it("should let the OAuth callback through when a code param is present", () => {
+  it("should redirect to /login with a return url when unauthenticated", () => {
     authService.isAuthenticated.and.returnValue(false);
 
-    expect(runGuard({ code: "auth-code" })).toBeTrue();
-    expect(authService.signInWithGoogle).not.toHaveBeenCalled();
-  });
+    const result = runGuard("/cv-editor");
 
-  it("should block access and start sign-in when unauthenticated", () => {
-    authService.isAuthenticated.and.returnValue(false);
-
-    expect(runGuard()).toBeFalse();
-    expect(authService.signInWithGoogle).toHaveBeenCalled();
+    expect(result).toBeInstanceOf(UrlTree);
+    expect(router.serializeUrl(result as UrlTree)).toBe(
+      "/login?returnUrl=%2Fcv-editor",
+    );
   });
 });
