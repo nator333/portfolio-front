@@ -33,7 +33,7 @@ interface ManifestPost {
 }
 
 const CACHE_KEY = 'blog-cache-v1';
-// Reads count against the API's 100 req/month usage-plan quota, so blog page
+// Reads count against the API's monthly usage-plan quota, so blog page
 // visits within the TTL are served from sessionStorage instead.
 const CACHE_TTL_MS = 60 * 60 * 1000;
 

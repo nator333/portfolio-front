@@ -6,7 +6,7 @@ import { ProjectsData } from '../models/project-data';
 import { AuthService } from './auth.service';
 
 const CACHE_KEY = 'projects-cache-v1';
-// Reads count against the API's 100 req/month usage-plan quota, so projects
+// Reads count against the API's monthly usage-plan quota, so projects
 // page visits within the TTL are served from sessionStorage instead.
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
