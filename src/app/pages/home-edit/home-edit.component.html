@@ -1,0 +1,80 @@
+<app-hero title="Home Editor" subtitle="Manage the hero mottoes"></app-hero>
+
+<section class="section">
+  <div class="container">
+    <div class="level">
+      <div class="level-left"></div>
+      <div class="level-right">
+        <button class="button is-light" type="button" (click)="logout()">Sign out</button>
+      </div>
+    </div>
+
+    @if (loading) {
+      <p>Loading home content...</p>
+    } @else {
+      <form [formGroup]="homeForm" (ngSubmit)="save()">
+        @if (errorMessage) {
+          <p class="has-text-danger">{{ errorMessage }}</p>
+        }
+        @if (successMessage) {
+          <p class="has-text-success">{{ successMessage }}</p>
+        }
+
+        <div class="box">
+          <div class="level">
+            <div class="level-left"><h2 class="title is-4">Hero mottoes</h2></div>
+            <div class="level-right">
+              <button
+                class="button is-small"
+                type="button"
+                [disabled]="!canAddMotto"
+                (click)="addMotto()"
+              >
+                + Add line
+              </button>
+            </div>
+          </div>
+          <p class="help">
+            Up to {{ maxMottoCount }} lines, {{ maxMottoLength }} characters each.
+            Lines render largest to smallest, top to bottom.
+          </p>
+          <div formArrayName="mottoes">
+            @for (control of mottoControls; track $index) {
+              <div class="field motto-field">
+                <label class="label">Line {{ $index + 1 }}</label>
+                <div class="motto-row">
+                  <input
+                    class="input"
+                    type="text"
+                    [formControlName]="$index"
+                    [maxlength]="maxMottoLength"
+                    [class.is-danger]="control.touched && control.invalid"
+                  />
+                  <button
+                    class="button is-small is-danger is-light"
+                    type="button"
+                    [disabled]="!canRemoveMotto"
+                    (click)="removeMotto($index)"
+                  >
+                    Remove
+                  </button>
+                </div>
+                @if (control.touched && control.hasError('required')) {
+                  <p class="help is-danger">A motto line cannot be empty.</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-primary" type="submit" [disabled]="saving">
+              Save
+            </button>
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+</section>

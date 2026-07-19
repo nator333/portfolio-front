@@ -29,6 +29,14 @@ export const routes: Routes = [
       import("./pages/login/login.component").then((m) => m.LoginComponent),
   },
   {
+    path: "home-edit",
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import("./pages/home-edit/home-edit.component").then(
+        (m) => m.HomeEditComponent,
+      ),
+  },
+  {
     path: "cv-editor",
     canActivate: [authGuard],
     loadComponent: () =>

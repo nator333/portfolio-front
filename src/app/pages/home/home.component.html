@@ -5,7 +5,7 @@
         <!-- Left Column - Text Content -->
         <div class="column is-half">
           <div class="motto-section">
-            @for (motto of mottoes; track motto; let i = $index) {
+            @for (motto of mottoes(); track motto; let i = $index) {
               @switch (i) {
                 @case (0) {
                   <h1 class="motto-line">{{ motto }}</h1>
