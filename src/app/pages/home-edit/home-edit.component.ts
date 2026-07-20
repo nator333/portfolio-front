@@ -13,7 +13,6 @@ import { HeroComponent } from '../../components/hero/hero.component';
 import { AuthService } from '../../services/auth.service';
 import { HomeService } from '../../services/home.service';
 import {
-  DEFAULT_MOTTOES,
   HomeData,
   MAX_MOTTO_COUNT,
   MAX_MOTTO_LENGTH,
@@ -116,14 +115,13 @@ export class HomeEditComponent implements OnInit {
     this.loading = true;
     this.homeService.getHome().subscribe({
       next: (data) => {
-        // A never-saved document comes back null; edit from the bundled
-        // defaults. A saved empty list stays empty — it was cleared on purpose.
-        this.setMottoes(data.mottoes ?? DEFAULT_MOTTOES);
+        // A never-saved document comes back null; start from an empty list.
+        this.setMottoes(data.mottoes ?? []);
         this.loading = false;
       },
       error: () => {
-        this.setMottoes(DEFAULT_MOTTOES);
-        this.errorMessage = 'Could not load the saved hero; showing defaults.';
+        this.setMottoes([]);
+        this.errorMessage = 'Could not load the saved hero.';
         this.loading = false;
       },
     });

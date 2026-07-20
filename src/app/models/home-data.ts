@@ -4,8 +4,8 @@
  */
 export interface HomeData {
   /**
-   * null means the item was never saved (front shows DEFAULT_MOTTOES);
-   * an empty array is a deliberate "show no mottoes".
+   * null means the item was never saved; the front renders it the same as
+   * an empty array (no motto lines).
    */
   mottoes: string[] | null;
 }
@@ -15,11 +15,3 @@ export interface HomeData {
 // sync with the API-side zod schema.
 export const MAX_MOTTO_COUNT = 4;
 export const MAX_MOTTO_LENGTH = 40;
-
-/** Shown until the API responds, and whenever it fails or has no data yet. */
-export const DEFAULT_MOTTOES: string[] = [
-  "Scream Dependencies",
-  "Hide Complexities",
-  "Embrace Criticism",
-  "Yet, Seek Connections",
-];

@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HomeService } from "../../services/home.service";
-import { DEFAULT_MOTTOES } from "../../models/home-data";
 
 /**
  * Home component that displays the main landing page with personal motto and profile information.
@@ -17,11 +16,9 @@ import { DEFAULT_MOTTOES } from "../../models/home-data";
 export class HomeComponent implements OnInit {
   private homeService = inject(HomeService);
 
-  // Bundled defaults render immediately; the API response (edited via
-  // /home-edit) replaces them when it arrives — including an empty list,
-  // which means the mottoes were deliberately cleared. On error or a
-  // never-saved item (mottoes: null) the defaults stay.
-  readonly mottoes = signal<string[]>(DEFAULT_MOTTOES);
+  // Populated from the API response (edited via /home-edit); a never-saved
+  // item (mottoes: null) or a failed read renders no motto lines.
+  readonly mottoes = signal<string[]>([]);
 
   readonly profile: string[] = ["Hi, I'm Hiro Nakamata", "Software Engineer"];
   readonly kappiInfo: string[] = [
@@ -36,12 +33,10 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.homeService.getHome().subscribe({
       next: (data) => {
-        if (Array.isArray(data.mottoes)) {
-          this.mottoes.set(data.mottoes);
-        }
+        this.mottoes.set(data.mottoes ?? []);
       },
       error: () => {
-        // Defaults already shown; a failed read never blanks the hero.
+        // Leave the hero without motto lines.
       },
     });
   }
