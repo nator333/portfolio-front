@@ -84,6 +84,9 @@ describe("BlogService", () => {
   });
 
   it("should fall back to the bundled manifest when the API fails", () => {
+    // The service logs the failure; keep the expected error out of CI output,
+    // where it reads like a real request burning the API quota.
+    const consoleError = spyOn(console, "error");
     let posts: BlogPost[] = [];
     service.getAllPosts().subscribe((p) => (posts = p));
 
@@ -108,6 +111,7 @@ describe("BlogService", () => {
     expect(posts.length).toBe(1);
     expect(posts[0].title).toBe("Bundled Post");
     expect(posts[0].filename).toBe("bundled-post.html");
+    expect(consoleError).toHaveBeenCalled();
   });
 
   it("should fall back to the bundled manifest when the API has no posts yet", () => {
@@ -131,6 +135,7 @@ describe("BlogService", () => {
   });
 
   it("should fetch pre-generated HTML for fallback posts resolved by url", () => {
+    const consoleError = spyOn(console, "error");
     let post: BlogPost | undefined;
     service.getPostByUrl("/blog/bundled-post").subscribe((p) => (post = p));
 
@@ -155,6 +160,7 @@ describe("BlogService", () => {
       .flush("<h2>Bundled</h2>");
 
     expect(post?.content).toBe("<h2>Bundled</h2>");
+    expect(consoleError).toHaveBeenCalled();
   });
 
   it("should PUT the blog document with the raw Cognito id token", () => {
