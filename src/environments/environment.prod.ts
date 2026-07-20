@@ -1,6 +1,6 @@
 // Values come from the `PortfolioApiStack-prod` outputs after `npm run deploy:prod` in portfolio-api.
 // The REST API URL includes the stage path (e.g. https://xxx.execute-api.us-west-1.amazonaws.com/prod).
-// apiKey identifies the site to the gateway's usage plan (100 req/month cap); fetch its value with:
+// apiKey identifies the site to the gateway's usage plan (monthly cap set in portfolio-api); fetch its value with:
 //   aws apigateway get-api-key --include-value --api-key <ApiKeyId output>
 import { firebaseConfig } from './firebase.config';
 

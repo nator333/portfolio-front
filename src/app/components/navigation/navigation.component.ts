@@ -91,6 +91,13 @@ import {
           @if (isAuthenticated()) {
             <a
               class="navbar-item nav-link"
+              routerLink="/home-edit"
+              routerLinkActive="is-active"
+            >
+              Home Edit
+            </a>
+            <a
+              class="navbar-item nav-link"
               routerLink="/cv-editor"
               routerLinkActive="is-active"
             >

@@ -2,60 +2,60 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { ProjectsData } from '../models/project-data';
+import { HomeData } from '../models/home-data';
 import { AuthService } from './auth.service';
 
-const CACHE_KEY = 'projects-cache-v1';
-// Reads count against the API's monthly usage-plan quota, so projects
-// page visits within the TTL are served from sessionStorage instead.
+const CACHE_KEY = 'home-cache-v1';
+// Reads count against the API's monthly usage-plan quota, and the home page
+// is the landing page — visits within the TTL are served from sessionStorage.
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
-interface CachedProjects {
+interface CachedHome {
   storedAt: number;
-  data: ProjectsData;
+  data: HomeData;
 }
 
 /**
- * Service for fetching and persisting the projects list through portfolio-api.
+ * Service for fetching and persisting the home hero content through portfolio-api.
  */
 @Injectable({
   providedIn: 'root',
 })
-export class ProjectsService {
+export class HomeService {
   constructor(
     private http: HttpClient,
     private authService: AuthService,
   ) {}
 
-  getProjects(): Observable<ProjectsData> {
+  getHome(): Observable<HomeData> {
     const cached = this.readCache();
     if (cached) {
       return of(cached);
     }
     const headers = new HttpHeaders({ 'X-Api-Key': environment.apiKey });
     return this.http
-      .get<ProjectsData>(`${environment.apiBaseUrl}/projects`, { headers })
+      .get<HomeData>(`${environment.apiBaseUrl}/home`, { headers })
       .pipe(tap((data) => this.writeCache(data)));
   }
 
-  updateProjects(data: ProjectsData): Observable<ProjectsData> {
+  updateHome(data: HomeData): Observable<HomeData> {
     const headers = new HttpHeaders({
       'X-Api-Key': environment.apiKey,
       // REST API Cognito authorizers expect the raw JWT, not a Bearer-prefixed value.
       Authorization: this.authService.getIdToken(),
     });
     return this.http
-      .put<ProjectsData>(`${environment.apiBaseUrl}/projects`, data, { headers })
+      .put<HomeData>(`${environment.apiBaseUrl}/home`, data, { headers })
       .pipe(tap((saved) => this.writeCache(saved)));
   }
 
-  private readCache(): ProjectsData | null {
+  private readCache(): HomeData | null {
     try {
       const raw = sessionStorage.getItem(CACHE_KEY);
       if (!raw) {
         return null;
       }
-      const cached: CachedProjects = JSON.parse(raw);
+      const cached: CachedHome = JSON.parse(raw);
       if (Date.now() - cached.storedAt > CACHE_TTL_MS) {
         sessionStorage.removeItem(CACHE_KEY);
         return null;
@@ -66,9 +66,9 @@ export class ProjectsService {
     }
   }
 
-  private writeCache(data: ProjectsData): void {
+  private writeCache(data: HomeData): void {
     try {
-      const cached: CachedProjects = { storedAt: Date.now(), data };
+      const cached: CachedHome = { storedAt: Date.now(), data };
       sessionStorage.setItem(CACHE_KEY, JSON.stringify(cached));
     } catch {
       // Cache is best-effort; a full or unavailable sessionStorage is fine.
