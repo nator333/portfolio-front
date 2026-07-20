@@ -3,7 +3,11 @@
  * /home endpoint. Mirrors lambda/home-schema.ts in portfolio-api.
  */
 export interface HomeData {
-  mottoes: string[];
+  /**
+   * null means the item was never saved (front shows DEFAULT_MOTTOES);
+   * an empty array is a deliberate "show no mottoes".
+   */
+  mottoes: string[] | null;
 }
 
 // The hero renders one heading per motto (h1..h4 by position), so the count

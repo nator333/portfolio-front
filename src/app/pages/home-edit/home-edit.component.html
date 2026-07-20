@@ -36,7 +36,8 @@
           </div>
           <p class="help">
             Up to {{ maxMottoCount }} lines, {{ maxMottoLength }} characters each.
-            Lines render largest to smallest, top to bottom.
+            Lines render largest to smallest, top to bottom. Removing every line
+            hides the motto section entirely.
           </p>
           <div formArrayName="mottoes">
             @for (control of mottoControls; track $index) {
@@ -53,7 +54,6 @@
                   <button
                     class="button is-small is-danger is-light"
                     type="button"
-                    [disabled]="!canRemoveMotto"
                     (click)="removeMotto($index)"
                   >
                     Remove

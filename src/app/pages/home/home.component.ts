@@ -18,7 +18,9 @@ export class HomeComponent implements OnInit {
   private homeService = inject(HomeService);
 
   // Bundled defaults render immediately; the API response (edited via
-  // /home-edit) replaces them when it arrives. On error the defaults stay.
+  // /home-edit) replaces them when it arrives — including an empty list,
+  // which means the mottoes were deliberately cleared. On error or a
+  // never-saved item (mottoes: null) the defaults stay.
   readonly mottoes = signal<string[]>(DEFAULT_MOTTOES);
 
   readonly profile: string[] = ["Hi, I'm Hiro Nakamata", "Software Engineer"];
@@ -34,7 +36,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.homeService.getHome().subscribe({
       next: (data) => {
-        if (data.mottoes?.length) {
+        if (Array.isArray(data.mottoes)) {
           this.mottoes.set(data.mottoes);
         }
       },

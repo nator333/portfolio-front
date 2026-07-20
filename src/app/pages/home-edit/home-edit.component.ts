@@ -56,10 +56,6 @@ export class HomeEditComponent implements OnInit {
     return this.mottoArray.length < MAX_MOTTO_COUNT;
   }
 
-  get canRemoveMotto(): boolean {
-    return this.mottoArray.length > 1;
-  }
-
   logout(): void {
     this.authService.logout();
     this.router.navigateByUrl('/home');
@@ -72,9 +68,7 @@ export class HomeEditComponent implements OnInit {
   }
 
   removeMotto(index: number): void {
-    if (this.canRemoveMotto) {
-      this.mottoArray.removeAt(index);
-    }
+    this.mottoArray.removeAt(index);
   }
 
   save(): void {
@@ -122,8 +116,9 @@ export class HomeEditComponent implements OnInit {
     this.loading = true;
     this.homeService.getHome().subscribe({
       next: (data) => {
-        // An unset document comes back empty; edit from the bundled defaults.
-        this.setMottoes(data.mottoes?.length ? data.mottoes : DEFAULT_MOTTOES);
+        // A never-saved document comes back null; edit from the bundled
+        // defaults. A saved empty list stays empty — it was cleared on purpose.
+        this.setMottoes(data.mottoes ?? DEFAULT_MOTTOES);
         this.loading = false;
       },
       error: () => {
