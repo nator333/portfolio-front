@@ -13,7 +13,6 @@ import { HeroComponent } from '../../components/hero/hero.component';
 import { AuthService } from '../../services/auth.service';
 import { HomeService } from '../../services/home.service';
 import {
-  DEFAULT_MOTTOES,
   HomeData,
   MAX_MOTTO_COUNT,
   MAX_MOTTO_LENGTH,
@@ -56,10 +55,6 @@ export class HomeEditComponent implements OnInit {
     return this.mottoArray.length < MAX_MOTTO_COUNT;
   }
 
-  get canRemoveMotto(): boolean {
-    return this.mottoArray.length > 1;
-  }
-
   logout(): void {
     this.authService.logout();
     this.router.navigateByUrl('/home');
@@ -72,9 +67,7 @@ export class HomeEditComponent implements OnInit {
   }
 
   removeMotto(index: number): void {
-    if (this.canRemoveMotto) {
-      this.mottoArray.removeAt(index);
-    }
+    this.mottoArray.removeAt(index);
   }
 
   save(): void {
@@ -122,13 +115,13 @@ export class HomeEditComponent implements OnInit {
     this.loading = true;
     this.homeService.getHome().subscribe({
       next: (data) => {
-        // An unset document comes back empty; edit from the bundled defaults.
-        this.setMottoes(data.mottoes?.length ? data.mottoes : DEFAULT_MOTTOES);
+        // A never-saved document comes back null; start from an empty list.
+        this.setMottoes(data.mottoes ?? []);
         this.loading = false;
       },
       error: () => {
-        this.setMottoes(DEFAULT_MOTTOES);
-        this.errorMessage = 'Could not load the saved hero; showing defaults.';
+        this.setMottoes([]);
+        this.errorMessage = 'Could not load the saved hero.';
         this.loading = false;
       },
     });

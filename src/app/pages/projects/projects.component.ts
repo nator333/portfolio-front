@@ -4,39 +4,6 @@ import { HeroComponent } from "../../components/hero/hero.component";
 import { ProjectsService } from "../../services/projects.service";
 import { ProjectEntry } from "../../models/project-data";
 
-// Shown when the projects API is unavailable (e.g. monthly quota exhausted) or
-// has no projects yet, so the page never renders empty.
-const FALLBACK_PROJECTS: ProjectEntry[] = [
-  {
-    title: "E-Commerce Platform",
-    tech: "Spring Boot, React, PostgreSQL",
-    description:
-      "A full-stack e-commerce solution with microservices architecture.",
-    image: "assets/projects/elementscpr.png",
-    tags: ["Java", "Spring Boot", "React", "PostgreSQL"],
-    liveUrl: "https://example.com",
-    githubUrl: "https://github.com",
-  },
-  {
-    title: "Real-time Chat Application",
-    tech: "Node.js, Socket.io, MongoDB",
-    description: "A real-time messaging app with WebSocket connectivity.",
-    image: "assets/projects/SilverBullet.png",
-    tags: ["Node.js", "Socket.io", "MongoDB", "WebSockets"],
-    liveUrl: "https://example.com",
-    githubUrl: "https://github.com",
-  },
-  {
-    title: "API Gateway Service",
-    tech: "Kotlin, Ktor, Redis",
-    description:
-      "High-performance API gateway with rate limiting and caching.",
-    image: "assets/projects/portfolio.png",
-    tags: ["Kotlin", "Ktor", "Redis", "Microservices"],
-    githubUrl: "https://github.com",
-  },
-];
-
 @Component({
   selector: "app-projects",
   standalone: true,
@@ -106,18 +73,16 @@ const FALLBACK_PROJECTS: ProjectEntry[] = [
   styleUrl: "./projects.component.scss",
 })
 export class ProjectsComponent implements OnInit {
-  projects: ProjectEntry[] = FALLBACK_PROJECTS;
+  projects: ProjectEntry[] = [];
 
   constructor(private projectsService: ProjectsService) {}
 
   ngOnInit(): void {
     this.projectsService.getProjects().subscribe({
       next: (data) => {
-        if (data.projects?.length) {
-          this.projects = data.projects;
-        }
+        this.projects = data.projects ?? [];
       },
-      // Keep the fallback content on error.
+      // Leave the list empty on error.
       error: () => undefined,
     });
   }

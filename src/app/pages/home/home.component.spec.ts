@@ -5,7 +5,6 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { HomeComponent } from "./home.component";
-import { DEFAULT_MOTTOES } from "../../models/home-data";
 import { environment } from "../../../environments/environment";
 
 describe("HomeComponent", () => {
@@ -29,22 +28,17 @@ describe("HomeComponent", () => {
     httpMock.verify();
   });
 
-  function flushHome(mottoes: string[]): void {
+  function flushHome(mottoes: string[] | null): void {
     httpMock
       .expectOne(`${environment.apiBaseUrl}/home`)
       .flush({ mottoes });
     fixture.detectChanges();
   }
 
-  it("should render the default motto lines with descending heading levels", () => {
-    flushHome([]);
+  it("should render no motto lines when the item was never saved", () => {
+    flushHome(null);
     const el: HTMLElement = fixture.nativeElement;
-    DEFAULT_MOTTOES.forEach((motto, i) => {
-      const heading = el.querySelector(`.motto-section h${i + 1}`);
-      expect(heading?.textContent)
-        .withContext(`motto ${i} should be an h${i + 1}`)
-        .toContain(motto);
-    });
+    expect(el.querySelector(".motto-section h1")).toBeNull();
   });
 
   it("should render API-provided mottoes when the endpoint returns them", () => {
@@ -59,19 +53,23 @@ describe("HomeComponent", () => {
     expect(el.querySelector(".motto-section h3")).toBeNull();
   });
 
-  it("should keep the default mottoes when the request fails", () => {
+  it("should render no motto lines when the saved list was cleared", () => {
+    flushHome([]);
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector(".motto-section h1")).toBeNull();
+  });
+
+  it("should render no motto lines when the request fails", () => {
     httpMock
       .expectOne(`${environment.apiBaseUrl}/home`)
       .flush({ message: "nope" }, { status: 500, statusText: "Server Error" });
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector(".motto-section h1")?.textContent).toContain(
-      DEFAULT_MOTTOES[0],
-    );
+    expect(el.querySelector(".motto-section h1")).toBeNull();
   });
 
   it("should render the signature image with its alt text", () => {
-    flushHome([]);
+    flushHome(null);
     const img = fixture.nativeElement.querySelector(
       ".signature-image",
     ) as HTMLImageElement;
@@ -80,7 +78,7 @@ describe("HomeComponent", () => {
   });
 
   it("should render the profile name and title", () => {
-    flushHome([]);
+    flushHome(null);
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector(".profile-name")?.textContent).toContain(
       component.profile[0],
@@ -91,7 +89,7 @@ describe("HomeComponent", () => {
   });
 
   it("should credit the name artist with a link", () => {
-    flushHome([]);
+    flushHome(null);
     const link = fixture.nativeElement.querySelector(
       ".artist-link",
     ) as HTMLAnchorElement;
