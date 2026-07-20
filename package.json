@@ -4,7 +4,6 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0 --port 3000 --poll 2000",
-    "prebuild": "node scripts/generate-blog-html.js",
     "build": "ng build",
     "test": "ng test --watch=false --browsers=ChromeHeadless",
     "watch": "ng build --watch --configuration development",
@@ -54,7 +53,6 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "animate.css": "^4.1.1",
     "bulma": "^1.0.4",
-    "gray-matter": "^4.0.3",
     "marked": "^15.0.12",
     "ngx-markdown": "^20.0.0",
     "pdfmake": "^0.3.11",

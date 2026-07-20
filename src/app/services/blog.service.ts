@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, of, catchError, tap } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { BlogData, BlogPostEntry } from '../models/blog-data';
 import { renderBlogMarkdown } from '../utils/blog-markdown.util';
@@ -12,24 +11,11 @@ export interface BlogPost {
   title: string;
   date: Date;
   summary: string;
-  /** HTML content, ready for [innerHTML]. Empty until loaded for fallback posts. */
+  /** HTML content, ready for [innerHTML]. */
   content: string;
   image: string;
   tags: string[];
   url: string;
-  /** Set only on bundled fallback posts, whose HTML is fetched from assets on demand. */
-  filename?: string;
-}
-
-/** Shape of the build-time manifest backing the bundled fallback posts. */
-interface ManifestPost {
-  id: number;
-  title: string;
-  date: string;
-  summary: string;
-  tags: string[];
-  url: string;
-  filename: string;
 }
 
 const CACHE_KEY = 'blog-cache-v1';
@@ -44,8 +30,8 @@ interface CachedBlog {
 
 /**
  * Service for blog posts. Loads the blog document from portfolio-api (DynamoDB)
- * and renders its markdown content to HTML; falls back to the pre-generated
- * build-time assets when the API is unavailable or has no posts yet.
+ * and renders its markdown content to HTML. The API document is the single
+ * source of truth; the list renders empty when it is unavailable.
  */
 @Injectable({
   providedIn: 'root'
@@ -61,13 +47,12 @@ export class BlogService {
    */
   getAllPosts(): Observable<BlogPost[]> {
     return this.getBlogData().pipe(
-      switchMap((data) => {
-        if (!data?.posts?.length) {
-          return this.loadFallbackPosts();
-        }
-        const posts = data.posts.map((entry, index) => this.toBlogPost(entry, index));
+      map((data) => {
+        const posts = (data?.posts ?? []).map((entry, index) =>
+          this.toBlogPost(entry, index),
+        );
         posts.sort((a, b) => b.date.getTime() - a.date.getTime());
-        return of(posts);
+        return posts;
       }),
     );
   }
@@ -79,26 +64,6 @@ export class BlogService {
   getPostByUrl(url: string): Observable<BlogPost | undefined> {
     return this.getAllPosts().pipe(
       map(posts => posts.find(post => post.url === url)),
-      switchMap(post => {
-        if (!post || !post.filename) {
-          return of(post);
-        }
-
-        // Fallback posts ship without content; load the pre-generated HTML.
-        return this.http.get(`assets/blog-html/${post.filename}`, { responseType: 'text' }).pipe(
-          map(content => ({
-            ...post,
-            content
-          })),
-          catchError(error => {
-            console.error(`Error loading blog post HTML: ${post.filename}`, error);
-            return of({
-              ...post,
-              content: `<p>Error loading content: ${error.message || 'Unknown error'}</p>`
-            });
-          })
-        );
-      })
     );
   }
 
@@ -149,25 +114,6 @@ export class BlogService {
       tags: entry.tags,
       url: entry.url,
     };
-  }
-
-  /**
-   * Bundled build-time posts, shown when the API is unavailable (e.g. monthly
-   * quota exhausted) or has no blog document yet, so the page never renders empty.
-   */
-  private loadFallbackPosts(): Observable<BlogPost[]> {
-    return this.http.get<{posts: ManifestPost[]}>('assets/blog-html/manifest.json').pipe(
-      map(manifest => manifest.posts.map(post => ({
-        ...post,
-        date: new Date(post.date),
-        content: '',
-        image: '',
-      }))),
-      catchError(error => {
-        console.error('Error loading blog manifest:', error);
-        return of([]);
-      })
-    );
   }
 
   private readCache(): BlogData | null {
