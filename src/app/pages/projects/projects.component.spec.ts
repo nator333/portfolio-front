@@ -5,11 +5,31 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { ProjectsComponent } from "./projects.component";
+import { ProjectEntry } from "../../models/project-data";
 import { environment } from "../../../environments/environment";
+
+const SAMPLE_PROJECTS: ProjectEntry[] = [
+  {
+    title: "My App",
+    tech: "Angular, AWS",
+    description: "Does things.",
+    image: "assets/projects/app.png",
+    tags: ["Angular", "AWS"],
+    liveUrl: "https://example.com",
+    githubUrl: "https://github.com/example/app",
+  },
+  {
+    title: "Gateway",
+    tech: "Kotlin, Ktor",
+    description: "Routes things.",
+    image: "assets/projects/gateway.png",
+    tags: ["Kotlin"],
+    githubUrl: "https://github.com/example/gateway",
+  },
+];
 
 describe("ProjectsComponent", () => {
   let fixture: ComponentFixture<ProjectsComponent>;
-  let component: ProjectsComponent;
   let httpMock: HttpTestingController;
 
   beforeEach(async () => {
@@ -20,7 +40,6 @@ describe("ProjectsComponent", () => {
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ProjectsComponent);
-    component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
@@ -47,33 +66,12 @@ describe("ProjectsComponent", () => {
     expect(el.querySelector("app-hero h1")?.textContent).toContain("Projects");
   });
 
-  it("should render projects from the API", () => {
-    flushProjects([
-      {
-        title: "My App",
-        tech: "Angular, AWS",
-        description: "Does things.",
-        image: "assets/projects/app.png",
-        tags: ["Angular", "AWS"],
-        liveUrl: "https://example.com",
-        githubUrl: "",
-      },
-    ]);
-
-    const cards = fixture.nativeElement.querySelectorAll(".project-card");
-    expect(cards.length).toBe(1);
-    const card = cards[0] as HTMLElement;
-    expect(card.querySelector(".title")?.textContent).toContain("My App");
-    expect(card.querySelector(".subtitle")?.textContent).toContain("Angular, AWS");
-    expect(card.querySelectorAll(".tag").length).toBe(2);
-  });
-
   it("should render one card per project with title, tech and tags", () => {
-    flushProjects([]);
+    flushProjects(SAMPLE_PROJECTS);
     const cards = fixture.nativeElement.querySelectorAll(".project-card");
-    expect(cards.length).toBe(component.projects.length);
+    expect(cards.length).toBe(SAMPLE_PROJECTS.length);
 
-    component.projects.forEach((project, i) => {
+    SAMPLE_PROJECTS.forEach((project, i) => {
       const card = cards[i] as HTMLElement;
       expect(card.querySelector(".title")?.textContent).toContain(project.title);
       expect(card.querySelector(".subtitle")?.textContent).toContain(project.tech);
@@ -85,9 +83,9 @@ describe("ProjectsComponent", () => {
   });
 
   it("should only render footer links for urls the project defines", () => {
-    flushProjects([]);
+    flushProjects(SAMPLE_PROJECTS);
     const cards = fixture.nativeElement.querySelectorAll(".project-card");
-    component.projects.forEach((project, i) => {
+    SAMPLE_PROJECTS.forEach((project, i) => {
       const links = Array.from(
         (cards[i] as HTMLElement).querySelectorAll(".card-footer a"),
       ) as HTMLAnchorElement[];
@@ -100,15 +98,15 @@ describe("ProjectsComponent", () => {
     });
   });
 
-  it("should keep fallback projects when the API returns none", () => {
+  it("should render no cards when the API returns none", () => {
     flushProjects([]);
     const cards = fixture.nativeElement.querySelectorAll(".project-card");
-    expect(cards.length).toBeGreaterThan(0);
+    expect(cards.length).toBe(0);
   });
 
-  it("should keep fallback projects when the API fails", () => {
+  it("should render no cards when the API fails", () => {
     failProjects();
     const cards = fixture.nativeElement.querySelectorAll(".project-card");
-    expect(cards.length).toBeGreaterThan(0);
+    expect(cards.length).toBe(0);
   });
 });
