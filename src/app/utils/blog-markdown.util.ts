@@ -2,8 +2,7 @@ import { Marked, Tokens } from 'marked';
 
 /**
  * Markdown-to-HTML conversion for blog posts fetched from portfolio-api.
- * Mirrors scripts/generate-blog-html.js (used for the bundled fallback posts):
- * fenced code blocks become Prism-ready <pre class="line-numbers"> blocks, and
+ * Fenced code blocks become Prism-ready <pre class="line-numbers"> blocks, and
  * extra tokens on the info string (e.g. `bash data-user="user" class="command-line"`)
  * carry over as classes / data attributes on the <pre> element.
  */

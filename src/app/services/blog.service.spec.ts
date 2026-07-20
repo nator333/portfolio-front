@@ -83,43 +83,26 @@ describe("BlogService", () => {
     expect(posts.length).toBe(2);
   });
 
-  it("should fall back to the bundled manifest when the API fails", () => {
+  it("should render an empty list when the API fails", () => {
     // The service logs the failure; keep the expected error out of CI output,
     // where it reads like a real request burning the API quota.
     const consoleError = spyOn(console, "error");
-    let posts: BlogPost[] = [];
+    let posts: BlogPost[] | undefined;
     service.getAllPosts().subscribe((p) => (posts = p));
 
     httpMock
       .expectOne(`${environment.apiBaseUrl}/blog`)
       .flush({ message: "quota exceeded" }, { status: 429, statusText: "Too Many Requests" });
 
-    httpMock.expectOne("assets/blog-html/manifest.json").flush({
-      posts: [
-        {
-          id: 1,
-          title: "Bundled Post",
-          date: "2024-01-15T00:00:00.000Z",
-          summary: "From assets.",
-          tags: ["Angular"],
-          url: "/blog/bundled-post",
-          filename: "bundled-post.html",
-        },
-      ],
-    });
-
-    expect(posts.length).toBe(1);
-    expect(posts[0].title).toBe("Bundled Post");
-    expect(posts[0].filename).toBe("bundled-post.html");
+    expect(posts).toEqual([]);
     expect(consoleError).toHaveBeenCalled();
   });
 
-  it("should fall back to the bundled manifest when the API has no posts yet", () => {
-    let posts: BlogPost[] = [];
+  it("should render an empty list when the API has no posts yet", () => {
+    let posts: BlogPost[] | undefined;
     service.getAllPosts().subscribe((p) => (posts = p));
 
     httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush({ posts: [] });
-    httpMock.expectOne("assets/blog-html/manifest.json").flush({ posts: [] });
 
     expect(posts).toEqual([]);
   });
@@ -134,33 +117,13 @@ describe("BlogService", () => {
     expect(post?.content).toContain("<em>markdown</em>");
   });
 
-  it("should fetch pre-generated HTML for fallback posts resolved by url", () => {
-    const consoleError = spyOn(console, "error");
-    let post: BlogPost | undefined;
-    service.getPostByUrl("/blog/bundled-post").subscribe((p) => (post = p));
+  it("should resolve undefined for an unknown url", () => {
+    let post: BlogPost | undefined = apiDocument.posts[0] as never;
+    service.getPostByUrl("/blog/does-not-exist").subscribe((p) => (post = p));
 
-    httpMock
-      .expectOne(`${environment.apiBaseUrl}/blog`)
-      .flush(null, { status: 500, statusText: "Server Error" });
-    httpMock.expectOne("assets/blog-html/manifest.json").flush({
-      posts: [
-        {
-          id: 1,
-          title: "Bundled Post",
-          date: "2024-01-15T00:00:00.000Z",
-          summary: "From assets.",
-          tags: [],
-          url: "/blog/bundled-post",
-          filename: "bundled-post.html",
-        },
-      ],
-    });
-    httpMock
-      .expectOne("assets/blog-html/bundled-post.html")
-      .flush("<h2>Bundled</h2>");
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush(apiDocument);
 
-    expect(post?.content).toBe("<h2>Bundled</h2>");
-    expect(consoleError).toHaveBeenCalled();
+    expect(post).toBeUndefined();
   });
 
   it("should PUT the blog document with the raw Cognito id token", () => {
