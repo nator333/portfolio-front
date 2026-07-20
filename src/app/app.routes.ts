@@ -45,6 +45,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "blog-edit",
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import("./pages/blog-edit/blog-edit.component").then(
+        (m) => m.BlogEditComponent,
+      ),
+  },
+  {
     path: "projects-edit",
     canActivate: [authGuard],
     loadComponent: () =>

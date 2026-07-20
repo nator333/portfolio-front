@@ -1,0 +1,137 @@
+<app-hero title="Blog Editor" subtitle="Manage your posts"></app-hero>
+
+<section class="section">
+  <div class="container">
+    <div class="level">
+      <div class="level-left"></div>
+      <div class="level-right">
+        <button class="button is-light" type="button" (click)="logout()">Sign out</button>
+      </div>
+    </div>
+
+    @if (loading) {
+      <p>Loading blog posts...</p>
+    } @else {
+      <form [formGroup]="blogForm" (ngSubmit)="save()">
+        @if (errorMessage) {
+          <p class="has-text-danger">{{ errorMessage }}</p>
+        }
+        @if (successMessage) {
+          <p class="has-text-success">{{ successMessage }}</p>
+        }
+
+        <div class="box">
+          <div class="level">
+            <div class="level-left"><h2 class="title is-4">Posts</h2></div>
+            <div class="level-right">
+              <button class="button is-small" type="button" (click)="addPost()">
+                + Add post
+              </button>
+            </div>
+          </div>
+          @for (group of postControls; track group) {
+            <div class="entry" [formGroup]="group">
+              <div class="columns">
+                <div class="column is-two-thirds">
+                  <label class="label">Title</label>
+                  <input
+                    class="input"
+                    type="text"
+                    formControlName="title"
+                    (blur)="suggestUrl(group)"
+                  />
+                  @if (group.get('title')?.touched && group.get('title')?.invalid) {
+                    <p class="help is-danger">Title is required.</p>
+                  }
+                </div>
+                <div class="column">
+                  <label class="label">Date</label>
+                  <input class="input" type="date" formControlName="date" />
+                  @if (group.get('date')?.touched && group.get('date')?.invalid) {
+                    <p class="help is-danger">Date is required.</p>
+                  }
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">URL (route path)</label>
+                <input
+                  class="input"
+                  type="text"
+                  formControlName="url"
+                  placeholder="/blog/my-post-slug"
+                />
+                @if (group.get('url')?.touched && group.get('url')?.invalid) {
+                  <p class="help is-danger">Must look like /blog/my-post-slug.</p>
+                }
+              </div>
+              <div class="field">
+                <label class="label">Summary</label>
+                <textarea class="textarea" rows="2" formControlName="summary"></textarea>
+              </div>
+              <div class="columns">
+                <div class="column">
+                  <label class="label">Tags (comma-separated)</label>
+                  <input
+                    class="input"
+                    type="text"
+                    formControlName="tags"
+                    placeholder="Angular, AWS"
+                  />
+                </div>
+                <div class="column">
+                  <label class="label">Eye-catch image URL (optional)</label>
+                  <input
+                    class="input"
+                    type="text"
+                    formControlName="image"
+                    placeholder="assets/blog/foo.png or https://..."
+                  />
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Content (markdown)</label>
+                <textarea
+                  class="textarea content-input"
+                  rows="14"
+                  formControlName="content"
+                  placeholder="## Heading&#10;&#10;Write the post in markdown..."
+                ></textarea>
+              </div>
+              <div class="field is-grouped">
+                <div class="control">
+                  <button class="button is-small" type="button" (click)="togglePreview(group)">
+                    {{ isPreviewOpen(group) ? 'Hide preview' : 'Show preview' }}
+                  </button>
+                </div>
+                <div class="control">
+                  <button
+                    class="button is-small is-danger is-light"
+                    type="button"
+                    (click)="removePost($index)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+              @if (isPreviewOpen(group)) {
+                <div class="preview content" [innerHTML]="previewHtml(group)"></div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control">
+            <button
+              class="button is-primary"
+              type="submit"
+              [disabled]="saving || loadFailed"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+</section>

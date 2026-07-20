@@ -60,7 +60,7 @@ export class BlogService {
    * Get all blog posts, newest first.
    */
   getAllPosts(): Observable<BlogPost[]> {
-    return this.loadBlogData().pipe(
+    return this.getBlogData().pipe(
       switchMap((data) => {
         if (!data?.posts?.length) {
           return this.loadFallbackPosts();
@@ -116,7 +116,11 @@ export class BlogService {
       .pipe(tap((saved) => this.writeCache(saved)));
   }
 
-  private loadBlogData(): Observable<BlogData | null> {
+  /**
+   * The raw blog document as stored behind the API (markdown content), or
+   * null when it could not be loaded. Used by the admin blog editor.
+   */
+  getBlogData(): Observable<BlogData | null> {
     const cached = this.readCache();
     if (cached) {
       return of(cached);
