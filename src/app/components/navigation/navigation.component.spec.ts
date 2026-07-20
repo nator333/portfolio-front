@@ -40,6 +40,7 @@ describe("NavigationComponent", () => {
     const hrefs = renderedHrefs();
     expect(hrefs).not.toContain("/cv-editor");
     expect(hrefs).not.toContain("/projects-edit");
+    expect(hrefs).not.toContain("/blog-edit");
     expect(hrefs).not.toContain("/cv-agent");
   });
 
@@ -50,6 +51,7 @@ describe("NavigationComponent", () => {
     const hrefs = renderedHrefs();
     expect(hrefs).toContain("/cv-editor");
     expect(hrefs).toContain("/projects-edit");
+    expect(hrefs).toContain("/blog-edit");
     expect(hrefs).toContain("/cv-agent");
   });
 

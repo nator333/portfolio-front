@@ -8,6 +8,12 @@
       "port": 4300
     },
     {
+      "name": "portfolio-front-dev-2",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["ng", "serve", "--port", "4310"],
+      "port": 4310
+    },
+    {
       "name": "portfolio-front-prod",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["ng", "serve", "--configuration", "production", "--port", "4301"],

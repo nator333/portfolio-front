@@ -112,6 +112,13 @@ import {
             </a>
             <a
               class="navbar-item nav-link"
+              routerLink="/blog-edit"
+              routerLinkActive="is-active"
+            >
+              Blog Edit
+            </a>
+            <a
+              class="navbar-item nav-link"
               routerLink="/cv-agent"
               routerLinkActive="is-active"
             >
