@@ -9,6 +9,19 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    # The Angular release train is version-locked: every @angular/* package
+    # must move together, and majors need `ng update` to run the migration
+    # schematics. A bare version bump breaks `npm ci` on peer resolution, so
+    # majors are handled manually instead. zone.js is pinned by @angular/core's
+    # peer range and is ignored outright (it is 0.x, so minors are breaking).
+    ignore:
+      - dependency-name: "@angular/*"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "@angular-devkit/*"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "zone.js"
     groups:
       angular:
         patterns:
