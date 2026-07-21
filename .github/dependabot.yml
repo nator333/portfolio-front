@@ -22,6 +22,11 @@ updates:
         update-types:
           - version-update:semver-major
       - dependency-name: "zone.js"
+      # @angular/compiler-cli constrains typescript to >=5.8 <6.0, so a major
+      # bump can never install. TypeScript moves with the Angular upgrade.
+      - dependency-name: "typescript"
+        update-types:
+          - version-update:semver-major
     groups:
       angular:
         patterns:
@@ -30,6 +35,12 @@ updates:
           - "@schematics/*"
           - "ng-packagr"
           - "zone.js"
+      # The core and its icon packs are a matched set: a core-only bump ships
+      # a mixed major that installs cleanly and builds green, but can break
+      # icon rendering at runtime. Keep them in one PR.
+      fontawesome:
+        patterns:
+          - "@fortawesome/*"
       karma:
         patterns:
           - "karma*"
