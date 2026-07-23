@@ -114,6 +114,20 @@
       font-size: 1.4rem;
     }
   }
+
+  /* Top-align the calendar and feed columns; the hero's global
+     `.columns { align-items: center }` would otherwise vertically centre the
+     shorter calendar against the taller feed. */
+  .activity-layout {
+    align-items: flex-start;
+
+    @media (max-width: 768px) {
+      /* Add breathing room when the feed stacks below the calendar. */
+      .column + .column {
+        margin-top: 1.5rem;
+      }
+    }
+  }
 }
 
 /* Mobile responsiveness */

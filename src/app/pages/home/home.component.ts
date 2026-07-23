@@ -3,16 +3,19 @@ import {
   OnInit,
   inject,
   signal,
+  computed,
   ChangeDetectionStrategy,
 } from "@angular/core";
 
 import { HomeService } from "../../services/home.service";
 import { BlogService } from "../../services/blog.service";
 import { ContributionCalendarComponent } from "../../components/contribution-calendar/contribution-calendar.component";
+import { ActivityFeedComponent } from "../../components/activity-feed/activity-feed.component";
 import {
-  ContributionDay,
-  toDailyContributions,
-} from "../../utils/contribution-calendar.util";
+  ActivityEntry,
+  activityToContributions,
+} from "../../models/activity-data";
+import { toIsoDate } from "../../utils/contribution-calendar.util";
 
 /**
  * Home component that displays the main landing page with personal motto and profile information.
@@ -21,7 +24,7 @@ import {
 @Component({
   selector: "app-home",
   standalone: true,
-  imports: [ContributionCalendarComponent],
+  imports: [ContributionCalendarComponent, ActivityFeedComponent],
   templateUrl: "./home.component.html",
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./home.component.scss",
@@ -44,12 +47,24 @@ export class HomeComponent implements OnInit {
     "Hiro Nakamata Signature",
   ];
 
-  // Activity plotted on the contribution calendar. Blog posts are the first
-  // source; gym sessions and GitHub activity will merge in here by simply
-  // concatenating their own ContributionDay[] (buildCalendarModel sums any
-  // overlapping dates). Empty until sources load, and left empty on failure —
-  // the calendar still renders its blank grid.
-  readonly activity = signal<ContributionDay[]>([]);
+  // Activity entries feeding both the calendar and the feed. Blog posts are
+  // the first source; gym sessions and GitHub activity will merge in here by
+  // concatenating their own entries. Empty until sources load, and left empty
+  // on failure — the calendar still renders its blank grid.
+  readonly entries = signal<ActivityEntry[]>([]);
+
+  // Per-day counts derived from the entries, for the calendar grid.
+  readonly contributions = computed(() =>
+    activityToContributions(this.entries()),
+  );
+
+  // Day currently selected on the calendar; drives the feed highlight.
+  readonly selectedDate = signal<string | null>(null);
+
+  onDaySelected(date: string): void {
+    // Toggle: clicking the highlighted day again clears the selection.
+    this.selectedDate.update((current) => (current === date ? null : date));
+  }
 
   ngOnInit(): void {
     this.homeService.getHome().subscribe({
@@ -63,12 +78,17 @@ export class HomeComponent implements OnInit {
 
     this.blogService.getAllPosts().subscribe({
       next: (posts) => {
-        this.activity.set(
-          toDailyContributions(posts.map((post) => post.date)),
+        this.entries.set(
+          posts.map((post) => ({
+            date: toIsoDate(post.date),
+            type: "blog" as const,
+            title: post.title,
+            url: post.url,
+          })),
         );
       },
       error: () => {
-        // Leave the calendar with a blank grid.
+        // Leave the calendar and feed empty.
       },
     });
   }

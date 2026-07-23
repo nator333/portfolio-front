@@ -1,0 +1,38 @@
+<section class="activity-feed" aria-label="Recent activity">
+  <h3 class="feed-heading">Recent activity</h3>
+
+  @if (sortedEntries().length === 0) {
+    <p class="feed-empty">No activity yet.</p>
+  } @else {
+    <ul class="feed-list">
+      @for (entry of sortedEntries(); track entry.date + entry.title) {
+        <li
+          class="feed-item"
+          [class.is-selected]="entry.date === selectedDate()"
+        >
+          <span class="feed-date">{{ formatDate(entry.date) }}</span>
+          <span class="feed-badge" [class]="'type-' + entry.type">{{
+            typeLabel(entry.type)
+          }}</span>
+          @if (entry.url) {
+            @if (isExternal(entry.url)) {
+              <a
+                class="feed-title"
+                [href]="entry.url"
+                target="_blank"
+                rel="noopener"
+                >{{ entry.title }}</a
+              >
+            } @else {
+              <a class="feed-title" [routerLink]="entry.url">{{
+                entry.title
+              }}</a>
+            }
+          } @else {
+            <span class="feed-title">{{ entry.title }}</span>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

@@ -56,6 +56,47 @@ describe("ContributionCalendarComponent", () => {
     );
   });
 
+  it("should emit daySelected when a day with activity is clicked", () => {
+    fixture.componentRef.setInput("contributions", [
+      { date: "2026-07-20", count: 2 },
+    ]);
+    fixture.detectChanges();
+    let emitted: string | undefined;
+    fixture.componentInstance.daySelected.subscribe((d) => (emitted = d));
+    const cell = fixture.nativeElement.querySelector(
+      "rect.level-2",
+    ) as SVGRectElement;
+    cell.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(emitted).toBe("2026-07-20");
+  });
+
+  it("should not emit daySelected for an empty day", () => {
+    fixture.componentRef.setInput("contributions", []);
+    fixture.detectChanges();
+    let emitted = false;
+    fixture.componentInstance.daySelected.subscribe(() => (emitted = true));
+    const cell = fixture.nativeElement.querySelector(
+      "rect.level-0",
+    ) as SVGRectElement;
+    cell.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(emitted).toBeFalse();
+  });
+
+  it("should mark the selected day's cell", () => {
+    fixture.componentRef.setInput("contributions", [
+      { date: "2026-07-20", count: 1 },
+    ]);
+    fixture.componentRef.setInput("selectedDate", "2026-07-20");
+    fixture.detectChanges();
+    const selected = fixture.nativeElement.querySelectorAll(
+      "rect.day-cell.is-selected",
+    );
+    expect(selected.length).toBe(1);
+    expect(selected[0].querySelector("title")?.textContent).toContain(
+      "2026-07-20",
+    );
+  });
+
   it("should use the configured noun in the summary and tooltips", () => {
     fixture.componentRef.setInput("weeks", 53);
     fixture.componentRef.setInput("mobileWeeks", 53);

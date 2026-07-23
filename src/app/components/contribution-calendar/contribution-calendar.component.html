@@ -45,12 +45,15 @@
             <rect
               class="day-cell"
               [class]="'level-' + cell.level"
+              [class.has-activity]="cell.count > 0"
+              [class.is-selected]="cell.date === selectedDate()"
               [attr.x]="columnX(wi)"
               [attr.y]="rowY($index)"
               [attr.width]="cellSize"
               [attr.height]="cellSize"
               rx="2"
               ry="2"
+              (click)="onCellClick(cell)"
             >
               <title>{{ tooltip(cell) }}</title>
             </rect>

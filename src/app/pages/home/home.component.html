@@ -55,6 +55,20 @@
 <section class="section activity-section">
   <div class="container">
     <h2 class="activity-heading">Activity</h2>
-    <app-contribution-calendar [contributions]="activity()" />
+    <div class="columns activity-layout">
+      <div class="column is-two-thirds">
+        <app-contribution-calendar
+          [contributions]="contributions()"
+          [selectedDate]="selectedDate()"
+          (daySelected)="onDaySelected($event)"
+        />
+      </div>
+      <div class="column is-one-third">
+        <app-activity-feed
+          [entries]="entries()"
+          [selectedDate]="selectedDate()"
+        />
+      </div>
+    </div>
   </div>
 </section>

@@ -1,6 +1,7 @@
 import {
   Component,
   input,
+  output,
   computed,
   signal,
   inject,
@@ -61,6 +62,10 @@ export class ContributionCalendarComponent {
   readonly end = input<Date>(new Date());
   /** Noun used in tooltips, e.g. "3 posts on 2026-01-05". */
   readonly noun = input<string>("contribution");
+  /** Currently selected day (YYYY-MM-DD); its cell gets a highlight ring. */
+  readonly selectedDate = input<string | null>(null);
+  /** Emits the date of a clicked day that has activity. */
+  readonly daySelected = output<string>();
 
   readonly cellSize = CELL_SIZE;
   readonly step = STEP;
@@ -125,6 +130,13 @@ export class ContributionCalendarComponent {
   /** Y of a day row's top edge. */
   rowY(dayIndex: number): number {
     return this.topPad + dayIndex * this.step;
+  }
+
+  /** Emit a selection for days that actually have activity. */
+  onCellClick(cell: CalendarCell): void {
+    if (cell.count > 0) {
+      this.daySelected.emit(cell.date);
+    }
   }
 
   /** Human-readable tooltip for a cell. */

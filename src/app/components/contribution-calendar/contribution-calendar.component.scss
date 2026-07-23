@@ -50,6 +50,16 @@ $gold: #ffd700;
   &.level-4 {
     fill: $gold;
   }
+
+  /* Only days with activity are clickable/selectable. */
+  &.has-activity {
+    cursor: pointer;
+  }
+
+  &.is-selected {
+    stroke: #ffffff;
+    stroke-width: 1.5px;
+  }
 }
 
 .calendar-legend {
