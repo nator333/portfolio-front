@@ -138,7 +138,9 @@
 
       .navbar-start .social-icons {
         justify-content: center;
-        padding: 1rem;
+        /* Match the brand bar's height (3.25rem) rather than padding the row
+           out; align-items:center (base rule) keeps the icons centred. */
+        min-height: 3.25rem;
         border-bottom: 1px dashed #000000;
         margin-bottom: 0.5rem;
       }
