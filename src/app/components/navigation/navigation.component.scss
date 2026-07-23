@@ -94,6 +94,22 @@
 
 /* Mobile styles */
 @media screen and (max-width: 1023px) {
+  /* Below Bulma's navbar breakpoint the navbar is display:block, so the
+     brand no longer stretches to the bar. Constrain it to the bar's inner
+     height (between the dashed borders) and strip the default navbar-item
+     line-height/padding so the oversized brand text centers instead of
+     spilling past the bottom border. */
+  .navbar .navbar-brand {
+    min-height: 0;
+    height: 100%;
+
+    .brand-text {
+      padding-top: 0;
+      padding-bottom: 0;
+      line-height: 1;
+    }
+  }
+
   .navbar-menu {
     &.is-active {
       background-color: #FFD700;
