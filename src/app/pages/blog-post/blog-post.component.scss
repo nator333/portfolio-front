@@ -57,11 +57,6 @@
   line-height: 1.8;
   font-size: 1.1rem;
 
-  // Styles for ngx-markdown component
-  ::ng-deep markdown {
-    color: #ffffff;
-  }
-
   h1, h2, h3, h4, h5, h6 {
     color: #ffffff;
     margin-top: 2rem;
