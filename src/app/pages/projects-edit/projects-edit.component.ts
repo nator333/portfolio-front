@@ -1,18 +1,23 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { HeroComponent } from '../../components/hero/hero.component';
-import { AuthService } from '../../services/auth.service';
-import { ProjectsService } from '../../services/projects.service';
-import { ProjectEntry, ProjectsData } from '../../models/project-data';
+import { Component, inject, OnInit } from "@angular/core";
+
+import { Router } from "@angular/router";
+import {
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+} from "@angular/forms";
+import { HeroComponent } from "../../components/hero/hero.component";
+import { AuthService } from "../../services/auth.service";
+import { ProjectsService } from "../../services/projects.service";
+import { ProjectEntry, ProjectsData } from "../../models/project-data";
 
 @Component({
-  selector: 'app-projects-edit',
+  selector: "app-projects-edit",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HeroComponent],
-  templateUrl: './projects-edit.component.html',
-  styleUrl: './projects-edit.component.scss',
+  imports: [ReactiveFormsModule, HeroComponent],
+  templateUrl: "./projects-edit.component.html",
+  styleUrl: "./projects-edit.component.scss",
 })
 export class ProjectsEditComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -22,8 +27,8 @@ export class ProjectsEditComponent implements OnInit {
 
   loading = false;
   saving = false;
-  errorMessage = '';
-  successMessage = '';
+  errorMessage = "";
+  successMessage = "";
 
   projectsForm: FormGroup = this.fb.group({
     projects: this.fb.array([]),
@@ -34,39 +39,42 @@ export class ProjectsEditComponent implements OnInit {
   }
 
   get projectControls(): FormGroup[] {
-    return (this.projectsForm.get('projects') as FormArray).controls as FormGroup[];
+    return (this.projectsForm.get("projects") as FormArray)
+      .controls as FormGroup[];
   }
 
   logout(): void {
     this.authService.logout();
-    this.router.navigateByUrl('/home');
+    this.router.navigateByUrl("/home");
   }
 
   private createProjectGroup(entry?: ProjectEntry): FormGroup {
     return this.fb.group({
-      title: [entry?.title ?? ''],
-      tech: [entry?.tech ?? ''],
-      description: [entry?.description ?? ''],
-      image: [entry?.image ?? ''],
-      tags: [entry?.tags?.join(', ') ?? ''],
-      liveUrl: [entry?.liveUrl ?? ''],
-      githubUrl: [entry?.githubUrl ?? ''],
+      title: [entry?.title ?? ""],
+      tech: [entry?.tech ?? ""],
+      description: [entry?.description ?? ""],
+      image: [entry?.image ?? ""],
+      tags: [entry?.tags?.join(", ") ?? ""],
+      liveUrl: [entry?.liveUrl ?? ""],
+      githubUrl: [entry?.githubUrl ?? ""],
     });
   }
 
   addProject(): void {
-    (this.projectsForm.get('projects') as FormArray).push(this.createProjectGroup());
+    (this.projectsForm.get("projects") as FormArray).push(
+      this.createProjectGroup(),
+    );
   }
 
   removeProject(index: number): void {
-    (this.projectsForm.get('projects') as FormArray).removeAt(index);
+    (this.projectsForm.get("projects") as FormArray).removeAt(index);
   }
 
   private loadProjects(): void {
     this.loading = true;
     this.projectsService.getProjects().subscribe({
       next: (data) => {
-        const projectsArray = this.projectsForm.get('projects') as FormArray;
+        const projectsArray = this.projectsForm.get("projects") as FormArray;
         projectsArray.clear();
         (data.projects ?? []).forEach((entry) =>
           projectsArray.push(this.createProjectGroup(entry)),
@@ -74,7 +82,7 @@ export class ProjectsEditComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.errorMessage = 'Could not load existing projects.';
+        this.errorMessage = "Could not load existing projects.";
         this.loading = false;
       },
     });
@@ -99,7 +107,7 @@ export class ProjectsEditComponent implements OnInit {
         description: entry.description,
         image: entry.image,
         tags: entry.tags
-          .split(',')
+          .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean),
         liveUrl: entry.liveUrl,
@@ -110,16 +118,16 @@ export class ProjectsEditComponent implements OnInit {
 
   save(): void {
     this.saving = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.errorMessage = "";
+    this.successMessage = "";
     this.projectsService.updateProjects(this.buildProjectsData()).subscribe({
       next: () => {
         this.saving = false;
-        this.successMessage = 'Projects saved.';
+        this.successMessage = "Projects saved.";
       },
       error: () => {
         this.saving = false;
-        this.errorMessage = 'Could not save projects.';
+        this.errorMessage = "Could not save projects.";
       },
     });
   }

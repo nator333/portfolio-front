@@ -1,10 +1,9 @@
 import { Component, input } from "@angular/core";
-import { CommonModule } from "@angular/common";
 
 @Component({
   selector: "app-hero",
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <section class="hero is-fullheight" [class]="heroClass()">
       <div class="hero-body">

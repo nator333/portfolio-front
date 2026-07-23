@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
+
 import { HeroComponent } from "../../components/hero/hero.component";
 import { CvService } from "../../services/cv.service";
 import {
@@ -15,7 +15,16 @@ const FALLBACK_SUMMARY = "";
 const FALLBACK_SKILLS: CvSkillCategory[] = [
   {
     category: "Languages",
-    skills: ["HTML5", "SASS", "TypeScript", "JavaScript", "Kotlin", "Java", "Swift", "Objective-C"],
+    skills: [
+      "HTML5",
+      "SASS",
+      "TypeScript",
+      "JavaScript",
+      "Kotlin",
+      "Java",
+      "Swift",
+      "Objective-C",
+    ],
   },
   {
     category: "Frameworks",
@@ -23,21 +32,45 @@ const FALLBACK_SKILLS: CvSkillCategory[] = [
   },
   {
     category: "Cloud Computing Platform",
-    skills: ["EC2", "S3", "Lambda", "API Gateway", "Kinesis", "Redshift", "GCE", "Firebase"],
+    skills: [
+      "EC2",
+      "S3",
+      "Lambda",
+      "API Gateway",
+      "Kinesis",
+      "Redshift",
+      "GCE",
+      "Firebase",
+    ],
   },
-  { category: "Database", skills: ["MySQL", "PostgreSQL", "SQLite", "Neo4j", "DynamoDB"] },
+  {
+    category: "Database",
+    skills: ["MySQL", "PostgreSQL", "SQLite", "Neo4j", "DynamoDB"],
+  },
   {
     category: "Tools",
-    skills: ["npm", "Gradle", "Maven", "Docker", "IntelliJ Ultimate", "Visual Studio Code", "Git"],
+    skills: [
+      "npm",
+      "Gradle",
+      "Maven",
+      "Docker",
+      "IntelliJ Ultimate",
+      "Visual Studio Code",
+      "Git",
+    ],
   },
 ];
 
 @Component({
   selector: "app-profile",
   standalone: true,
-  imports: [CommonModule, HeroComponent],
+  imports: [HeroComponent],
   template: `
-    <app-hero title="Profile" subtitle="About Hiro Nakamata" [showContent]="true">
+    <app-hero
+      title="Profile"
+      subtitle="About Hiro Nakamata"
+      [showContent]="true"
+    >
       <button
         class="button is-primary"
         type="button"
@@ -89,7 +122,9 @@ const FALLBACK_SKILLS: CvSkillCategory[] = [
                   <span class="entry-role">{{ entry.role }}</span>
                   <span class="entry-company">{{ entry.company }}</span>
                 </div>
-                <p class="entry-dates">{{ entry.startDate }} – {{ entry.endDate }}</p>
+                <p class="entry-dates">
+                  {{ entry.startDate }} – {{ entry.endDate }}
+                </p>
                 @if (entry.bullets.length) {
                   <ul class="entry-bullets">
                     @for (bullet of entry.bullets; track bullet) {
@@ -99,7 +134,8 @@ const FALLBACK_SKILLS: CvSkillCategory[] = [
                 }
                 @if (entry.techstack) {
                   <p class="entry-techstack">
-                    <span class="techstack-label">Techstack:</span> {{ entry.techstack }}
+                    <span class="techstack-label">Techstack:</span>
+                    {{ entry.techstack }}
                   </p>
                 }
               </div>
@@ -116,7 +152,9 @@ const FALLBACK_SKILLS: CvSkillCategory[] = [
                   <span class="entry-role">{{ entry.degree }}</span>
                   <span class="entry-company">{{ entry.institution }}</span>
                 </div>
-                <p class="entry-dates">{{ entry.startDate }} – {{ entry.endDate }}</p>
+                <p class="entry-dates">
+                  {{ entry.startDate }} – {{ entry.endDate }}
+                </p>
               </div>
             }
           </div>

@@ -1,10 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { HeroComponent } from '../../components/hero/hero.component';
-import { AuthService } from '../../services/auth.service';
+import { Component, inject, OnInit } from "@angular/core";
 
-const RETURN_URL_STORAGE_KEY = 'cv-editor-return-url';
+import { ActivatedRoute, Router } from "@angular/router";
+import { HeroComponent } from "../../components/hero/hero.component";
+import { AuthService } from "../../services/auth.service";
+
+const RETURN_URL_STORAGE_KEY = "cv-editor-return-url";
 
 /**
  * Single sign-in entry point and the registered Cognito OAuth callback.
@@ -13,9 +13,9 @@ const RETURN_URL_STORAGE_KEY = 'cv-editor-return-url';
  * sessionStorage because Cognito only echoes back the ?code= parameter.
  */
 @Component({
-  selector: 'app-login',
+  selector: "app-login",
   standalone: true,
-  imports: [CommonModule, HeroComponent],
+  imports: [HeroComponent],
   template: `
     <app-hero title="Sign in" subtitle="Admin access"></app-hero>
 
@@ -28,7 +28,11 @@ const RETURN_URL_STORAGE_KEY = 'cv-editor-return-url';
           @if (signingIn) {
             <p>Completing sign-in...</p>
           } @else {
-            <button class="button is-primary" type="button" (click)="signInWithGoogle()">
+            <button
+              class="button is-primary"
+              type="button"
+              (click)="signInWithGoogle()"
+            >
               <span class="icon"><i class="fab fa-google"></i></span>
               <span>Sign in with Google</span>
             </button>
@@ -50,11 +54,11 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
 
   signingIn = false;
-  errorMessage = '';
+  errorMessage = "";
 
   ngOnInit(): void {
     // Returning from the Cognito hosted domain after Google sign-in.
-    const code = this.route.snapshot.queryParamMap.get('code');
+    const code = this.route.snapshot.queryParamMap.get("code");
     if (code && !this.authService.isAuthenticated()) {
       this.signingIn = true;
       this.authService.handleRedirectCallback(code).subscribe({
@@ -63,7 +67,7 @@ export class LoginComponent implements OnInit {
         },
         error: () => {
           this.signingIn = false;
-          this.errorMessage = 'Sign-in failed. Please try again.';
+          this.errorMessage = "Sign-in failed. Please try again.";
           this.router.navigate([], { queryParams: {}, replaceUrl: true });
         },
       });
@@ -76,19 +80,19 @@ export class LoginComponent implements OnInit {
   }
 
   signInWithGoogle(): void {
-    this.errorMessage = '';
+    this.errorMessage = "";
     sessionStorage.setItem(RETURN_URL_STORAGE_KEY, this.returnUrl());
     this.authService.signInWithGoogle();
   }
 
   private returnUrl(): string {
-    const url = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/home';
-    return url.startsWith('/') ? url : '/home';
+    const url = this.route.snapshot.queryParamMap.get("returnUrl") ?? "/home";
+    return url.startsWith("/") ? url : "/home";
   }
 }
 
 function consumeReturnUrl(): string {
-  const url = sessionStorage.getItem(RETURN_URL_STORAGE_KEY) ?? '/home';
+  const url = sessionStorage.getItem(RETURN_URL_STORAGE_KEY) ?? "/home";
   sessionStorage.removeItem(RETURN_URL_STORAGE_KEY);
-  return url.startsWith('/') ? url : '/home';
+  return url.startsWith("/") ? url : "/home";
 }
