@@ -10,7 +10,13 @@
   .navbar-brand {
     display: flex;
     align-items: center; /* Vertically center the brand */
-    
+    /* Bulma's default 3.25rem min-height is taller than this bar's inner
+       height (52px bar minus the two 3px dashed borders), which pushed the
+       brand past the bottom border. Constrain it to the bar so the brand
+       centers between the borders at every breakpoint. */
+    min-height: 0;
+    height: 100%;
+
     .brand-text {
       color: #000000 !important;
       font-size: 1.95rem; /* Increased by another 5pt (approximately 0.35rem) */
@@ -19,7 +25,12 @@
       display: flex;
       align-items: center; /* Ensure text is vertically centered */
       height: 100%;
-      
+      /* Strip the default navbar-item line-height/padding that made the
+         31px brand text overflow the bar. */
+      line-height: 1;
+      padding-top: 0;
+      padding-bottom: 0;
+
       &:hover {
         color: #000000 !important;
         background-color: rgba(0, 0, 0, 0.05);
@@ -29,13 +40,32 @@
   
   .navbar-burger {
     color: #000000;
-    
+
     &:hover {
       background-color: rgba(0, 0, 0, 0.05);
     }
-    
+
     &.is-active {
       color: #000000;
+    }
+
+    /* Lay out the three hamburger lines explicitly: evenly spaced 5px apart
+       and centred in the button. Bulma's defaults were mis-positioning them
+       here (two lines overlapping above centre, reading as "="). The 5px
+       spacing keeps the is-active X animation closing cleanly. */
+    span {
+      height: 2px;
+      width: 20px;
+      left: calc(50% - 10px);
+    }
+    span:nth-child(1) {
+      top: calc(50% - 6px);
+    }
+    span:nth-child(2) {
+      top: calc(50% - 1px);
+    }
+    span:nth-child(3) {
+      top: calc(50% + 4px);
     }
   }
   
@@ -94,16 +124,30 @@
 
 /* Mobile styles */
 @media screen and (max-width: 1023px) {
-  .navbar-menu {
-    &.is-active {
-      background-color: #FFD700;
-      border-top: 1px dashed #000000;
-    }
-    
-    .navbar-start {
-      .social-icons {
+  /* Nested under .navbar so these overrides match the specificity of the
+     base rules above (which are themselves nested under .navbar). Without
+     this, the base `.social-icons { padding: 0 1rem }` outranked the mobile
+     `padding: 1rem`, leaving the icon row with no vertical padding — cramped
+     against the top border and reading as off-centre. */
+  .navbar {
+    .navbar-menu {
+      /* Drop Bulma's 0.5rem top padding: it sits inside the social bar above
+         the icons, inflating the visible band past the brand bar and pushing
+         the icons down. Without it the band equals the row's min-height. */
+      padding-top: 0;
+
+      &.is-active {
+        background-color: #FFD700;
+        border-top: 1px dashed #000000;
+      }
+
+      .navbar-start .social-icons {
         justify-content: center;
-        padding: 1rem;
+        /* Target a visible band exactly 20% shorter than the 52px brand bar
+           (41.6px). The row overlaps the navbar's bottom border by ~2px, so
+           add that back to the 2.6rem (3.25rem × 0.8) base. align-items:
+           center (base rule) keeps the icons centred within the band. */
+        min-height: calc(2.6rem + 2px);
         border-bottom: 1px dashed #000000;
         margin-bottom: 0.5rem;
       }
