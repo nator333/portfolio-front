@@ -4,6 +4,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
+import { provideRouter } from "@angular/router";
 import { HomeComponent } from "./home.component";
 import { environment } from "../../../environments/environment";
 
@@ -16,12 +17,19 @@ describe("HomeComponent", () => {
     sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
-      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(withXhr()),
+        provideHttpClientTesting(),
+        provideRouter([]),
+      ],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    // ngOnInit also loads blog posts for the activity calendar; drain that
+    // request so the /home assertions below can focus on the hero.
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush({ posts: [] });
   });
 
   afterEach(() => {
@@ -93,5 +101,25 @@ describe("HomeComponent", () => {
     ) as HTMLAnchorElement;
     expect(link.getAttribute("href")).toBe(component.kappiInfo[0]);
     expect(link.textContent).toContain(component.kappiInfo[1]);
+  });
+
+  it("should derive calendar contributions from entries", () => {
+    flushHome(null);
+    component.entries.set([
+      { date: "2026-07-20", type: "blog", title: "a" },
+      { date: "2026-07-20", type: "blog", title: "b" },
+    ]);
+    expect(component.contributions()).toEqual([
+      { date: "2026-07-20", count: 2 },
+    ]);
+  });
+
+  it("should toggle the selected date on repeated selection", () => {
+    flushHome(null);
+    expect(component.selectedDate()).toBeNull();
+    component.onDaySelected("2026-07-20");
+    expect(component.selectedDate()).toBe("2026-07-20");
+    component.onDaySelected("2026-07-20");
+    expect(component.selectedDate()).toBeNull();
   });
 });
