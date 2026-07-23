@@ -10,7 +10,13 @@
   .navbar-brand {
     display: flex;
     align-items: center; /* Vertically center the brand */
-    
+    /* Bulma's default 3.25rem min-height is taller than this bar's inner
+       height (52px bar minus the two 3px dashed borders), which pushed the
+       brand past the bottom border. Constrain it to the bar so the brand
+       centers between the borders at every breakpoint. */
+    min-height: 0;
+    height: 100%;
+
     .brand-text {
       color: #000000 !important;
       font-size: 1.95rem; /* Increased by another 5pt (approximately 0.35rem) */
@@ -19,7 +25,12 @@
       display: flex;
       align-items: center; /* Ensure text is vertically centered */
       height: 100%;
-      
+      /* Strip the default navbar-item line-height/padding that made the
+         31px brand text overflow the bar. */
+      line-height: 1;
+      padding-top: 0;
+      padding-bottom: 0;
+
       &:hover {
         color: #000000 !important;
         background-color: rgba(0, 0, 0, 0.05);
@@ -94,22 +105,6 @@
 
 /* Mobile styles */
 @media screen and (max-width: 1023px) {
-  /* Below Bulma's navbar breakpoint the navbar is display:block, so the
-     brand no longer stretches to the bar. Constrain it to the bar's inner
-     height (between the dashed borders) and strip the default navbar-item
-     line-height/padding so the oversized brand text centers instead of
-     spilling past the bottom border. */
-  .navbar .navbar-brand {
-    min-height: 0;
-    height: 100%;
-
-    .brand-text {
-      padding-top: 0;
-      padding-bottom: 0;
-      line-height: 1;
-    }
-  }
-
   .navbar-menu {
     &.is-active {
       background-color: #FFD700;
