@@ -1,10 +1,9 @@
-import { Component, input } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, input, ChangeDetectionStrategy } from "@angular/core";
 
 @Component({
   selector: "app-hero",
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <section class="hero is-fullheight" [class]="heroClass()">
       <div class="hero-body">
@@ -26,6 +25,7 @@ import { CommonModule } from "@angular/common";
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./hero.component.scss",
 })
 export class HeroComponent {

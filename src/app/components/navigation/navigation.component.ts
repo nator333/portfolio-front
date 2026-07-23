@@ -1,7 +1,12 @@
-import { Component, inject, signal } from "@angular/core";
+import {
+  Component,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { RouterLink, RouterLinkActive } from "@angular/router";
-import { CommonModule } from "@angular/common";
+
 import { AuthService } from "../../services/auth.service";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import {
@@ -13,7 +18,7 @@ import {
 @Component({
   selector: "app-navigation",
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, FaIconComponent],
+  imports: [RouterLink, RouterLinkActive, FaIconComponent],
   template: `
     <nav
       class="navbar is-fixed-top"
@@ -129,6 +134,7 @@ import {
       </div>
     </nav>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./navigation.component.scss",
 })
 export class NavigationComponent {

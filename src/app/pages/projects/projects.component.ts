@@ -1,5 +1,5 @@
-import { Component, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
+
 import { HeroComponent } from "../../components/hero/hero.component";
 import { ProjectsService } from "../../services/projects.service";
 import { ProjectEntry } from "../../models/project-data";
@@ -7,7 +7,7 @@ import { ProjectEntry } from "../../models/project-data";
 @Component({
   selector: "app-projects",
   standalone: true,
-  imports: [CommonModule, HeroComponent],
+  imports: [HeroComponent],
   template: `
     <app-hero title="Projects" subtitle="My Work & Contributions"> </app-hero>
 
@@ -70,6 +70,7 @@ import { ProjectEntry } from "../../models/project-data";
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./projects.component.scss",
 })
 export class ProjectsComponent implements OnInit {

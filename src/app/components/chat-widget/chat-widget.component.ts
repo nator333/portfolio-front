@@ -3,11 +3,16 @@ import {
   ElementRef,
   ViewChild,
   signal,
+  ChangeDetectionStrategy,
 } from "@angular/core";
-import { CommonModule } from "@angular/common";
+
 import { FormsModule } from "@angular/forms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
-import { faComments, faPaperPlane, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faComments,
+  faPaperPlane,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChatService } from "../../services/chat.service";
 import { ChatMessage, CHAT_MAX_MESSAGE_CHARS } from "../../models/chat-data";
@@ -15,10 +20,14 @@ import { ChatMessage, CHAT_MAX_MESSAGE_CHARS } from "../../models/chat-data";
 @Component({
   selector: "app-chat-widget",
   standalone: true,
-  imports: [CommonModule, FormsModule, FaIconComponent],
+  imports: [FormsModule, FaIconComponent],
   template: `
     @if (isOpen()) {
-      <div class="chat-panel" role="dialog" aria-label="Portfolio assistant chat">
+      <div
+        class="chat-panel"
+        role="dialog"
+        aria-label="Portfolio assistant chat"
+      >
         <header class="chat-header">
           <span class="chat-title">Ask about Hiro</span>
           <button
@@ -84,6 +93,7 @@ import { ChatMessage, CHAT_MAX_MESSAGE_CHARS } from "../../models/chat-data";
       <fa-icon [icon]="isOpen() ? closeIcon : chatIcon" size="lg"></fa-icon>
     </button>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./chat-widget.component.scss",
 })
 export class ChatWidgetComponent {
@@ -113,7 +123,10 @@ export class ChatWidgetComponent {
     }
     this.draft = "";
     this.errorMessage.set("");
-    this.messages.update((all) => [...all, { role: "user", content: question }]);
+    this.messages.update((all) => [
+      ...all,
+      { role: "user", content: question },
+    ]);
     this.isLoading.set(true);
     this.scrollToBottom();
 

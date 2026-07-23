@@ -1,4 +1,11 @@
-import { Component, ElementRef, inject, signal, ViewChild } from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  inject,
+  signal,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { Observable } from "rxjs";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -22,76 +29,84 @@ interface AgentTurn extends AgentMessage {
   standalone: true,
   imports: [CommonModule, FormsModule, HeroComponent],
   template: `
-    <app-hero title="CV Agent" subtitle="Your private editing copilot"></app-hero>
+    <app-hero
+      title="CV Agent"
+      subtitle="Your private editing copilot"
+    ></app-hero>
 
     <section class="section">
       <div class="container agent-container">
         <div class="agent-chat" #conversation>
-            @if (turns().length === 0) {
-              <p class="agent-hint">
-                Ask me to rewrite, tighten, or extend your CV or projects —
-                e.g. "shorten my summary to two sentences".
-              </p>
-            }
-            @for (turn of turns(); track $index) {
-              <div class="agent-bubble" [class.is-user]="turn.role === 'user'">
-                {{ turn.content }}
-                @if (turn.proposal) {
-                  <div class="agent-proposal">
-                    <p class="proposal-label">
-                      Proposed {{ turn.proposal.target === "cv" ? "CV" : "projects" }} update
-                    </p>
-                    <details>
-                      <summary>Show JSON</summary>
-                      <pre>{{ turn.proposal.data | json }}</pre>
-                    </details>
-                    <button
-                      class="button is-primary is-small"
-                      type="button"
-                      [disabled]="applying()"
-                      (click)="apply(turn.proposal)"
-                    >
-                      {{ applying() ? "Applying…" : "Apply" }}
-                    </button>
-                  </div>
-                }
-              </div>
-            }
-            @if (isLoading()) {
-              <div class="agent-bubble is-typing" aria-label="Agent is thinking">
-                <span></span><span></span><span></span>
-              </div>
-            }
-            @if (errorMessage) {
-              <p class="agent-error">{{ errorMessage }}</p>
-            }
-            @if (successMessage) {
-              <p class="agent-success">{{ successMessage }}</p>
-            }
-          </div>
+          @if (turns().length === 0) {
+            <p class="agent-hint">
+              Ask me to rewrite, tighten, or extend your CV or projects — e.g.
+              "shorten my summary to two sentences".
+            </p>
+          }
+          @for (turn of turns(); track $index) {
+            <div class="agent-bubble" [class.is-user]="turn.role === 'user'">
+              {{ turn.content }}
+              @if (turn.proposal) {
+                <div class="agent-proposal">
+                  <p class="proposal-label">
+                    Proposed
+                    {{
+                      turn.proposal.target === "cv" ? "CV" : "projects"
+                    }}
+                    update
+                  </p>
+                  <details>
+                    <summary>Show JSON</summary>
+                    <pre>{{ turn.proposal.data | json }}</pre>
+                  </details>
+                  <button
+                    class="button is-primary is-small"
+                    type="button"
+                    [disabled]="applying()"
+                    (click)="apply(turn.proposal)"
+                  >
+                    {{ applying() ? "Applying…" : "Apply" }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          @if (isLoading()) {
+            <div class="agent-bubble is-typing" aria-label="Agent is thinking">
+              <span></span><span></span><span></span>
+            </div>
+          }
+          @if (errorMessage) {
+            <p class="agent-error">{{ errorMessage }}</p>
+          }
+          @if (successMessage) {
+            <p class="agent-success">{{ successMessage }}</p>
+          }
+        </div>
 
-          <form class="agent-input-row" (ngSubmit)="send()">
-            <input
-              class="agent-input"
-              type="text"
-              name="agent-question"
-              [(ngModel)]="draft"
-              [maxlength]="maxMessageChars"
-              [disabled]="isLoading()"
-              placeholder="What should we improve?"
-              autocomplete="off"
-            />
-            <button
-              class="button is-primary"
-              type="submit"
-              [disabled]="isLoading() || !draft.trim()"
-            >
-              Send
-            </button>
-          </form>
+        <form class="agent-input-row" (ngSubmit)="send()">
+          <input
+            class="agent-input"
+            type="text"
+            name="agent-question"
+            [(ngModel)]="draft"
+            [maxlength]="maxMessageChars"
+            [disabled]="isLoading()"
+            placeholder="What should we improve?"
+            autocomplete="off"
+          />
+          <button
+            class="button is-primary"
+            type="submit"
+            [disabled]="isLoading() || !draft.trim()"
+          >
+            Send
+          </button>
+        </form>
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./cv-agent.component.scss",
 })
 export class CvAgentComponent {
@@ -122,12 +137,19 @@ export class CvAgentComponent {
     this.isLoading.set(true);
     this.scrollToBottom();
 
-    const history: AgentMessage[] = this.turns().map(({ role, content }) => ({ role, content }));
+    const history: AgentMessage[] = this.turns().map(({ role, content }) => ({
+      role,
+      content,
+    }));
     this.agentService.sendMessage(history).subscribe({
       next: (response) => {
         this.turns.update((all) => [
           ...all,
-          { role: "assistant", content: response.reply, proposal: response.proposal },
+          {
+            role: "assistant",
+            content: response.reply,
+            proposal: response.proposal,
+          },
         ]);
         this.isLoading.set(false);
         this.scrollToBottom();

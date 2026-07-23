@@ -1,10 +1,9 @@
-import { Component } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 
 @Component({
   selector: "app-footer",
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <footer class="footer has-background-dark">
       <div class="content has-text-centered">
@@ -37,6 +36,7 @@ import { CommonModule } from "@angular/common";
       </div>
     </footer>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./footer.component.scss",
 })
 export class FooterComponent {

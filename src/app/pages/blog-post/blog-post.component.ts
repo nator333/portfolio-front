@@ -1,12 +1,17 @@
-import { Component, OnInit, AfterViewChecked } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
-import { BlogService, BlogPost } from '../../services/blog.service';
-import * as Prism from 'prismjs';
+import {
+  Component,
+  OnInit,
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { ActivatedRoute, Router } from "@angular/router";
+import { HttpClientModule } from "@angular/common/http";
+import { BlogService, BlogPost } from "../../services/blog.service";
+import * as Prism from "prismjs";
 
 @Component({
-  selector: 'app-blog-post',
+  selector: "app-blog-post",
   standalone: true,
   imports: [CommonModule, HttpClientModule],
   template: `
@@ -28,7 +33,7 @@ import * as Prism from 'prismjs';
             <div class="blog-post-header">
               <h1 class="title is-2 has-text-white">{{ post.title }}</h1>
               <p class="subtitle is-5 has-text-grey-light">
-                {{ post.date | date:'longDate' }}
+                {{ post.date | date: "longDate" }}
               </p>
               <div class="tags">
                 @for (tag of post.tags; track tag) {
@@ -40,7 +45,11 @@ import * as Prism from 'prismjs';
             @if (post.image) {
               <div class="blog-post-image">
                 <figure class="image is-16by9">
-                  <img [src]="post.image" [alt]="post.title" class="eye-catch-image" />
+                  <img
+                    [src]="post.image"
+                    [alt]="post.title"
+                    class="eye-catch-image"
+                  />
                 </figure>
               </div>
             }
@@ -60,18 +69,19 @@ import * as Prism from 'prismjs';
       </div>
     </section>
   `,
-  styleUrl: './blog-post.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: "./blog-post.component.scss",
 })
 export class BlogPostComponent implements OnInit, AfterViewChecked {
   post: BlogPost | undefined;
   loading = true;
-  error = '';
+  error = "";
   private highlightedCode = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private blogService: BlogService
+    private blogService: BlogService,
   ) {}
 
   ngOnInit(): void {
@@ -79,9 +89,9 @@ export class BlogPostComponent implements OnInit, AfterViewChecked {
     window.scrollTo(0, 0);
 
     // Get the URL parameter
-    const url = this.route.snapshot.paramMap.get('url');
+    const url = this.route.snapshot.paramMap.get("url");
     if (!url) {
-      this.error = 'Blog post not found';
+      this.error = "Blog post not found";
       this.loading = false;
       return;
     }
@@ -93,20 +103,20 @@ export class BlogPostComponent implements OnInit, AfterViewChecked {
           this.post = post;
           this.loading = false;
         } else {
-          this.error = 'Blog post not found';
+          this.error = "Blog post not found";
           this.loading = false;
         }
       },
       error: (err) => {
-        console.error('Error loading blog post:', err);
-        this.error = 'Error loading blog post';
+        console.error("Error loading blog post:", err);
+        this.error = "Error loading blog post";
         this.loading = false;
-      }
+      },
     });
   }
 
   goBack(): void {
-    this.router.navigate(['/blog']);
+    this.router.navigate(["/blog"]);
   }
 
   // Initialize Prism.js after the view is rendered

@@ -1,25 +1,31 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+
+import { Router } from "@angular/router";
 import {
   FormArray,
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
-} from '@angular/forms';
-import { HeroComponent } from '../../components/hero/hero.component';
-import { AuthService } from '../../services/auth.service';
-import { BlogService } from '../../services/blog.service';
-import { BlogData, BlogPostEntry } from '../../models/blog-data';
-import { renderBlogMarkdown } from '../../utils/blog-markdown.util';
+} from "@angular/forms";
+import { HeroComponent } from "../../components/hero/hero.component";
+import { AuthService } from "../../services/auth.service";
+import { BlogService } from "../../services/blog.service";
+import { BlogData, BlogPostEntry } from "../../models/blog-data";
+import { renderBlogMarkdown } from "../../utils/blog-markdown.util";
 
 @Component({
-  selector: 'app-blog-edit',
+  selector: "app-blog-edit",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HeroComponent],
-  templateUrl: './blog-edit.component.html',
-  styleUrl: './blog-edit.component.scss',
+  imports: [ReactiveFormsModule, HeroComponent],
+  templateUrl: "./blog-edit.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: "./blog-edit.component.scss",
 })
 export class BlogEditComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -35,8 +41,8 @@ export class BlogEditComponent implements OnInit {
    * followed by Save would wipe the existing posts.
    */
   loadFailed = false;
-  errorMessage = '';
-  successMessage = '';
+  errorMessage = "";
+  successMessage = "";
 
   blogForm: FormGroup = this.fb.group({
     posts: this.fb.array([]),
@@ -50,38 +56,38 @@ export class BlogEditComponent implements OnInit {
   }
 
   get postControls(): FormGroup[] {
-    return (this.blogForm.get('posts') as FormArray).controls as FormGroup[];
+    return (this.blogForm.get("posts") as FormArray).controls as FormGroup[];
   }
 
   logout(): void {
     this.authService.logout();
-    this.router.navigateByUrl('/home');
+    this.router.navigateByUrl("/home");
   }
 
   addPost(): void {
     // Newest posts go on top in the editor, matching the public list order.
-    (this.blogForm.get('posts') as FormArray).insert(0, this.createPostGroup());
+    (this.blogForm.get("posts") as FormArray).insert(0, this.createPostGroup());
   }
 
   removePost(index: number): void {
-    const posts = this.blogForm.get('posts') as FormArray;
+    const posts = this.blogForm.get("posts") as FormArray;
     this.openPreviews.delete(posts.at(index) as FormGroup);
     posts.removeAt(index);
   }
 
   /** Prefills the url from the title for new posts, once the title is typed. */
   suggestUrl(group: FormGroup): void {
-    const url = (group.get('url')?.value as string) ?? '';
-    const title = (group.get('title')?.value as string) ?? '';
+    const url = (group.get("url")?.value as string) ?? "";
+    const title = (group.get("title")?.value as string) ?? "";
     if (url || !title) {
       return;
     }
     const slug = title
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
     if (slug) {
-      group.get('url')?.setValue(`/blog/${slug}`);
+      group.get("url")?.setValue(`/blog/${slug}`);
     }
   }
 
@@ -98,50 +104,51 @@ export class BlogEditComponent implements OnInit {
   }
 
   previewHtml(group: FormGroup): string {
-    return renderBlogMarkdown((group.get('content')?.value as string) ?? '');
+    return renderBlogMarkdown((group.get("content")?.value as string) ?? "");
   }
 
   save(): void {
     if (this.loadFailed) {
-      this.errorMessage = 'Reload the page first — the saved blog could not be loaded.';
+      this.errorMessage =
+        "Reload the page first — the saved blog could not be loaded.";
       return;
     }
     if (this.blogForm.invalid) {
       this.blogForm.markAllAsTouched();
-      this.errorMessage = 'Fix the highlighted fields before saving.';
+      this.errorMessage = "Fix the highlighted fields before saving.";
       return;
     }
     this.saving = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.errorMessage = "";
+    this.successMessage = "";
     this.blogService.updateBlog(this.buildBlogData()).subscribe({
       next: () => {
         this.saving = false;
-        this.successMessage = 'Blog saved.';
+        this.successMessage = "Blog saved.";
       },
       error: () => {
         this.saving = false;
-        this.errorMessage = 'Could not save the blog.';
+        this.errorMessage = "Could not save the blog.";
       },
     });
   }
 
   private createPostGroup(entry?: BlogPostEntry): FormGroup {
     return this.fb.group({
-      title: [entry?.title ?? '', Validators.required],
+      title: [entry?.title ?? "", Validators.required],
       // The date input works with plain yyyy-MM-dd values.
       date: [
         (entry?.date ?? new Date().toISOString()).slice(0, 10),
         Validators.required,
       ],
-      summary: [entry?.summary ?? ''],
-      tags: [entry?.tags?.join(', ') ?? ''],
+      summary: [entry?.summary ?? ""],
+      tags: [entry?.tags?.join(", ") ?? ""],
       url: [
-        entry?.url ?? '',
+        entry?.url ?? "",
         [Validators.required, Validators.pattern(/^\/blog\/\S+$/)],
       ],
-      image: [entry?.image ?? ''],
-      content: [entry?.content ?? ''],
+      image: [entry?.image ?? ""],
+      content: [entry?.content ?? ""],
     });
   }
 
@@ -150,12 +157,12 @@ export class BlogEditComponent implements OnInit {
     this.blogService.getBlogData().subscribe((data) => {
       if (!data) {
         this.loadFailed = true;
-        this.errorMessage = 'Could not load the saved blog.';
+        this.errorMessage = "Could not load the saved blog.";
         this.loading = false;
         return;
       }
       this.loadFailed = false;
-      const posts = this.blogForm.get('posts') as FormArray;
+      const posts = this.blogForm.get("posts") as FormArray;
       posts.clear();
       [...data.posts]
         .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
@@ -182,7 +189,7 @@ export class BlogEditComponent implements OnInit {
         date: entry.date,
         summary: entry.summary.trim(),
         tags: entry.tags
-          .split(',')
+          .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean),
         url: entry.url.trim(),

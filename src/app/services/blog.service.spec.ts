@@ -1,5 +1,5 @@
 import { TestBed } from "@angular/core/testing";
-import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClient, withXhr } from "@angular/common/http";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -38,7 +38,7 @@ describe("BlogService", () => {
     sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         {
           provide: AuthService,
@@ -92,7 +92,10 @@ describe("BlogService", () => {
 
     httpMock
       .expectOne(`${environment.apiBaseUrl}/blog`)
-      .flush({ message: "quota exceeded" }, { status: 429, statusText: "Too Many Requests" });
+      .flush(
+        { message: "quota exceeded" },
+        { status: 429, statusText: "Too Many Requests" },
+      );
 
     expect(posts).toEqual([]);
     expect(consoleError).toHaveBeenCalled();

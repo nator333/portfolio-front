@@ -1,6 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+
+import { Router } from "@angular/router";
 import {
   FormArray,
   FormBuilder,
@@ -8,22 +13,23 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
-} from '@angular/forms';
-import { HeroComponent } from '../../components/hero/hero.component';
-import { AuthService } from '../../services/auth.service';
-import { HomeService } from '../../services/home.service';
+} from "@angular/forms";
+import { HeroComponent } from "../../components/hero/hero.component";
+import { AuthService } from "../../services/auth.service";
+import { HomeService } from "../../services/home.service";
 import {
   HomeData,
   MAX_MOTTO_COUNT,
   MAX_MOTTO_LENGTH,
-} from '../../models/home-data';
+} from "../../models/home-data";
 
 @Component({
-  selector: 'app-home-edit',
+  selector: "app-home-edit",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HeroComponent],
-  templateUrl: './home-edit.component.html',
-  styleUrl: './home-edit.component.scss',
+  imports: [ReactiveFormsModule, HeroComponent],
+  templateUrl: "./home-edit.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: "./home-edit.component.scss",
 })
 export class HomeEditComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -36,8 +42,8 @@ export class HomeEditComponent implements OnInit {
 
   loading = false;
   saving = false;
-  errorMessage = '';
-  successMessage = '';
+  errorMessage = "";
+  successMessage = "";
 
   homeForm: FormGroup = this.fb.group({
     mottoes: this.fb.array([]),
@@ -57,7 +63,7 @@ export class HomeEditComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
-    this.router.navigateByUrl('/home');
+    this.router.navigateByUrl("/home");
   }
 
   addMotto(): void {
@@ -76,28 +82,28 @@ export class HomeEditComponent implements OnInit {
       return;
     }
     this.saving = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.errorMessage = "";
+    this.successMessage = "";
     const data: HomeData = {
       mottoes: this.mottoControls.map((control) => control.value.trim()),
     };
     this.homeService.updateHome(data).subscribe({
       next: () => {
         this.saving = false;
-        this.successMessage = 'Home hero saved.';
+        this.successMessage = "Home hero saved.";
       },
       error: () => {
         this.saving = false;
-        this.errorMessage = 'Could not save the home hero.';
+        this.errorMessage = "Could not save the home hero.";
       },
     });
   }
 
   private get mottoArray(): FormArray {
-    return this.homeForm.get('mottoes') as FormArray;
+    return this.homeForm.get("mottoes") as FormArray;
   }
 
-  private createMottoControl(value = ''): FormControl<string> {
+  private createMottoControl(value = ""): FormControl<string> {
     return this.fb.nonNullable.control(value, [
       Validators.required,
       Validators.maxLength(MAX_MOTTO_LENGTH),
@@ -121,7 +127,7 @@ export class HomeEditComponent implements OnInit {
       },
       error: () => {
         this.setMottoes([]);
-        this.errorMessage = 'Could not load the saved hero.';
+        this.errorMessage = "Could not load the saved hero.";
         this.loading = false;
       },
     });

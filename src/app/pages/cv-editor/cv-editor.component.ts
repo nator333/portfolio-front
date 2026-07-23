@@ -1,19 +1,30 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { HeroComponent } from '../../components/hero/hero.component';
-import { AuthService } from '../../services/auth.service';
-import { CvService } from '../../services/cv.service';
-import { CvData } from '../../models/cv-data';
-import { downloadCvPdf } from '../../utils/cv-pdf.util';
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+
+import { Router } from "@angular/router";
+import {
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+} from "@angular/forms";
+import { HeroComponent } from "../../components/hero/hero.component";
+import { AuthService } from "../../services/auth.service";
+import { CvService } from "../../services/cv.service";
+import { CvData } from "../../models/cv-data";
+import { downloadCvPdf } from "../../utils/cv-pdf.util";
 
 @Component({
-  selector: 'app-cv-editor',
+  selector: "app-cv-editor",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HeroComponent],
-  templateUrl: './cv-editor.component.html',
-  styleUrl: './cv-editor.component.scss',
+  imports: [ReactiveFormsModule, HeroComponent],
+  templateUrl: "./cv-editor.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: "./cv-editor.component.scss",
 })
 export class CvEditorComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -23,22 +34,22 @@ export class CvEditorComponent implements OnInit {
 
   loading = false;
   saving = false;
-  errorMessage = '';
-  successMessage = '';
+  errorMessage = "";
+  successMessage = "";
 
   cvForm: FormGroup = this.fb.group({
     personalInfo: this.fb.group({
-      fullName: [''],
-      title: [''],
-      email: [''],
-      phone: [''],
+      fullName: [""],
+      title: [""],
+      email: [""],
+      phone: [""],
       links: this.fb.group({
-        website: [''],
-        github: [''],
-        linkedin: [''],
+        website: [""],
+        github: [""],
+        linkedin: [""],
       }),
     }),
-    summary: [''],
+    summary: [""],
     technicalSkills: this.fb.array([]),
     experience: this.fb.array([]),
     qualifications: this.fb.array([]),
@@ -50,90 +61,106 @@ export class CvEditorComponent implements OnInit {
   }
 
   get skillCategoryControls(): FormGroup[] {
-    return (this.cvForm.get('technicalSkills') as FormArray).controls as FormGroup[];
+    return (this.cvForm.get("technicalSkills") as FormArray)
+      .controls as FormGroup[];
   }
 
   get experienceControls(): FormGroup[] {
-    return (this.cvForm.get('experience') as FormArray).controls as FormGroup[];
+    return (this.cvForm.get("experience") as FormArray).controls as FormGroup[];
   }
 
   get qualificationControls(): FormGroup[] {
-    return (this.cvForm.get('qualifications') as FormArray).controls as FormGroup[];
+    return (this.cvForm.get("qualifications") as FormArray)
+      .controls as FormGroup[];
   }
 
   get educationControls(): FormGroup[] {
-    return (this.cvForm.get('education') as FormArray).controls as FormGroup[];
+    return (this.cvForm.get("education") as FormArray).controls as FormGroup[];
   }
 
   logout(): void {
     this.authService.logout();
-    this.router.navigateByUrl('/home');
+    this.router.navigateByUrl("/home");
   }
 
-  private createSkillCategoryGroup(entry?: CvData['technicalSkills'][number]): FormGroup {
+  private createSkillCategoryGroup(
+    entry?: CvData["technicalSkills"][number],
+  ): FormGroup {
     return this.fb.group({
-      category: [entry?.category ?? ''],
-      skills: [entry?.skills?.join(', ') ?? ''],
+      category: [entry?.category ?? ""],
+      skills: [entry?.skills?.join(", ") ?? ""],
     });
   }
 
-  private createExperienceGroup(entry?: CvData['experience'][number]): FormGroup {
+  private createExperienceGroup(
+    entry?: CvData["experience"][number],
+  ): FormGroup {
     return this.fb.group({
-      company: [entry?.company ?? ''],
-      role: [entry?.role ?? ''],
-      startDate: [entry?.startDate ?? ''],
-      endDate: [entry?.endDate ?? ''],
-      bullets: [entry?.bullets?.join('\n') ?? ''],
-      techstack: [entry?.techstack ?? ''],
+      company: [entry?.company ?? ""],
+      role: [entry?.role ?? ""],
+      startDate: [entry?.startDate ?? ""],
+      endDate: [entry?.endDate ?? ""],
+      bullets: [entry?.bullets?.join("\n") ?? ""],
+      techstack: [entry?.techstack ?? ""],
     });
   }
 
-  private createQualificationGroup(entry?: CvData['qualifications'][number]): FormGroup {
+  private createQualificationGroup(
+    entry?: CvData["qualifications"][number],
+  ): FormGroup {
     return this.fb.group({
-      label: [entry?.label ?? ''],
-      text: [entry?.text ?? ''],
+      label: [entry?.label ?? ""],
+      text: [entry?.text ?? ""],
     });
   }
 
-  private createEducationGroup(entry?: CvData['education'][number]): FormGroup {
+  private createEducationGroup(entry?: CvData["education"][number]): FormGroup {
     return this.fb.group({
-      institution: [entry?.institution ?? ''],
-      degree: [entry?.degree ?? ''],
-      startDate: [entry?.startDate ?? ''],
-      endDate: [entry?.endDate ?? ''],
+      institution: [entry?.institution ?? ""],
+      degree: [entry?.degree ?? ""],
+      startDate: [entry?.startDate ?? ""],
+      endDate: [entry?.endDate ?? ""],
     });
   }
 
   addSkillCategory(): void {
-    (this.cvForm.get('technicalSkills') as FormArray).push(this.createSkillCategoryGroup());
+    (this.cvForm.get("technicalSkills") as FormArray).push(
+      this.createSkillCategoryGroup(),
+    );
   }
 
   removeSkillCategory(index: number): void {
-    (this.cvForm.get('technicalSkills') as FormArray).removeAt(index);
+    (this.cvForm.get("technicalSkills") as FormArray).removeAt(index);
   }
 
   addExperience(): void {
-    (this.cvForm.get('experience') as FormArray).push(this.createExperienceGroup());
+    (this.cvForm.get("experience") as FormArray).push(
+      this.createExperienceGroup(),
+    );
   }
 
   removeExperience(index: number): void {
-    (this.cvForm.get('experience') as FormArray).removeAt(index);
+    (this.cvForm.get("experience") as FormArray).removeAt(index);
   }
 
   addQualification(): void {
-    (this.cvForm.get('qualifications') as FormArray).push(this.createQualificationGroup());
+    (this.cvForm.get("qualifications") as FormArray).push(
+      this.createQualificationGroup(),
+    );
   }
 
   removeQualification(index: number): void {
-    (this.cvForm.get('qualifications') as FormArray).removeAt(index);
+    (this.cvForm.get("qualifications") as FormArray).removeAt(index);
   }
 
   addEducation(): void {
-    (this.cvForm.get('education') as FormArray).push(this.createEducationGroup());
+    (this.cvForm.get("education") as FormArray).push(
+      this.createEducationGroup(),
+    );
   }
 
   removeEducation(index: number): void {
-    (this.cvForm.get('education') as FormArray).removeAt(index);
+    (this.cvForm.get("education") as FormArray).removeAt(index);
   }
 
   private loadCv(): void {
@@ -144,7 +171,7 @@ export class CvEditorComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.errorMessage = 'Could not load existing CV data.';
+        this.errorMessage = "Could not load existing CV data.";
         this.loading = false;
       },
     });
@@ -156,25 +183,25 @@ export class CvEditorComponent implements OnInit {
       summary: data.summary,
     });
 
-    const skillsArray = this.cvForm.get('technicalSkills') as FormArray;
+    const skillsArray = this.cvForm.get("technicalSkills") as FormArray;
     skillsArray.clear();
     (data.technicalSkills ?? []).forEach((entry) =>
       skillsArray.push(this.createSkillCategoryGroup(entry)),
     );
 
-    const experienceArray = this.cvForm.get('experience') as FormArray;
+    const experienceArray = this.cvForm.get("experience") as FormArray;
     experienceArray.clear();
     (data.experience ?? []).forEach((entry) =>
       experienceArray.push(this.createExperienceGroup(entry)),
     );
 
-    const qualificationsArray = this.cvForm.get('qualifications') as FormArray;
+    const qualificationsArray = this.cvForm.get("qualifications") as FormArray;
     qualificationsArray.clear();
     (data.qualifications ?? []).forEach((entry) =>
       qualificationsArray.push(this.createQualificationGroup(entry)),
     );
 
-    const educationArray = this.cvForm.get('education') as FormArray;
+    const educationArray = this.cvForm.get("education") as FormArray;
     educationArray.clear();
     (data.education ?? []).forEach((entry) =>
       educationArray.push(this.createEducationGroup(entry)),
@@ -190,18 +217,20 @@ export class CvEditorComponent implements OnInit {
         (entry: { category: string; skills: string }) => ({
           category: entry.category,
           skills: entry.skills
-            .split(',')
+            .split(",")
             .map((skill) => skill.trim())
             .filter(Boolean),
         }),
       ),
-      experience: value.experience.map((entry: { bullets: string; [key: string]: unknown }) => ({
-        ...entry,
-        bullets: entry.bullets
-          .split('\n')
-          .map((bullet) => bullet.trim())
-          .filter(Boolean),
-      })),
+      experience: value.experience.map(
+        (entry: { bullets: string; [key: string]: unknown }) => ({
+          ...entry,
+          bullets: entry.bullets
+            .split("\n")
+            .map((bullet) => bullet.trim())
+            .filter(Boolean),
+        }),
+      ),
       qualifications: value.qualifications,
       education: value.education,
     };
@@ -209,16 +238,16 @@ export class CvEditorComponent implements OnInit {
 
   save(): void {
     this.saving = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.errorMessage = "";
+    this.successMessage = "";
     this.cvService.updateCv(this.buildCvData()).subscribe({
       next: () => {
         this.saving = false;
-        this.successMessage = 'CV saved.';
+        this.successMessage = "CV saved.";
       },
       error: () => {
         this.saving = false;
-        this.errorMessage = 'Could not save CV data.';
+        this.errorMessage = "Could not save CV data.";
       },
     });
   }

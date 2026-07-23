@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClient, withXhr } from "@angular/common/http";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -36,7 +36,7 @@ describe("ProjectsComponent", () => {
     sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [ProjectsComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ProjectsComponent);
@@ -49,14 +49,19 @@ describe("ProjectsComponent", () => {
   });
 
   function flushProjects(projects: unknown): void {
-    httpMock.expectOne(`${environment.apiBaseUrl}/projects`).flush({ projects });
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/projects`)
+      .flush({ projects });
     fixture.detectChanges();
   }
 
   function failProjects(): void {
     httpMock
       .expectOne(`${environment.apiBaseUrl}/projects`)
-      .flush({ message: "quota exceeded" }, { status: 429, statusText: "Too Many Requests" });
+      .flush(
+        { message: "quota exceeded" },
+        { status: 429, statusText: "Too Many Requests" },
+      );
     fixture.detectChanges();
   }
 
@@ -73,8 +78,12 @@ describe("ProjectsComponent", () => {
 
     SAMPLE_PROJECTS.forEach((project, i) => {
       const card = cards[i] as HTMLElement;
-      expect(card.querySelector(".title")?.textContent).toContain(project.title);
-      expect(card.querySelector(".subtitle")?.textContent).toContain(project.tech);
+      expect(card.querySelector(".title")?.textContent).toContain(
+        project.title,
+      );
+      expect(card.querySelector(".subtitle")?.textContent).toContain(
+        project.tech,
+      );
       expect(card.querySelectorAll(".tag").length).toBe(project.tags.length);
       const img = card.querySelector("img") as HTMLImageElement;
       expect(img.getAttribute("src")).toBe(project.image);

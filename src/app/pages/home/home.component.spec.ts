@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClient, withXhr } from "@angular/common/http";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -16,7 +16,7 @@ describe("HomeComponent", () => {
     sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(HomeComponent);
@@ -29,9 +29,7 @@ describe("HomeComponent", () => {
   });
 
   function flushHome(mottoes: string[] | null): void {
-    httpMock
-      .expectOne(`${environment.apiBaseUrl}/home`)
-      .flush({ mottoes });
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({ mottoes });
     fixture.detectChanges();
   }
 
