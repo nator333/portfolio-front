@@ -143,9 +143,11 @@
 
       .navbar-start .social-icons {
         justify-content: center;
-        /* 20% shorter than the brand bar (3.25rem × 0.8); align-items:center
-           (base rule) keeps the icons centred within the band. */
-        min-height: 2.6rem;
+        /* Target a visible band exactly 20% shorter than the 52px brand bar
+           (41.6px). The row overlaps the navbar's bottom border by ~2px, so
+           add that back to the 2.6rem (3.25rem × 0.8) base. align-items:
+           center (base rule) keeps the icons centred within the band. */
+        min-height: calc(2.6rem + 2px);
         border-bottom: 1px dashed #000000;
         margin-bottom: 0.5rem;
       }
