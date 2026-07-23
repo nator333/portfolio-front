@@ -2,13 +2,9 @@
 // The REST API URL includes the stage path (e.g. https://xxx.execute-api.us-west-1.amazonaws.com/dev).
 // apiKey identifies the site to the gateway's usage plan (monthly cap set in portfolio-api); fetch its value with:
 //   aws apigateway get-api-key --include-value --api-key <ApiKeyId output>
-import { firebaseConfig } from './firebase.config';
 
 export const environment = {
   production: false,
-  firebase: firebaseConfig,
-  // Keep dev traffic out of Analytics; prod build enables it via environment.prod.ts.
-  analyticsEnabled: false,
   apiBaseUrl: 'https://ok1kkskdy2.execute-api.us-west-1.amazonaws.com/dev',
   apiKey: 'ALHgc7ND7S3S49ToIyC1eaZARblavmFP4VSFI3Rv',
   // Chat has its own key + usage plan (500 req/month); fetch with the ChatApiKeyId output.
