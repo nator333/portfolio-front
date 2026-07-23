@@ -22,6 +22,9 @@ describe("HomeComponent", () => {
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    // ngOnInit also loads blog posts for the activity calendar; drain that
+    // request so the /home assertions below can focus on the hero.
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush({ posts: [] });
   });
 
   afterEach(() => {

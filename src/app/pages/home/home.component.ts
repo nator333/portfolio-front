@@ -7,6 +7,12 @@ import {
 } from "@angular/core";
 
 import { HomeService } from "../../services/home.service";
+import { BlogService } from "../../services/blog.service";
+import { ContributionCalendarComponent } from "../../components/contribution-calendar/contribution-calendar.component";
+import {
+  ContributionDay,
+  toDailyContributions,
+} from "../../utils/contribution-calendar.util";
 
 /**
  * Home component that displays the main landing page with personal motto and profile information.
@@ -15,13 +21,14 @@ import { HomeService } from "../../services/home.service";
 @Component({
   selector: "app-home",
   standalone: true,
-  imports: [],
+  imports: [ContributionCalendarComponent],
   templateUrl: "./home.component.html",
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./home.component.scss",
 })
 export class HomeComponent implements OnInit {
   private homeService = inject(HomeService);
+  private blogService = inject(BlogService);
 
   // Populated from the API response (edited via /home-edit); a never-saved
   // item (mottoes: null) or a failed read renders no motto lines.
@@ -37,6 +44,13 @@ export class HomeComponent implements OnInit {
     "Hiro Nakamata Signature",
   ];
 
+  // Activity plotted on the contribution calendar. Blog posts are the first
+  // source; gym sessions and GitHub activity will merge in here by simply
+  // concatenating their own ContributionDay[] (buildCalendarModel sums any
+  // overlapping dates). Empty until sources load, and left empty on failure —
+  // the calendar still renders its blank grid.
+  readonly activity = signal<ContributionDay[]>([]);
+
   ngOnInit(): void {
     this.homeService.getHome().subscribe({
       next: (data) => {
@@ -44,6 +58,17 @@ export class HomeComponent implements OnInit {
       },
       error: () => {
         // Leave the hero without motto lines.
+      },
+    });
+
+    this.blogService.getAllPosts().subscribe({
+      next: (posts) => {
+        this.activity.set(
+          toDailyContributions(posts.map((post) => post.date)),
+        );
+      },
+      error: () => {
+        // Leave the calendar with a blank grid.
       },
     });
   }

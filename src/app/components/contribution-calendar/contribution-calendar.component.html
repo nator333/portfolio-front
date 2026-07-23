@@ -1,0 +1,70 @@
+<figure class="contribution-calendar">
+  <figcaption class="calendar-summary">
+    {{ model().total }} {{ noun() }}{{ model().total === 1 ? "" : "s" }}
+    {{ scopeLabel() }}
+  </figcaption>
+
+  <div class="calendar-scroll">
+    <svg
+      class="calendar-grid"
+      [attr.viewBox]="'0 0 ' + width() + ' ' + height()"
+      [attr.width]="width()"
+      [attr.height]="height()"
+      role="img"
+      [attr.aria-label]="
+        model().total + ' ' + noun() + 's plotted ' + scopeLabel()
+      "
+    >
+      <!-- Month labels -->
+      @for (month of model().months; track month.weekIndex) {
+        <text
+          class="axis-label"
+          [attr.x]="columnX(month.weekIndex)"
+          [attr.y]="topPad - 6"
+        >
+          {{ month.label }}
+        </text>
+      }
+
+      <!-- Weekday labels (Mon / Wed / Fri) -->
+      @for (weekday of weekdayLabels; track weekday.text) {
+        <text
+          class="axis-label"
+          text-anchor="end"
+          [attr.x]="leftPad - 6"
+          [attr.y]="rowY(weekday.row) + cellSize - 1"
+        >
+          {{ weekday.text }}
+        </text>
+      }
+
+      <!-- Day cells -->
+      @for (week of model().weeks; track $index; let wi = $index) {
+        @for (cell of week.days; track cell.date) {
+          @if (cell.inRange) {
+            <rect
+              class="day-cell"
+              [class]="'level-' + cell.level"
+              [attr.x]="columnX(wi)"
+              [attr.y]="rowY($index)"
+              [attr.width]="cellSize"
+              [attr.height]="cellSize"
+              rx="2"
+              ry="2"
+            >
+              <title>{{ tooltip(cell) }}</title>
+            </rect>
+          }
+        }
+      }
+    </svg>
+  </div>
+
+  <div class="calendar-legend">
+    <span class="legend-text">Less</span>
+    @for (level of legendLevels; track level) {
+      <span class="legend-swatch" [class]="'level-' + level"></span>
+    }
+    <span class="legend-text">More</span>
+  </div>
+</figure>
