@@ -82,4 +82,50 @@ describe("NavigationComponent", () => {
     expect(menu.classList).not.toContain("is-active");
     expect(burger.classList).not.toContain("is-active");
   });
+
+  it("should close the menu when a menu link is tapped", () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const burger = el.querySelector(".navbar-burger") as HTMLElement;
+    const menu = el.querySelector(".navbar-menu") as HTMLElement;
+
+    burger.click();
+    fixture.detectChanges();
+    expect(menu.classList).toContain("is-active");
+
+    const link = menu.querySelector("a.nav-link") as HTMLElement;
+    link.click();
+    fixture.detectChanges();
+    expect(menu.classList).not.toContain("is-active");
+  });
+
+  it("should dismiss the menu when tapping outside the navbar", () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const burger = el.querySelector(".navbar-burger") as HTMLElement;
+    const menu = el.querySelector(".navbar-menu") as HTMLElement;
+
+    burger.click();
+    fixture.detectChanges();
+    expect(menu.classList).toContain("is-active");
+
+    // A bubbling click whose target is outside the navbar.
+    document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    fixture.detectChanges();
+    expect(menu.classList).not.toContain("is-active");
+  });
+
+  it("should keep the menu open when the click stays inside the navbar", () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const burger = el.querySelector(".navbar-burger") as HTMLElement;
+    const menu = el.querySelector(".navbar-menu") as HTMLElement;
+    const brand = el.querySelector(".navbar-brand") as HTMLElement;
+
+    burger.click();
+    fixture.detectChanges();
+    expect(menu.classList).toContain("is-active");
+
+    // Clicking non-interactive navbar chrome must not dismiss.
+    brand.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    fixture.detectChanges();
+    expect(menu.classList).toContain("is-active");
+  });
 });

@@ -2,6 +2,8 @@ import {
   Component,
   inject,
   signal,
+  ElementRef,
+  HostListener,
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
@@ -48,6 +50,7 @@ import {
         id="navbarBasicExample"
         class="navbar-menu"
         [class.is-active]="isMenuOpen()"
+        (click)="closeMenu()"
       >
         <div class="navbar-start">
           <!-- Social Media Icons -->
@@ -139,6 +142,7 @@ import {
 })
 export class NavigationComponent {
   private authService = inject(AuthService);
+  private host = inject(ElementRef<HTMLElement>);
 
   isMenuOpen = signal(false);
   isAuthenticated = toSignal(this.authService.isAuthenticated$, {
@@ -152,5 +156,25 @@ export class NavigationComponent {
 
   toggleMenu(): void {
     this.isMenuOpen.update((value) => !value);
+  }
+
+  closeMenu(): void {
+    this.isMenuOpen.set(false);
+  }
+
+  /**
+   * Dismiss the open mobile menu when tapping anywhere outside the navbar.
+   * Taps on the burger (which toggles) and on menu links (which close via the
+   * menu's own handler) live inside the navbar, so they are left alone here.
+   */
+  @HostListener("document:click", ["$event"])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isMenuOpen()) {
+      return;
+    }
+    const navbar = this.host.nativeElement.querySelector(".navbar");
+    if (navbar && !navbar.contains(event.target as Node)) {
+      this.closeMenu();
+    }
   }
 }
