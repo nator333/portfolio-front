@@ -22,8 +22,11 @@ updates:
         update-types:
           - version-update:semver-major
       - dependency-name: "zone.js"
-      # @angular/compiler-cli constrains typescript to >=5.8 <6.0, so a major
-      # bump can never install. TypeScript moves with the Angular upgrade.
+      # @angular/compiler-cli constrains typescript to >=6.0 <6.1. A major bump
+      # does not fail loudly: npm installs it at the root and nests the old
+      # version under Angular, so the build silently keeps using the old
+      # compiler while package.json claims the new one. This rule is the only
+      # thing catching that. TypeScript moves with the Angular upgrade instead.
       - dependency-name: "typescript"
         update-types:
           - version-update:semver-major
