@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 
 import { ActivatedRoute, Router } from "@angular/router";
 import { HeroComponent } from "../../components/hero/hero.component";
@@ -41,6 +46,7 @@ const RETURN_URL_STORAGE_KEY = "cv-editor-return-url";
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
     .login-box {
       max-width: 420px;

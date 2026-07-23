@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { NavigationComponent } from "./components/navigation/navigation.component";
 import { FooterComponent } from "./components/footer/footer.component";
@@ -7,7 +7,12 @@ import { ChatWidgetComponent } from "./components/chat-widget/chat-widget.compon
 @Component({
   selector: "app-root",
   standalone: true,
-  imports: [RouterOutlet, NavigationComponent, FooterComponent, ChatWidgetComponent],
+  imports: [
+    RouterOutlet,
+    NavigationComponent,
+    FooterComponent,
+    ChatWidgetComponent,
+  ],
   template: `
     <div class="app-container">
       <app-navigation></app-navigation>
@@ -18,6 +23,7 @@ import { ChatWidgetComponent } from "./components/chat-widget/chat-widget.compon
       <app-chat-widget></app-chat-widget>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./app.scss",
 })
 export class AppComponent {

@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 
 import { Router } from "@angular/router";
 import {
@@ -23,6 +28,7 @@ import {
   standalone: true,
   imports: [ReactiveFormsModule, HeroComponent],
   templateUrl: "./home-edit.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./home-edit.component.scss",
 })
 export class HomeEditComponent implements OnInit {

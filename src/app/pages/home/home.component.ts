@@ -1,4 +1,10 @@
-import { Component, OnInit, inject, signal } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 
 import { HomeService } from "../../services/home.service";
 
@@ -11,6 +17,7 @@ import { HomeService } from "../../services/home.service";
   standalone: true,
   imports: [],
   templateUrl: "./home.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./home.component.scss",
 })
 export class HomeComponent implements OnInit {

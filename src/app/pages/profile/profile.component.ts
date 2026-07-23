@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 
 import { HeroComponent } from "../../components/hero/hero.component";
 import { CvService } from "../../services/cv.service";
@@ -162,6 +162,7 @@ const FALLBACK_SKILLS: CvSkillCategory[] = [
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./profile.component.scss",
 })
 export class ProfileComponent implements OnInit {

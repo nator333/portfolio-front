@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 
 import { HeroComponent } from "../../components/hero/hero.component";
 import { ProjectsService } from "../../services/projects.service";
@@ -70,6 +70,7 @@ import { ProjectEntry } from "../../models/project-data";
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./projects.component.scss",
 })
 export class ProjectsComponent implements OnInit {

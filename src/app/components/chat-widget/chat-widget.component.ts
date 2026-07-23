@@ -1,4 +1,10 @@
-import { Component, ElementRef, ViewChild, signal } from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  signal,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 
 import { FormsModule } from "@angular/forms";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
@@ -87,6 +93,7 @@ import { ChatMessage, CHAT_MAX_MESSAGE_CHARS } from "../../models/chat-data";
       <fa-icon [icon]="isOpen() ? closeIcon : chatIcon" size="lg"></fa-icon>
     </button>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./chat-widget.component.scss",
 })
 export class ChatWidgetComponent {

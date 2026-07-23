@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 
 import { Router } from "@angular/router";
 import {
@@ -17,6 +22,7 @@ import { ProjectEntry, ProjectsData } from "../../models/project-data";
   standalone: true,
   imports: [ReactiveFormsModule, HeroComponent],
   templateUrl: "./projects-edit.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./projects-edit.component.scss",
 })
 export class ProjectsEditComponent implements OnInit {

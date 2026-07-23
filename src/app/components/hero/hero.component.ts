@@ -1,4 +1,4 @@
-import { Component, input } from "@angular/core";
+import { Component, input, ChangeDetectionStrategy } from "@angular/core";
 
 @Component({
   selector: "app-hero",
@@ -25,6 +25,7 @@ import { Component, input } from "@angular/core";
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./hero.component.scss",
 })
 export class HeroComponent {

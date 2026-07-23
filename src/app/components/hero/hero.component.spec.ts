@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { HeroComponent } from "./hero.component";
 
@@ -47,6 +47,7 @@ describe("HeroComponent", () => {
 @Component({
   standalone: true,
   imports: [HeroComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <app-hero title="Host Title" [showContent]="true">
       <p class="projected">Projected body</p>

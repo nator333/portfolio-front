@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 
 import { Router } from "@angular/router";
 import {
@@ -18,6 +23,7 @@ import { downloadCvPdf } from "../../utils/cv-pdf.util";
   standalone: true,
   imports: [ReactiveFormsModule, HeroComponent],
   templateUrl: "./cv-editor.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./cv-editor.component.scss",
 })
 export class CvEditorComponent implements OnInit {

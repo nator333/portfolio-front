@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { HttpClientModule } from "@angular/common/http";
@@ -41,7 +41,7 @@ import { BlogService, BlogPost } from "../../services/blog.service";
                           {{ post.title }}
                         </p>
                         <p class="subtitle is-6 has-text-grey-light">
-                          {{ post.date | date:'mediumDate' }}
+                          {{ post.date | date: "mediumDate" }}
                         </p>
                       </div>
                     </div>
@@ -71,12 +71,13 @@ import { BlogService, BlogPost } from "../../services/blog.service";
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./blog.component.scss",
 })
 export class BlogComponent implements OnInit {
   blogPosts: BlogPost[] = [];
   loading = true;
-  error = '';
+  error = "";
 
   constructor(private blogService: BlogService) {}
 
@@ -87,10 +88,10 @@ export class BlogComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading blog posts:', err);
-        this.error = 'Error loading blog posts. Please try again later.';
+        console.error("Error loading blog posts:", err);
+        this.error = "Error loading blog posts. Please try again later.";
         this.loading = false;
-      }
+      },
     });
   }
 }

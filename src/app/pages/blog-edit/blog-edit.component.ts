@@ -1,4 +1,9 @@
-import { Component, inject, OnInit } from "@angular/core";
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 
 import { Router } from "@angular/router";
 import {
@@ -19,6 +24,7 @@ import { renderBlogMarkdown } from "../../utils/blog-markdown.util";
   standalone: true,
   imports: [ReactiveFormsModule, HeroComponent],
   templateUrl: "./blog-edit.component.html",
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./blog-edit.component.scss",
 })
 export class BlogEditComponent implements OnInit {

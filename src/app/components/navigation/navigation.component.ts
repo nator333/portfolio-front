@@ -1,4 +1,9 @@
-import { Component, inject, signal } from "@angular/core";
+import {
+  Component,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { RouterLink, RouterLinkActive } from "@angular/router";
 
@@ -129,6 +134,7 @@ import {
       </div>
     </nav>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./navigation.component.scss",
 })
 export class NavigationComponent {

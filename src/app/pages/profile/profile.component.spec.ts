@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClient, withXhr } from "@angular/common/http";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -15,7 +15,7 @@ describe("ProfileComponent", () => {
     sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [ProfileComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ProfileComponent);
@@ -139,7 +139,10 @@ describe("ProfileComponent", () => {
   it("should fall back to static skill categories when the API fails", () => {
     httpMock
       .expectOne(`${environment.apiBaseUrl}/cv`)
-      .flush({ message: "quota exceeded" }, { status: 429, statusText: "Too Many Requests" });
+      .flush(
+        { message: "quota exceeded" },
+        { status: 429, statusText: "Too Many Requests" },
+      );
     fixture.detectChanges();
 
     const categoryNames = Array.from(
