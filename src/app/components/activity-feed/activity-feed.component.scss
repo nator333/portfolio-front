@@ -23,14 +23,20 @@ $gold: #ffd700;
   list-style: none;
   margin: 0;
   padding: 0;
-  /* Cap the height on wide screens so the panel tracks the calendar rather
-     than running down the page; scrolls internally when it overflows. */
+  /* Cap the height so the panel tracks the calendar rather than running down
+     the page; scrolls internally when it overflows. */
   max-height: 320px;
   overflow-y: auto;
+  /* Keep a flick past either end of the list from scrolling the page behind
+     it, which is what makes a nested scroll area bearable on touch. */
+  overscroll-behavior: contain;
 
   @media (max-width: 768px) {
-    max-height: none;
-    overflow-y: visible;
+    /* Taller than desktop: stacked below the calendar the feed has the full
+       width, so a short window would waste it. Capped all the same — the feed
+       carries a year of entries from three sources, and uncapped it ran to
+       ~7,500px on a 375px-wide screen, around eleven screens of page. */
+    max-height: 60vh;
   }
 }
 
