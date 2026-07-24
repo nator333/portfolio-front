@@ -91,6 +91,13 @@ import {
           </a>
           <a
             class="navbar-item nav-link"
+            routerLink="/workout"
+            routerLinkActive="is-active"
+          >
+            Training
+          </a>
+          <a
+            class="navbar-item nav-link"
             routerLink="/profile"
             routerLinkActive="is-active"
           >

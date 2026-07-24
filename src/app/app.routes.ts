@@ -10,6 +10,11 @@ export const routes: Routes = [
   { path: "projects", component: ProjectsComponent },
   { path: "blog", component: BlogComponent },
   {
+    path: "workout",
+    loadComponent: () =>
+      import("./pages/workout/workout.component").then((m) => m.WorkoutComponent),
+  },
+  {
     path: "blog/:url",
     loadComponent: () =>
       import("./pages/blog-post/blog-post.component").then(
