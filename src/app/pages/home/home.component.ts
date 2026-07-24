@@ -8,14 +8,13 @@ import {
 } from "@angular/core";
 
 import { HomeService } from "../../services/home.service";
-import { BlogService } from "../../services/blog.service";
+import { ActivityService } from "../../services/activity.service";
 import { ContributionCalendarComponent } from "../../components/contribution-calendar/contribution-calendar.component";
 import { ActivityFeedComponent } from "../../components/activity-feed/activity-feed.component";
 import {
   ActivityEntry,
   activityToContributions,
 } from "../../models/activity-data";
-import { toIsoDate } from "../../utils/contribution-calendar.util";
 
 /**
  * Home component that displays the main landing page with personal motto and profile information.
@@ -31,7 +30,7 @@ import { toIsoDate } from "../../utils/contribution-calendar.util";
 })
 export class HomeComponent implements OnInit {
   private homeService = inject(HomeService);
-  private blogService = inject(BlogService);
+  private activityService = inject(ActivityService);
 
   // Populated from the API response (edited via /home-edit); a never-saved
   // item (mottoes: null) or a failed read renders no motto lines.
@@ -47,10 +46,10 @@ export class HomeComponent implements OnInit {
     "Hiro Nakamata Signature",
   ];
 
-  // Activity entries feeding both the calendar and the feed. Blog posts are
-  // the first source; gym sessions and GitHub activity will merge in here by
-  // concatenating their own entries. Empty until sources load, and left empty
-  // on failure — the calendar still renders its blank grid.
+  // Activity entries feeding both the calendar and the feed. The API merges
+  // GitHub, gym and blog server-side and returns one flat list, so a new source
+  // appears here without this component changing. Empty until it loads, and
+  // left empty on failure — the calendar still renders its blank grid.
   readonly entries = signal<ActivityEntry[]>([]);
 
   // Per-day counts derived from the entries, for the calendar grid.
@@ -76,16 +75,9 @@ export class HomeComponent implements OnInit {
       },
     });
 
-    this.blogService.getAllPosts().subscribe({
-      next: (posts) => {
-        this.entries.set(
-          posts.map((post) => ({
-            date: toIsoDate(post.date),
-            type: "blog" as const,
-            title: post.title,
-            url: post.url,
-          })),
-        );
+    this.activityService.getActivity().subscribe({
+      next: (entries) => {
+        this.entries.set(entries);
       },
       error: () => {
         // Leave the calendar and feed empty.
