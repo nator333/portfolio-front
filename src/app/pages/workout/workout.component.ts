@@ -4,6 +4,7 @@ import {
   OnDestroy,
   ChangeDetectionStrategy,
   signal,
+  computed,
 } from "@angular/core";
 import { DecimalPipe } from "@angular/common";
 import { Chart, ChartConfiguration } from "chart.js/auto";
@@ -58,6 +59,10 @@ const GRID = "rgba(255,255,255,0.08)";
             <div class="metric">
               <span class="metric-value">{{ data.totals.frequency.sessionsPerWeek | number: "1.0-1" }}</span>
               <span class="metric-label">sessions / week</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">{{ sessionsPerYear() }}</span>
+              <span class="metric-label">sessions / year</span>
             </div>
             <div class="metric">
               <span class="metric-value">{{ data.totals.frequency.currentStreakWeeks }}</span>
@@ -137,6 +142,19 @@ export class WorkoutComponent implements OnInit, OnDestroy {
   readonly summary = signal<WorkoutSummary | null>(null);
   readonly loaded = signal(false);
   readonly weeksShown = signal(0);
+
+  /** All-time average sessions per year: workout days over the span logged,
+   *  floored at a month so a brand-new history doesn't divide by ~zero. */
+  readonly sessionsPerYear = computed(() => {
+    const totals = this.summary()?.totals;
+    if (!totals) {
+      return 0;
+    }
+    const spanMs =
+      new Date(totals.lastDate).getTime() - new Date(totals.firstDate).getTime();
+    const years = Math.max(spanMs / (365.25 * 24 * 60 * 60 * 1000), 1 / 12);
+    return Math.round(totals.workoutDays / years);
+  });
 
   private charts: Chart[] = [];
 
