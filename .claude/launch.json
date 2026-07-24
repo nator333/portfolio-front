@@ -2,21 +2,49 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "portfolio-front-4200",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "ng",
+        "serve",
+        "--port",
+        "4200"
+      ],
+      "port": 4200
+    },
+    {
       "name": "portfolio-front-dev",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["ng", "serve", "--port", "4300"],
+      "runtimeArgs": [
+        "ng",
+        "serve",
+        "--port",
+        "4300"
+      ],
       "port": 4300
     },
     {
       "name": "portfolio-front-dev-2",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["ng", "serve", "--port", "4310"],
+      "runtimeArgs": [
+        "ng",
+        "serve",
+        "--port",
+        "4310"
+      ],
       "port": 4310
     },
     {
       "name": "portfolio-front-prod",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["ng", "serve", "--configuration", "production", "--port", "4301"],
+      "runtimeArgs": [
+        "ng",
+        "serve",
+        "--configuration",
+        "production",
+        "--port",
+        "4301"
+      ],
       "port": 4301
     }
   ]

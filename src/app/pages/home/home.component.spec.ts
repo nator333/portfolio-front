@@ -27,9 +27,11 @@ describe("HomeComponent", () => {
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-    // ngOnInit also loads blog posts for the activity calendar; drain that
+    // ngOnInit also loads the merged activity feed for the calendar; drain that
     // request so the /home assertions below can focus on the hero.
-    httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush({ posts: [] });
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/activity`)
+      .flush({ range: { from: "", to: "" }, entries: [], counts: {} });
   });
 
   afterEach(() => {
