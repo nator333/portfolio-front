@@ -9,6 +9,8 @@ export const environment = {
   apiKey: 'OmHyN4U0o01qsH9SqK1rU3Vf4h5YzIHB8DUc6cAR',
   // Chat has its own key + usage plan (500 req/month); fetch with the ChatApiKeyId output.
   chatApiKey: 'ICz30MNs6S7xjk0quiZGP4aUlQyxtLex6ve9uNeO',
+  // Workout has its own key + daily usage plan; fetch with the WorkoutApiKeyId output.
+  workoutApiKey: '5zHdXJC0eKvMVkFjwbXg22UHGS4wTGW3mTBIO3Zh',
   cognitoDomain: 'https://nakamata-cv-prod.auth.us-west-1.amazoncognito.com',
   cognitoClientId: '2qdrj1sit5e7il0fdse7fcjmt9',
 };

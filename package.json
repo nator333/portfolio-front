@@ -52,6 +52,7 @@
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "animate.css": "^4.1.1",
     "bulma": "^1.0.4",
+    "chart.js": "^4.5.1",
     "marked": "^18.0.7",
     "pdfmake": "^0.3.11",
     "prismjs": "^1.30.0",
