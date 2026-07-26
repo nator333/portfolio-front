@@ -51,12 +51,10 @@
                   <textarea class="textarea" rows="2" formControlName="description"></textarea>
                 </div>
                 <div class="field">
-                  <label class="label">Image URL or asset path</label>
-                  <input
-                    class="input"
-                    type="text"
-                    formControlName="image"
-                    placeholder="assets/projects/foo.png or https://..."
+                  <app-image-upload
+                    [control]="$any(group.get('image'))"
+                    category="project"
+                    label="Project image"
                   />
                 </div>
                 <div class="field">

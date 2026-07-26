@@ -14,6 +14,7 @@ import {
   Validators,
 } from "@angular/forms";
 import { HeroComponent } from "../../components/hero/hero.component";
+import { ImageUploadComponent } from "../../components/image-upload/image-upload.component";
 import { AuthService } from "../../services/auth.service";
 import { BlogService } from "../../services/blog.service";
 import { BlogData, BlogPostEntry } from "../../models/blog-data";
@@ -22,7 +23,7 @@ import { renderBlogMarkdown } from "../../utils/blog-markdown.util";
 @Component({
   selector: "app-blog-edit",
   standalone: true,
-  imports: [ReactiveFormsModule, HeroComponent],
+  imports: [ReactiveFormsModule, HeroComponent, ImageUploadComponent],
   templateUrl: "./blog-edit.component.html",
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./blog-edit.component.scss",

@@ -13,4 +13,9 @@ export const environment = {
   workoutApiKey: '5zHdXJC0eKvMVkFjwbXg22UHGS4wTGW3mTBIO3Zh',
   cognitoDomain: 'https://nakamata-cv-prod.auth.us-west-1.amazoncognito.com',
   cognitoClientId: '2qdrj1sit5e7il0fdse7fcjmt9',
+  // TODO: fill from the PortfolioApiStack-prod `MediaCdnBaseUrl` output once the
+  // media PR (portfolio-api#26) is merged and deployed to prod. Empty until then
+  // so a premature prod build cannot point uploads at a distribution that has
+  // no images behind it.
+  assetCdnBaseUrl: '',
 };
