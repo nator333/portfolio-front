@@ -134,6 +134,13 @@ import {
             </a>
             <a
               class="navbar-item nav-link"
+              routerLink="/media-library"
+              routerLinkActive="is-active"
+            >
+              Media
+            </a>
+            <a
+              class="navbar-item nav-link"
               routerLink="/cv-agent"
               routerLinkActive="is-active"
             >

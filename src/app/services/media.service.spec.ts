@@ -4,7 +4,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { MediaService, UploadedMedia } from './media.service';
+import { MediaAsset, MediaService, UploadedMedia } from './media.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
@@ -91,5 +91,36 @@ describe('MediaService', () => {
     expect(create.request.body.category).toBe('general');
     create.flush(presignResponse);
     httpMock.expectOne(presignResponse.upload.url).flush('');
+  });
+
+  it('lists the catalog with the id token, unwrapping assets', () => {
+    let assets: MediaAsset[] = [];
+    service.list().subscribe((a) => (assets = a));
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/media`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toBe('test-id-token');
+    req.flush({ assets: [{ assetId: 'a1' }, { assetId: 'a2' }] });
+
+    expect(assets.map((a) => a.assetId)).toEqual(['a1', 'a2']);
+  });
+
+  it('PATCHes metadata for a single asset', () => {
+    service.updateMeta('a1', { alt: 'A dog', category: 'blog' }).subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/media/a1`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.headers.get('Authorization')).toBe('test-id-token');
+    expect(req.request.body).toEqual({ alt: 'A dog', category: 'blog' });
+    req.flush({ assetId: 'a1', alt: 'A dog', category: 'blog' });
+  });
+
+  it('DELETEs an asset by id', () => {
+    service.remove('a1').subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/media/a1`);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.headers.get('Authorization')).toBe('test-id-token');
+    req.flush({ assetId: 'a1', deleted: true });
   });
 });

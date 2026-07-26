@@ -25,6 +25,34 @@ export interface UploadedMedia {
   thumbUrl: string;
 }
 
+export interface MediaVariant {
+  key: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+/** A stored image as returned by GET /media (one MediaAssets catalog row). */
+export interface MediaAsset {
+  assetId: string;
+  category: MediaCategory;
+  contentType: string;
+  originalFilename: string;
+  sizeBytes: number;
+  cdnUrl: string;
+  variants: Record<string, MediaVariant>;
+  alt: string;
+  title: string;
+  uploadedAt: string;
+}
+
+/** Editable metadata fields (PATCH /media/{id}). */
+export interface MediaMetadata {
+  alt?: string;
+  title?: string;
+  category?: MediaCategory;
+}
+
 /**
  * Admin image uploads. Two steps: ask portfolio-api (Cognito-gated) for a
  * short-lived presigned POST, then upload the file straight to S3 with it. The
@@ -38,13 +66,11 @@ export class MediaService {
   private auth = inject(AuthService);
 
   upload(file: File, category: MediaCategory = 'general'): Observable<UploadedMedia> {
-    // REST API Cognito authorizers expect the raw JWT, not a Bearer value.
-    const headers = new HttpHeaders({ Authorization: this.auth.getIdToken() });
     return this.http
       .post<CreateUploadResponse>(
         `${environment.apiBaseUrl}/uploads`,
         { filename: file.name, contentType: file.type, category },
-        { headers },
+        { headers: this.authHeaders() },
       )
       .pipe(
         switchMap((res) => this.postToS3(res.upload, file).pipe(map(() => res))),
@@ -54,6 +80,36 @@ export class MediaService {
           thumbUrl: `${environment.assetCdnBaseUrl}/${res.assetId}/thumb.webp`,
         })),
       );
+  }
+
+  /** List the media catalog (admin library), newest first per the API. */
+  list(): Observable<MediaAsset[]> {
+    return this.http
+      .get<{ assets: MediaAsset[] }>(`${environment.apiBaseUrl}/media`, {
+        headers: this.authHeaders(),
+      })
+      .pipe(map((response) => response.assets ?? []));
+  }
+
+  /** Edit an asset's alt / title / category. */
+  updateMeta(assetId: string, patch: MediaMetadata): Observable<MediaAsset> {
+    return this.http.patch<MediaAsset>(
+      `${environment.apiBaseUrl}/media/${assetId}`,
+      patch,
+      { headers: this.authHeaders() },
+    );
+  }
+
+  /** Delete an asset and every stored variant. */
+  remove(assetId: string): Observable<void> {
+    return this.http
+      .delete(`${environment.apiBaseUrl}/media/${assetId}`, { headers: this.authHeaders() })
+      .pipe(map(() => undefined));
+  }
+
+  private authHeaders(): HttpHeaders {
+    // REST API Cognito authorizers expect the raw JWT, not a Bearer value.
+    return new HttpHeaders({ Authorization: this.auth.getIdToken() });
   }
 
   private postToS3(presigned: PresignedPost, file: File): Observable<string> {
