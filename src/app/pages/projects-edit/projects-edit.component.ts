@@ -16,6 +16,7 @@ import { HeroComponent } from "../../components/hero/hero.component";
 import { ImageUploadComponent } from "../../components/image-upload/image-upload.component";
 import { AuthService } from "../../services/auth.service";
 import { ProjectsService } from "../../services/projects.service";
+import { MediaAsset, MediaService } from "../../services/media.service";
 import { ProjectEntry, ProjectsData } from "../../models/project-data";
 
 @Component({
@@ -30,7 +31,11 @@ export class ProjectsEditComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private projectsService = inject(ProjectsService);
+  private mediaService = inject(MediaService);
   private router = inject(Router);
+
+  /** Saved images offered in each project's image picker. */
+  mediaAssets: MediaAsset[] = [];
 
   loading = false;
   saving = false;
@@ -43,6 +48,15 @@ export class ProjectsEditComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProjects();
+    this.loadMedia();
+  }
+
+  private loadMedia(): void {
+    // Best-effort: the picker just has no saved options if this fails.
+    this.mediaService.list().subscribe({
+      next: (assets) => (this.mediaAssets = assets),
+      error: () => (this.mediaAssets = []),
+    });
   }
 
   get projectControls(): FormGroup[] {

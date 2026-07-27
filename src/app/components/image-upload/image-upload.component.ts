@@ -5,7 +5,7 @@ import {
   inject,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MediaCategory, MediaService } from '../../services/media.service';
+import { MediaAsset, MediaCategory, MediaService } from '../../services/media.service';
 
 type UploadStatus = 'idle' | 'uploading' | 'saved' | 'error';
 
@@ -34,6 +34,8 @@ export class ImageUploadComponent implements OnDestroy {
   @Input({ required: true }) control!: FormControl<string>;
   @Input() category: MediaCategory = 'general';
   @Input() label = 'Image';
+  /** Previously uploaded images, offered in the "pick a saved image" dropdown. */
+  @Input() assets: MediaAsset[] = [];
 
   readonly accept = ALLOWED_TYPES.join(',');
 
@@ -44,6 +46,16 @@ export class ImageUploadComponent implements OnDestroy {
 
   get previewSrc(): string | null {
     return this.localPreview || this.control.value || null;
+  }
+
+  /**
+   * Saved images offered in the dropdown: those in this field's category, plus
+   * uncategorised ("general") images, which are usable anywhere.
+   */
+  get selectableAssets(): MediaAsset[] {
+    return this.assets.filter(
+      (asset) => asset.category === this.category || asset.category === 'general',
+    );
   }
 
   onFileSelected(event: Event): void {
@@ -77,6 +89,20 @@ export class ImageUploadComponent implements OnDestroy {
       },
       error: () => this.fail('Upload failed. Please try again.'),
     });
+  }
+
+  /** Pick a previously uploaded image; its CDN url becomes the field value. */
+  onSelectSaved(event: Event): void {
+    const url = (event.target as HTMLSelectElement).value;
+    if (!url) {
+      return;
+    }
+    // Drop any local file preview so the preview reflects the chosen saved image.
+    this.revokeLocalPreview();
+    this.control.setValue(url);
+    this.control.markAsDirty();
+    this.status = 'idle';
+    this.message = '';
   }
 
   clear(): void {
