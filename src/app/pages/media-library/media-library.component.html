@@ -1,0 +1,107 @@
+<app-hero title="Media Library" subtitle="Uploaded blog and project images"></app-hero>
+
+<section class="section">
+  <div class="container">
+    <div class="level">
+      <div class="level-left">
+        <label class="button is-primary">
+          <span>{{ uploadStatus || "Upload image" }}</span>
+          <input
+            type="file"
+            [accept]="uploadAccept"
+            hidden
+            [disabled]="!!uploadStatus"
+            (change)="onUpload($event)"
+          />
+        </label>
+        <button class="button is-light ml-2" type="button" (click)="load()" [disabled]="loading">
+          Refresh
+        </button>
+      </div>
+      <div class="level-right">
+        <button class="button is-light" type="button" (click)="logout()">Sign out</button>
+      </div>
+    </div>
+
+    @if (errorMessage) {
+      <p class="has-text-danger">{{ errorMessage }}</p>
+    }
+
+    @if (loading) {
+      <p>Loading media…</p>
+    } @else if (assets.length === 0) {
+      <p class="has-text-grey">No images uploaded yet.</p>
+    } @else {
+      <form [formGroup]="form">
+        <div class="columns is-multiline" formArrayName="items">
+          @for (asset of assets; track asset.assetId; let i = $index) {
+            <div class="column is-half">
+              <div class="box media-card" [formGroupName]="i">
+                <div class="media-card__body">
+                  <img class="media-card__thumb" [src]="thumbUrl(asset)" [alt]="asset.alt" />
+                  <div class="media-card__fields">
+                    <p class="is-size-7 has-text-grey">
+                      {{ asset.originalFilename }} ·
+                      {{ asset.uploadedAt | date: "y-MM-dd" }}
+                    </p>
+                    <div class="field">
+                      <label class="label is-small">Title</label>
+                      <input class="input is-small" type="text" formControlName="title" />
+                    </div>
+                    <div class="field">
+                      <label class="label is-small">Alt text</label>
+                      <input class="input is-small" type="text" formControlName="alt" />
+                    </div>
+                    <div class="field">
+                      <label class="label is-small">Category</label>
+                      <div class="select is-small is-fullwidth">
+                        <select formControlName="category">
+                          @for (category of categories; track category) {
+                            <option [value]="category">{{ category }}</option>
+                          }
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field is-grouped media-card__actions">
+                  <div class="control">
+                    <button
+                      class="button is-small is-primary"
+                      type="button"
+                      (click)="save(i)"
+                      [disabled]="isSaving(asset) || itemControls[i].pristine"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <div class="control">
+                    <button class="button is-small" type="button" (click)="copyUrl(i)">
+                      {{ copiedId === asset.assetId ? "Copied!" : "Copy URL" }}
+                    </button>
+                  </div>
+                  <div class="control">
+                    <button
+                      class="button is-small is-danger is-light"
+                      type="button"
+                      (click)="remove(i)"
+                      [disabled]="isSaving(asset)"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  @if (rowMessage(asset)) {
+                    <div class="control">
+                      <span class="is-size-7 has-text-grey">{{ rowMessage(asset) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </form>
+    }
+  </div>
+</section>

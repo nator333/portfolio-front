@@ -79,12 +79,10 @@
                   />
                 </div>
                 <div class="column">
-                  <label class="label">Eye-catch image URL (optional)</label>
-                  <input
-                    class="input"
-                    type="text"
-                    formControlName="image"
-                    placeholder="assets/blog/foo.png or https://..."
+                  <app-image-upload
+                    [control]="$any(group.get('image'))"
+                    category="blog"
+                    label="Eye-catch image (optional)"
                   />
                 </div>
               </div>

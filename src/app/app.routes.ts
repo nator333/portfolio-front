@@ -73,5 +73,13 @@ export const routes: Routes = [
         (m) => m.CvAgentComponent,
       ),
   },
+  {
+    path: "media-library",
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import("./pages/media-library/media-library.component").then(
+        (m) => m.MediaLibraryComponent,
+      ),
+  },
   { path: "**", redirectTo: "/home" },
 ];

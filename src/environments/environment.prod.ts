@@ -13,4 +13,8 @@ export const environment = {
   workoutApiKey: '5zHdXJC0eKvMVkFjwbXg22UHGS4wTGW3mTBIO3Zh',
   cognitoDomain: 'https://nakamata-cv-prod.auth.us-west-1.amazoncognito.com',
   cognitoClientId: '2qdrj1sit5e7il0fdse7fcjmt9',
+  // CloudFront base URL for uploaded images; from the PortfolioApiStack-prod
+  // `MediaCdnBaseUrl` output. Uploaded images resolve to
+  // `<base>/<assetId>/w1600.webp` (and thumb.webp).
+  assetCdnBaseUrl: 'https://d16hk4iehiyc15.cloudfront.net',
 };

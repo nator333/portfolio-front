@@ -13,6 +13,7 @@ import {
   ReactiveFormsModule,
 } from "@angular/forms";
 import { HeroComponent } from "../../components/hero/hero.component";
+import { ImageUploadComponent } from "../../components/image-upload/image-upload.component";
 import { AuthService } from "../../services/auth.service";
 import { ProjectsService } from "../../services/projects.service";
 import { ProjectEntry, ProjectsData } from "../../models/project-data";
@@ -20,7 +21,7 @@ import { ProjectEntry, ProjectsData } from "../../models/project-data";
 @Component({
   selector: "app-projects-edit",
   standalone: true,
-  imports: [ReactiveFormsModule, HeroComponent],
+  imports: [ReactiveFormsModule, HeroComponent, ImageUploadComponent],
   templateUrl: "./projects-edit.component.html",
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./projects-edit.component.scss",

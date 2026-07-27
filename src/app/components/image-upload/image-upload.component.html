@@ -1,0 +1,51 @@
+<label class="label">{{ label }}</label>
+
+<div class="image-upload">
+  @if (previewSrc) {
+    <div class="image-upload__preview">
+      <img [src]="previewSrc" alt="Image preview" (error)="onPreviewError()" />
+    </div>
+  }
+
+  <div class="image-upload__controls">
+    <input
+      class="input"
+      type="text"
+      [formControl]="control"
+      placeholder="assets/blog/foo.png or https://..."
+    />
+
+    <div class="image-upload__actions">
+      <label class="button is-small">
+        <span>{{ status === 'uploading' ? 'Uploading…' : 'Upload image' }}</span>
+        <input
+          type="file"
+          [accept]="accept"
+          hidden
+          [disabled]="status === 'uploading'"
+          (change)="onFileSelected($event)"
+        />
+      </label>
+      @if (control.value) {
+        <button
+          class="button is-small is-light"
+          type="button"
+          [disabled]="status === 'uploading'"
+          (click)="clear()"
+        >
+          Clear
+        </button>
+      }
+    </div>
+
+    @if (message) {
+      <p
+        class="help"
+        [class.is-danger]="status === 'error'"
+        [class.is-success]="status === 'saved'"
+      >
+        {{ message }}
+      </p>
+    }
+  </div>
+</div>
