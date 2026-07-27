@@ -34,15 +34,15 @@
     } @else {
       <form [formGroup]="form">
         <div class="columns is-multiline" formArrayName="items">
-          @for (group of itemControls; track assets[$index].assetId) {
+          @for (asset of assets; track asset.assetId; let i = $index) {
             <div class="column is-half">
-              <div class="box media-card" [formGroupName]="$index">
+              <div class="box media-card" [formGroupName]="i">
                 <div class="media-card__body">
-                  <img class="media-card__thumb" [src]="thumbUrl(assets[$index])" [alt]="assets[$index].alt" />
+                  <img class="media-card__thumb" [src]="thumbUrl(asset)" [alt]="asset.alt" />
                   <div class="media-card__fields">
                     <p class="is-size-7 has-text-grey">
-                      {{ assets[$index].originalFilename }} ·
-                      {{ assets[$index].uploadedAt | date: "y-MM-dd" }}
+                      {{ asset.originalFilename }} ·
+                      {{ asset.uploadedAt | date: "y-MM-dd" }}
                     </p>
                     <div class="field">
                       <label class="label is-small">Title</label>
@@ -70,30 +70,30 @@
                     <button
                       class="button is-small is-primary"
                       type="button"
-                      (click)="save($index)"
-                      [disabled]="isSaving(assets[$index]) || group.pristine"
+                      (click)="save(i)"
+                      [disabled]="isSaving(asset) || itemControls[i].pristine"
                     >
                       Save
                     </button>
                   </div>
                   <div class="control">
-                    <button class="button is-small" type="button" (click)="copyUrl($index)">
-                      {{ copiedId === assets[$index].assetId ? "Copied!" : "Copy URL" }}
+                    <button class="button is-small" type="button" (click)="copyUrl(i)">
+                      {{ copiedId === asset.assetId ? "Copied!" : "Copy URL" }}
                     </button>
                   </div>
                   <div class="control">
                     <button
                       class="button is-small is-danger is-light"
                       type="button"
-                      (click)="remove($index)"
-                      [disabled]="isSaving(assets[$index])"
+                      (click)="remove(i)"
+                      [disabled]="isSaving(asset)"
                     >
                       Delete
                     </button>
                   </div>
-                  @if (rowMessage(assets[$index])) {
+                  @if (rowMessage(asset)) {
                     <div class="control">
-                      <span class="is-size-7 has-text-grey">{{ rowMessage(assets[$index]) }}</span>
+                      <span class="is-size-7 has-text-grey">{{ rowMessage(asset) }}</span>
                     </div>
                   }
                 </div>
