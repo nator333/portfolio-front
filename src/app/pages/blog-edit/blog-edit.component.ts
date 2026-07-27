@@ -17,6 +17,7 @@ import { HeroComponent } from "../../components/hero/hero.component";
 import { ImageUploadComponent } from "../../components/image-upload/image-upload.component";
 import { AuthService } from "../../services/auth.service";
 import { BlogService } from "../../services/blog.service";
+import { MediaAsset, MediaService } from "../../services/media.service";
 import { BlogData, BlogPostEntry } from "../../models/blog-data";
 import { renderBlogMarkdown } from "../../utils/blog-markdown.util";
 
@@ -32,7 +33,11 @@ export class BlogEditComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private blogService = inject(BlogService);
+  private mediaService = inject(MediaService);
   private router = inject(Router);
+
+  /** Saved images offered in each post's eye-catch picker. */
+  mediaAssets: MediaAsset[] = [];
 
   loading = false;
   saving = false;
@@ -54,6 +59,15 @@ export class BlogEditComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBlog();
+    this.loadMedia();
+  }
+
+  private loadMedia(): void {
+    // Best-effort: the picker just has no saved options if this fails.
+    this.mediaService.list().subscribe({
+      next: (assets) => (this.mediaAssets = assets),
+      error: () => (this.mediaAssets = []),
+    });
   }
 
   get postControls(): FormGroup[] {

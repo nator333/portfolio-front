@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 import { BlogEditComponent } from './blog-edit.component';
 import { BlogService } from '../../services/blog.service';
 import { AuthService } from '../../services/auth.service';
+import { MediaService } from '../../services/media.service';
 import { BlogData } from '../../models/blog-data';
 
 const savedBlog: BlogData = {
@@ -47,6 +48,7 @@ describe('BlogEditComponent', () => {
         provideRouter([]),
         { provide: BlogService, useValue: blogService },
         { provide: AuthService, useValue: { logout: () => undefined } },
+        { provide: MediaService, useValue: { list: () => of([]) } },
       ],
     }).compileComponents();
 
