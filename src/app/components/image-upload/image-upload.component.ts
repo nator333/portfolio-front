@@ -48,9 +48,14 @@ export class ImageUploadComponent implements OnDestroy {
     return this.localPreview || this.control.value || null;
   }
 
-  /** Saved images offered in the dropdown: only those in this field's category. */
+  /**
+   * Saved images offered in the dropdown: those in this field's category, plus
+   * uncategorised ("general") images, which are usable anywhere.
+   */
   get selectableAssets(): MediaAsset[] {
-    return this.assets.filter((asset) => asset.category === this.category);
+    return this.assets.filter(
+      (asset) => asset.category === this.category || asset.category === 'general',
+    );
   }
 
   onFileSelected(event: Event): void {
