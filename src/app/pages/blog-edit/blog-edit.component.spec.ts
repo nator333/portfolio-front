@@ -122,11 +122,8 @@ describe('BlogEditComponent', () => {
     expect(group.get('url')?.value).toBe('/blog/my-new-post');
   });
 
-  it('should render a markdown preview when toggled open', () => {
-    const group = component.postControls[0];
-    expect(component.isPreviewOpen(group)).toBe(false);
-    component.togglePreview(group);
-    expect(component.isPreviewOpen(group)).toBe(true);
-    expect(component.previewHtml(group)).toContain('Newer</h2>');
+  it('should render a markdown editor for each post', () => {
+    const editors = fixture.nativeElement.querySelectorAll('app-markdown-editor');
+    expect(editors.length).toBe(component.postControls.length);
   });
 });

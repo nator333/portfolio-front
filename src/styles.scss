@@ -64,6 +64,15 @@ body {
   font-weight: 700;
 }
 
+/* EasyMDE (blog editor): its fullscreen / side-by-side layers default to a low
+   z-index and slip behind the fixed navbar (z-index 30). Lift them above it so
+   the toolbar and preview stay visible in those modes. */
+.editor-toolbar.fullscreen,
+.CodeMirror-fullscreen,
+.editor-preview-side {
+  z-index: 40 !important;
+}
+
 /* Gold accent color for headings and important text */
 .gold-text {
   color: #FFD700;

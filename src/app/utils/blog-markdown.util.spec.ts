@@ -35,6 +35,23 @@ describe("renderBlogMarkdown", () => {
     expect(html).not.toContain("<script>");
   });
 
+  it("should emit a mermaid pre block (not a code block) for a mermaid fence", () => {
+    const html = renderBlogMarkdown("```mermaid\ngraph TD\n  A --> B\n```");
+
+    expect(html).toContain('<pre class="mermaid">');
+    expect(html).toContain("graph TD");
+    // Must not be wrapped as a Prism code block, or mermaid.run cannot read it.
+    expect(html).not.toContain("language-mermaid");
+    expect(html).not.toContain("line-numbers");
+  });
+
+  it("should escape HTML inside a mermaid fence", () => {
+    const html = renderBlogMarkdown('```mermaid\ngraph TD\n  A["<b>x</b>"] --> B\n```');
+
+    expect(html).toContain("&lt;b&gt;");
+    expect(html).not.toContain("<b>x</b>");
+  });
+
   it("should omit the language class when given a fence with no language", () => {
     const html = renderBlogMarkdown("```\nplain\n```");
 

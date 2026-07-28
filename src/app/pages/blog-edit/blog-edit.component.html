@@ -89,19 +89,13 @@
               </div>
               <div class="field">
                 <label class="label">Content (markdown)</label>
-                <textarea
-                  class="textarea content-input"
-                  rows="14"
+                <app-markdown-editor
                   formControlName="content"
-                  placeholder="## Heading&#10;&#10;Write the post in markdown..."
-                ></textarea>
+                  [assets]="mediaAssets"
+                  category="blog"
+                />
               </div>
               <div class="field is-grouped">
-                <div class="control">
-                  <button class="button is-small" type="button" (click)="togglePreview(group)">
-                    {{ isPreviewOpen(group) ? 'Hide preview' : 'Show preview' }}
-                  </button>
-                </div>
                 <div class="control">
                   <button
                     class="button is-small is-danger is-light"
@@ -112,9 +106,6 @@
                   </button>
                 </div>
               </div>
-              @if (isPreviewOpen(group)) {
-                <div class="preview content" [innerHTML]="previewHtml(group)"></div>
-              }
             </div>
           }
         </div>

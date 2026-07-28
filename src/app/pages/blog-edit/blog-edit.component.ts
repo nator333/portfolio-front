@@ -15,16 +15,21 @@ import {
 } from "@angular/forms";
 import { HeroComponent } from "../../components/hero/hero.component";
 import { ImageUploadComponent } from "../../components/image-upload/image-upload.component";
+import { MarkdownEditorComponent } from "../../components/markdown-editor/markdown-editor.component";
 import { AuthService } from "../../services/auth.service";
 import { BlogService } from "../../services/blog.service";
 import { MediaAsset, MediaService } from "../../services/media.service";
 import { BlogData, BlogPostEntry } from "../../models/blog-data";
-import { renderBlogMarkdown } from "../../utils/blog-markdown.util";
 
 @Component({
   selector: "app-blog-edit",
   standalone: true,
-  imports: [ReactiveFormsModule, HeroComponent, ImageUploadComponent],
+  imports: [
+    ReactiveFormsModule,
+    HeroComponent,
+    ImageUploadComponent,
+    MarkdownEditorComponent,
+  ],
   templateUrl: "./blog-edit.component.html",
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./blog-edit.component.scss",
@@ -53,9 +58,6 @@ export class BlogEditComponent implements OnInit {
   blogForm: FormGroup = this.fb.group({
     posts: this.fb.array([]),
   });
-
-  // Keyed by form group (not index) so open previews survive removals.
-  private openPreviews = new Set<FormGroup>();
 
   ngOnInit(): void {
     this.loadBlog();
@@ -86,7 +88,6 @@ export class BlogEditComponent implements OnInit {
 
   removePost(index: number): void {
     const posts = this.blogForm.get("posts") as FormArray;
-    this.openPreviews.delete(posts.at(index) as FormGroup);
     posts.removeAt(index);
   }
 
@@ -104,22 +105,6 @@ export class BlogEditComponent implements OnInit {
     if (slug) {
       group.get("url")?.setValue(`/blog/${slug}`);
     }
-  }
-
-  togglePreview(group: FormGroup): void {
-    if (this.openPreviews.has(group)) {
-      this.openPreviews.delete(group);
-    } else {
-      this.openPreviews.add(group);
-    }
-  }
-
-  isPreviewOpen(group: FormGroup): boolean {
-    return this.openPreviews.has(group);
-  }
-
-  previewHtml(group: FormGroup): string {
-    return renderBlogMarkdown((group.get("content")?.value as string) ?? "");
   }
 
   save(): void {
