@@ -42,7 +42,7 @@ export class HomeComponent implements OnInit {
     "Toshifumi Kakiuchi",
   ];
   readonly sighInfo: string[] = [
-    "assets/home/my_name_gold.png",
+    "assets/my_name_gold.png",
     "Hiro Nakamata Signature",
   ];
 
