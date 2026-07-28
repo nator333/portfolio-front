@@ -1,8 +1,10 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
+  NgZone,
   OnDestroy,
   ViewChild,
   forwardRef,
@@ -91,6 +93,13 @@ export class MarkdownEditorComponent
   implements AfterViewInit, OnDestroy, ControlValueAccessor
 {
   private media = inject(MediaService);
+  // EasyMDE fires its toolbar/editor callbacks outside Angular's change
+  // detection, and the parent uses a non-default CD strategy, so a plain
+  // zone tick does not re-check this view. Callbacks that change bound state
+  // (the image picker, upload status) call cdr.detectChanges() directly;
+  // form-value emissions run through the zone so the parent form reacts.
+  private zone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('host') private host!: ElementRef<HTMLTextAreaElement>;
 
@@ -172,10 +181,10 @@ export class MarkdownEditorComponent
     this.editor.value(this.pendingValue);
     this.editor.codemirror.on('change', () => {
       if (!this.writing) {
-        this.onChange(this.editor!.value());
+        this.zone.run(() => this.onChange(this.editor!.value()));
       }
     });
-    this.editor.codemirror.on('blur', () => this.onTouched());
+    this.editor.codemirror.on('blur', () => this.zone.run(() => this.onTouched()));
   }
 
   ngOnDestroy(): void {
@@ -216,10 +225,12 @@ export class MarkdownEditorComponent
     this.showImagePicker = !this.showImagePicker;
     this.uploadMessage = '';
     this.uploadError = false;
+    this.cdr.detectChanges();
   }
 
   closeImagePicker(): void {
     this.showImagePicker = false;
+    this.cdr.detectChanges();
   }
 
   onSelectSaved(event: Event): void {
@@ -252,6 +263,7 @@ export class MarkdownEditorComponent
 
     this.uploadError = false;
     this.uploadMessage = 'Uploading…';
+    this.cdr.detectChanges();
     this.media.upload(file, this.category).subscribe({
       next: (result) => {
         this.uploadMessage = '';
@@ -296,5 +308,6 @@ export class MarkdownEditorComponent
   private fail(message: string): void {
     this.uploadError = true;
     this.uploadMessage = message;
+    this.cdr.detectChanges();
   }
 }
