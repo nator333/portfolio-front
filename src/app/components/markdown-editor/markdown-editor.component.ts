@@ -139,6 +139,12 @@ export class MarkdownEditorComponent
         'unordered-list',
         'ordered-list',
         'horizontal-rule',
+        {
+          name: 'line-break',
+          action: () => this.insertBreak(),
+          className: 'fa fa-turn-down',
+          title: 'Insert line break (<br>)',
+        },
         '|',
         'link',
         'code',
@@ -271,6 +277,19 @@ export class MarkdownEditorComponent
       return;
     }
     cm.replaceSelection(MERMAID_TEMPLATE);
+    cm.focus();
+  }
+
+  /**
+   * Inserts an explicit <br>. Markdown collapses blank lines, so this is the way
+   * to force a single line break; marked passes the raw tag straight through.
+   */
+  private insertBreak(): void {
+    const cm = this.editor?.codemirror;
+    if (!cm) {
+      return;
+    }
+    cm.replaceSelection('<br>\n');
     cm.focus();
   }
 
