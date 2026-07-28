@@ -6,6 +6,31 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+
+    <!--
+      Default social-share preview (Open Graph + Twitter Card).
+      Crawlers (X, Slack, iMessage) don't run JS, so these must live in the
+      static HTML. They cover the domain and every top-level route, which all
+      serve this index.html. Per-post blog previews are a separate, dynamic
+      concern (see the SPA fallback note in README) and are not handled here.
+    -->
+    <meta name="description" content="Masahiro Nakamata's portfolio — software engineering, projects, and blog." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Hiro's Portfolio" />
+    <meta property="og:title" content="Hiro's Portfolio" />
+    <meta property="og:description" content="Masahiro Nakamata's portfolio — software engineering, projects, and blog." />
+    <meta property="og:url" content="https://nakamata.tech/" />
+    <meta property="og:image" content="https://nakamata.tech/assets/og/name-art.png" />
+    <meta property="og:image:secure_url" content="https://nakamata.tech/assets/og/name-art.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Masahiro Nakamata — name in gold calligraphy" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Hiro's Portfolio" />
+    <meta name="twitter:description" content="Masahiro Nakamata's portfolio — software engineering, projects, and blog." />
+    <meta name="twitter:image" content="https://nakamata.tech/assets/og/name-art.png" />
+    <meta name="twitter:image:alt" content="Masahiro Nakamata — name in gold calligraphy" />
   </head>
   <body>
     <app-root></app-root>
