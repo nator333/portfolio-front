@@ -8,6 +8,7 @@ import { CommonModule } from "@angular/common";
 import { ActivatedRoute, Router } from "@angular/router";
 import { HttpClientModule } from "@angular/common/http";
 import { BlogService, BlogPost } from "../../services/blog.service";
+import { runMermaid } from "../../utils/mermaid.util";
 import * as Prism from "prismjs";
 
 @Component({
@@ -119,11 +120,11 @@ export class BlogPostComponent implements OnInit, AfterViewChecked {
     this.router.navigate(["/blog"]);
   }
 
-  // Initialize Prism.js after the view is rendered
+  // Highlight code and render Mermaid diagrams once the content is in the DOM.
   ngAfterViewChecked(): void {
     if (this.post && !this.loading && !this.highlightedCode) {
-      // Highlight all code blocks
       Prism.highlightAll();
+      void runMermaid(document.body);
       this.highlightedCode = true;
     }
   }
