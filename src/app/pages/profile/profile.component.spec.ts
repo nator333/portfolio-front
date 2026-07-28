@@ -136,7 +136,7 @@ describe("ProfileComponent", () => {
     expect(titles).not.toContain("Education");
   });
 
-  it("should fall back to static skill categories when the API fails", () => {
+  it("should render no skill categories when the API fails", () => {
     httpMock
       .expectOne(`${environment.apiBaseUrl}/cv`)
       .flush(
@@ -145,20 +145,17 @@ describe("ProfileComponent", () => {
       );
     fixture.detectChanges();
 
-    const categoryNames = Array.from(
-      fixture.nativeElement.querySelectorAll(".skillBox .subtitle"),
-    ).map((h) => (h as HTMLElement).textContent?.trim());
-    expect(categoryNames).toContain("Languages");
-    expect(categoryNames).toContain("Database");
-    expect(categoryNames).toContain("Tools");
+    expect(
+      fixture.nativeElement.querySelectorAll(".skillBox").length,
+    ).toBe(0);
+    expect(sectionTitles()).not.toContain("Technical Skills");
   });
 
-  it("should keep fallback categories when the CV has no technical skills yet", () => {
+  it("should omit the skills section when the CV has no technical skills", () => {
     flushCv({});
-    const categoryNames = Array.from(
-      fixture.nativeElement.querySelectorAll(".skillBox .subtitle"),
-    ).map((h) => (h as HTMLElement).textContent?.trim());
-    expect(categoryNames).toContain("Languages");
-    expect(categoryNames).toContain("Tools");
+    expect(
+      fixture.nativeElement.querySelectorAll(".skillBox").length,
+    ).toBe(0);
+    expect(sectionTitles()).not.toContain("Technical Skills");
   });
 });
