@@ -9,58 +9,6 @@ import {
 } from "../../models/cv-data";
 import { downloadCvPdf } from "../../utils/cv-pdf.util";
 
-// Shown when the CV API is unavailable (e.g. monthly quota exhausted), so the
-// page never renders empty.
-const FALLBACK_SUMMARY = "";
-const FALLBACK_SKILLS: CvSkillCategory[] = [
-  {
-    category: "Languages",
-    skills: [
-      "HTML5",
-      "SASS",
-      "TypeScript",
-      "JavaScript",
-      "Kotlin",
-      "Java",
-      "Swift",
-      "Objective-C",
-    ],
-  },
-  {
-    category: "Frameworks",
-    skills: ["Angular", "React", "Vue.js", "Node.js", "Spring Boot", "Ktor"],
-  },
-  {
-    category: "Cloud Computing Platform",
-    skills: [
-      "EC2",
-      "S3",
-      "Lambda",
-      "API Gateway",
-      "Kinesis",
-      "Redshift",
-      "GCE",
-      "Firebase",
-    ],
-  },
-  {
-    category: "Database",
-    skills: ["MySQL", "PostgreSQL", "SQLite", "Neo4j", "DynamoDB"],
-  },
-  {
-    category: "Tools",
-    skills: [
-      "npm",
-      "Gradle",
-      "Maven",
-      "Docker",
-      "IntelliJ Ultimate",
-      "Visual Studio Code",
-      "Git",
-    ],
-  },
-];
-
 @Component({
   selector: "app-profile",
   standalone: true,
@@ -93,25 +41,27 @@ const FALLBACK_SKILLS: CvSkillCategory[] = [
           </div>
         }
 
-        <div class="profile-block">
-          <h2 class="title is-3 has-text-centered">Technical Skills</h2>
-          <div class="columns is-multiline">
-            @for (category of skillCategories; track category.category) {
-              <div class="column is-half">
-                <div class="skillBox">
-                  <h3 class="subtitle is-5 has-text-centered">
-                    {{ category.category }}
-                  </h3>
-                  <div class="skill-list">
-                    @for (skill of category.skills; track skill) {
-                      <span class="skill-tag">{{ skill }}</span>
-                    }
+        @if (skillCategories.length) {
+          <div class="profile-block">
+            <h2 class="title is-3 has-text-centered">Technical Skills</h2>
+            <div class="columns is-multiline">
+              @for (category of skillCategories; track category.category) {
+                <div class="column is-half">
+                  <div class="skillBox">
+                    <h3 class="subtitle is-5 has-text-centered">
+                      {{ category.category }}
+                    </h3>
+                    <div class="skill-list">
+                      @for (skill of category.skills; track skill) {
+                        <span class="skill-tag">{{ skill }}</span>
+                      }
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
+              }
+            </div>
           </div>
-        </div>
+        }
 
         @if (experience.length) {
           <div class="profile-block">
@@ -168,8 +118,8 @@ const FALLBACK_SKILLS: CvSkillCategory[] = [
 export class ProfileComponent implements OnInit {
   downloadingCv = false;
   downloadError = "";
-  summary = FALLBACK_SUMMARY;
-  skillCategories: CvSkillCategory[] = FALLBACK_SKILLS;
+  summary = "";
+  skillCategories: CvSkillCategory[] = [];
   experience: CvExperienceEntry[] = [];
   education: CvEducationEntry[] = [];
 
@@ -178,14 +128,11 @@ export class ProfileComponent implements OnInit {
   ngOnInit(): void {
     this.cvService.getCv().subscribe({
       next: (data) => {
-        if (data.technicalSkills?.length) {
-          this.skillCategories = data.technicalSkills;
-        }
-        this.summary = data.summary || FALLBACK_SUMMARY;
+        this.skillCategories = data.technicalSkills ?? [];
+        this.summary = data.summary ?? "";
         this.experience = data.experience ?? [];
         this.education = data.education ?? [];
       },
-      // Keep the fallback content on error.
       error: () => undefined,
     });
   }
