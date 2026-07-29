@@ -72,9 +72,18 @@ describe("ActivityFeedComponent", () => {
   });
 
   it("should render a non-link title when no url is present", () => {
-    setEntries([{ date: "2026-07-19", type: "gym", title: "Leg day" }]);
+    setEntries([{ date: "2026-07-19", type: "blog", title: "Draft" }]);
     const title = fixture.nativeElement.querySelector(".feed-title");
     expect(title.tagName.toLowerCase()).toBe("span");
+  });
+
+  it("should link linkless gym entries to the training page", () => {
+    setEntries([{ date: "2026-07-19", type: "gym", title: "Leg day" }]);
+    const title = fixture.nativeElement.querySelector(
+      "a.feed-title",
+    ) as HTMLAnchorElement | null;
+    expect(title?.getAttribute("href")).toBe("/workout");
+    expect(title?.getAttribute("target")).toBeNull();
   });
 
   it("should highlight entries on the selected date", () => {

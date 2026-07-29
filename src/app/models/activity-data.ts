@@ -7,6 +7,16 @@ import { ContributionDay } from "../utils/contribution-calendar.util";
  */
 export type ActivityType = "blog" | "gym" | "github";
 
+/** All activity types, in the order they're shown in filters and legends. */
+export const ACTIVITY_TYPES: readonly ActivityType[] = ["blog", "gym", "github"];
+
+/** Short, human-readable label per activity type. */
+export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
+  blog: "Blog",
+  gym: "Gym",
+  github: "GitHub",
+};
+
 export interface ActivityEntry {
   /** Local calendar date, YYYY-MM-DD (matches ContributionDay.date). */
   date: string;

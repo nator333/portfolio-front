@@ -11,8 +11,11 @@ import { HomeService } from "../../services/home.service";
 import { ActivityService } from "../../services/activity.service";
 import { ContributionCalendarComponent } from "../../components/contribution-calendar/contribution-calendar.component";
 import { ActivityFeedComponent } from "../../components/activity-feed/activity-feed.component";
+import { ActivityFiltersComponent } from "../../components/activity-filters/activity-filters.component";
 import {
   ActivityEntry,
+  ActivityType,
+  ACTIVITY_TYPES,
   activityToContributions,
 } from "../../models/activity-data";
 
@@ -23,7 +26,11 @@ import {
 @Component({
   selector: "app-home",
   standalone: true,
-  imports: [ContributionCalendarComponent, ActivityFeedComponent],
+  imports: [
+    ContributionCalendarComponent,
+    ActivityFeedComponent,
+    ActivityFiltersComponent,
+  ],
   templateUrl: "./home.component.html",
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./home.component.scss",
@@ -52,9 +59,31 @@ export class HomeComponent implements OnInit {
   // left empty on failure — the calendar still renders its blank grid.
   readonly entries = signal<ActivityEntry[]>([]);
 
-  // Per-day counts derived from the entries, for the calendar grid.
+  // Activity types switched on in the filter badges. Every type starts active,
+  // so the calendar and feed show everything until the visitor narrows it down.
+  readonly activeTypes = signal<Set<ActivityType>>(new Set(ACTIVITY_TYPES));
+
+  // Types that actually occur in the loaded entries, in canonical order — the
+  // badges only offer filters that would change what's shown.
+  readonly availableTypes = computed(() => {
+    const present = new Set(this.entries().map((entry) => entry.type));
+    return ACTIVITY_TYPES.filter((type) => present.has(type));
+  });
+
+  // Active types as an ordered array, for the filter badges' `active` input.
+  readonly activeTypeList = computed(() =>
+    ACTIVITY_TYPES.filter((type) => this.activeTypes().has(type)),
+  );
+
+  // Entries kept by the current type filter; feeds both the calendar and list.
+  readonly filteredEntries = computed(() => {
+    const active = this.activeTypes();
+    return this.entries().filter((entry) => active.has(entry.type));
+  });
+
+  // Per-day counts derived from the filtered entries, for the calendar grid.
   readonly contributions = computed(() =>
-    activityToContributions(this.entries()),
+    activityToContributions(this.filteredEntries()),
   );
 
   // Day currently selected on the calendar; drives the feed highlight.
@@ -63,6 +92,19 @@ export class HomeComponent implements OnInit {
   onDaySelected(date: string): void {
     // Toggle: clicking the highlighted day again clears the selection.
     this.selectedDate.update((current) => (current === date ? null : date));
+  }
+
+  // Flip a type on or off; a new Set keeps the signal change detectable.
+  onTypeToggled(type: ActivityType): void {
+    this.activeTypes.update((current) => {
+      const next = new Set(current);
+      if (next.has(type)) {
+        next.delete(type);
+      } else {
+        next.add(type);
+      }
+      return next;
+    });
   }
 
   ngOnInit(): void {
