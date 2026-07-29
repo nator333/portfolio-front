@@ -1,0 +1,18 @@
+<div
+  class="activity-filters"
+  role="group"
+  aria-label="Filter activity by type"
+>
+  @for (type of types(); track type) {
+    <button
+      type="button"
+      class="filter-badge"
+      [class]="'type-' + type"
+      [class.is-active]="isActive(type)"
+      [attr.aria-pressed]="isActive(type)"
+      (click)="toggled.emit(type)"
+    >
+      {{ label(type) }}
+    </button>
+  }
+</div>

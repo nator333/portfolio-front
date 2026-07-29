@@ -21,6 +21,9 @@
     text-shadow: none;
     animation: fadeInUp 1s ease-out 0.3s both;
     color: #ffffff !important;
+    // Bulma pulls the subtitle tight against the title; give it a little
+    // breathing room so the two headings don't read as one block.
+    padding-top: 10px;
   }
   
   .content {

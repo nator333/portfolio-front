@@ -14,19 +14,14 @@
           <span class="feed-badge" [class]="'type-' + entry.type">{{
             typeLabel(entry.type)
           }}</span>
-          @if (entry.url) {
-            @if (isExternal(entry.url)) {
-              <a
-                class="feed-title"
-                [href]="entry.url"
-                target="_blank"
-                rel="noopener"
+          @let url = entryUrl(entry);
+          @if (url) {
+            @if (isExternal(url)) {
+              <a class="feed-title" [href]="url" target="_blank" rel="noopener"
                 >{{ entry.title }}</a
               >
             } @else {
-              <a class="feed-title" [routerLink]="entry.url">{{
-                entry.title
-              }}</a>
+              <a class="feed-title" [routerLink]="url">{{ entry.title }}</a>
             }
           } @else {
             <span class="feed-title">{{ entry.title }}</span>

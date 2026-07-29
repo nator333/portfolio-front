@@ -8,13 +8,14 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { RouterLink } from "@angular/router";
-import { ActivityEntry, ActivityType } from "../../models/activity-data";
+import {
+  ActivityEntry,
+  ActivityType,
+  ACTIVITY_TYPE_LABELS,
+} from "../../models/activity-data";
 
-const TYPE_LABELS: Record<ActivityType, string> = {
-  blog: "Blog",
-  gym: "Gym",
-  github: "GitHub",
-};
+/** Route for the training page; gym entries link here when self-linkless. */
+const TRAINING_ROUTE = "/workout";
 
 /**
  * Chronological list of activity entries, the detail surface beside the
@@ -62,7 +63,15 @@ export class ActivityFeedComponent {
   }
 
   typeLabel(type: ActivityType): string {
-    return TYPE_LABELS[type];
+    return ACTIVITY_TYPE_LABELS[type];
+  }
+
+  /**
+   * Where an entry's title links. Gym sessions have no page of their own, so
+   * they route to the training page; an explicit url on the entry still wins.
+   */
+  entryUrl(entry: ActivityEntry): string | undefined {
+    return entry.url ?? (entry.type === "gym" ? TRAINING_ROUTE : undefined);
   }
 
   /** True for absolute http(s) URLs; those open in a new tab via href. */

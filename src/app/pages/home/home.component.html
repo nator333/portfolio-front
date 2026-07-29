@@ -55,6 +55,13 @@
 <section class="section activity-section">
   <div class="container">
     <h2 class="activity-heading">Activity</h2>
+    @if (availableTypes().length > 1) {
+      <app-activity-filters
+        [types]="availableTypes()"
+        [active]="activeTypeList()"
+        (toggled)="onTypeToggled($event)"
+      />
+    }
     <div class="columns activity-layout">
       <div class="column is-two-thirds">
         <app-contribution-calendar
@@ -65,7 +72,7 @@
       </div>
       <div class="column is-one-third">
         <app-activity-feed
-          [entries]="entries()"
+          [entries]="filteredEntries()"
           [selectedDate]="selectedDate()"
         />
       </div>
