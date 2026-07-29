@@ -45,19 +45,42 @@ const WEEKS_CHARTED = 26;
 const AXIS = "#8a8a84";
 const GRID = "rgba(255,255,255,0.08)";
 
-/** Rolling window and hypertrophy set-volume guide (sets per muscle per week). */
+/** Rolling window for the weekly-volume view. */
 const WINDOW_DAYS = 7;
-const TARGET_MIN = 10;
-const TARGET_MAX = 20;
-/** Muscle groups that are hypertrophy targets — Cardio and Other are excluded. */
-const MAJOR_MUSCLES = MUSCLE_ORDER.filter((m) => m !== "Cardio" && m !== "Other");
 
-/** Bar colour by where a muscle's weekly set count falls against the guide. */
+/**
+ * Per-muscle weekly set range (min ≈ minimum effective volume, max ≈ maximum
+ * recoverable), adapted from Renaissance Periodization's MEV–MRV landmarks.
+ * These are heuristics, not prescriptions. Ranges for arms, traps and forearms
+ * sit lower on purpose: our set counts are direct-only (a row is Back, not Back
+ * + Biceps), so those muscles' indirect volume is not captured here.
+ */
+const MUSCLE_TARGETS: Record<string, { min: number; max: number }> = {
+  Chest: { min: 10, max: 22 },
+  Back: { min: 10, max: 25 },
+  Legs: { min: 8, max: 20 },
+  Shoulders: { min: 8, max: 26 },
+  Biceps: { min: 8, max: 18 },
+  Triceps: { min: 6, max: 18 },
+  Traps: { min: 6, max: 20 },
+  Calves: { min: 8, max: 16 },
+  Abs: { min: 6, max: 16 },
+  Forearms: { min: 4, max: 12 },
+};
+/** Muscle groups that are hypertrophy targets — those with a defined range. */
+const MAJOR_MUSCLES = MUSCLE_ORDER.filter((m) => m in MUSCLE_TARGETS);
+/** Widest max across muscles, so the x-axis always shows every target band. */
+const MAX_TARGET = Math.max(...Object.values(MUSCLE_TARGETS).map((t) => t.max));
+
+/** Bar colour by where a muscle's set count falls against *its own* range. */
 const ZONE_UNDER = "#d9614f";
 const ZONE_OPTIMAL = "#1baf7a";
 const ZONE_OVER = "#eda100";
-const zoneColor = (sets: number): string =>
-  sets < TARGET_MIN ? ZONE_UNDER : sets <= TARGET_MAX ? ZONE_OPTIMAL : ZONE_OVER;
+const zoneColor = (muscle: string, sets: number): string => {
+  const t = MUSCLE_TARGETS[muscle];
+  if (!t) return ZONE_OPTIMAL;
+  return sets < t.min ? ZONE_UNDER : sets <= t.max ? ZONE_OPTIMAL : ZONE_OVER;
+};
 
 @Component({
   selector: "app-workout",
@@ -100,7 +123,7 @@ const zoneColor = (sets: number): string =>
           <div class="chart-block">
             <h2 class="chart-title">Weekly volume — last 7 days</h2>
             <p class="chart-sub">
-              Hard sets per muscle over the trailing 7 days ({{ windowLabel() }}). Shaded band is the {{ targetMin }}–{{ targetMax }} sets hypertrophy guide.
+              Hard sets per muscle over the trailing 7 days ({{ windowLabel() }}). Each shaded band is that muscle's own weekly target range.
             </p>
             <div class="zone-legend">
               <span><i class="zone-swatch" style="background:{{ zoneUnder }}"></i>under</span>
@@ -111,7 +134,21 @@ const zoneColor = (sets: number): string =>
               <canvas
                 id="chart-7day"
                 role="img"
-                aria-label="Horizontal bars of hard sets per muscle group over the last 7 days, against a 10 to 20 set target band."
+                aria-label="Horizontal bars of hard sets per muscle group over the last 7 days, each against that muscle's own target band."
+              ></canvas>
+            </div>
+          </div>
+
+          <div class="chart-block">
+            <h2 class="chart-title">Recovery — days since last trained</h2>
+            <p class="chart-sub">
+              Days since each muscle was last worked, as of {{ data.totals.lastDate }}. Green is freshly trained, amber is due, red is overdue.
+            </p>
+            <div class="chart-box chart-box--lanes">
+              <canvas
+                id="chart-recovery"
+                role="img"
+                aria-label="Horizontal bars of days since each muscle group was last trained."
               ></canvas>
             </div>
           </div>
@@ -177,9 +214,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
   readonly loaded = signal(false);
   readonly weeksShown = signal(0);
 
-  // Exposed for the 7-day chart's caption and zone legend.
-  readonly targetMin = TARGET_MIN;
-  readonly targetMax = TARGET_MAX;
+  // Exposed for the 7-day chart's zone legend.
   readonly zoneUnder = ZONE_UNDER;
   readonly zoneOptimal = ZONE_OPTIMAL;
   readonly zoneOver = ZONE_OVER;
@@ -251,6 +286,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
       "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
     this.buildSevenDay(data.days, data.totals.lastDate);
+    this.buildRecovery(data.days, data.totals.lastDate);
     this.buildStrength(data.strengthSeries);
     this.buildWeekly(data.weeks);
     this.buildRadar(data.muscles);
@@ -275,27 +311,37 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     const rows = MAJOR_MUSCLES.map((m) => ({ muscle: m, sets: sets.get(m) ?? 0 })).sort(
       (a, b) => b.sets - a.sets,
     );
-    const maxSets = Math.max(TARGET_MAX + 4, ...rows.map((r) => r.sets));
+    // Headroom past the widest bar/band so the tip labels never clip.
+    const maxSets = Math.max(MAX_TARGET, ...rows.map((r) => r.sets)) + 4;
 
-    // Draws the optimal band and its edges behind the bars.
+    // Each lane gets its own target band drawn behind its bar, since the
+    // productive range differs by muscle.
     const band = {
       id: "targetBand",
       beforeDatasetsDraw: (chart: Chart) => {
         const { ctx, chartArea, scales } = chart;
         const x = scales["x"];
-        const lo = x.getPixelForValue(TARGET_MIN);
-        const hi = x.getPixelForValue(TARGET_MAX);
+        const y = scales["y"];
+        const rowH = (chartArea.bottom - chartArea.top) / rows.length;
         ctx.save();
-        ctx.fillStyle = "rgba(27,175,122,0.10)";
-        ctx.fillRect(lo, chartArea.top, hi - lo, chartArea.bottom - chartArea.top);
-        ctx.strokeStyle = "rgba(27,175,122,0.45)";
-        ctx.setLineDash([4, 4]);
-        for (const px of [lo, hi]) {
-          ctx.beginPath();
-          ctx.moveTo(px, chartArea.top);
-          ctx.lineTo(px, chartArea.bottom);
-          ctx.stroke();
-        }
+        rows.forEach((r, i) => {
+          const t = MUSCLE_TARGETS[r.muscle];
+          if (!t) return;
+          const lo = x.getPixelForValue(t.min);
+          const hi = x.getPixelForValue(t.max);
+          const top = y.getPixelForValue(i) - rowH * 0.42;
+          const h = rowH * 0.84;
+          ctx.fillStyle = "rgba(27,175,122,0.12)";
+          ctx.fillRect(lo, top, hi - lo, h);
+          ctx.strokeStyle = "rgba(27,175,122,0.5)";
+          ctx.setLineDash([3, 3]);
+          for (const px of [lo, hi]) {
+            ctx.beginPath();
+            ctx.moveTo(px, top);
+            ctx.lineTo(px, top + h);
+            ctx.stroke();
+          }
+        });
         ctx.restore();
       },
     };
@@ -325,7 +371,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
           {
             label: "sets",
             data: rows.map((r) => r.sets),
-            backgroundColor: rows.map((r) => zoneColor(r.sets)),
+            backgroundColor: rows.map((r) => zoneColor(r.muscle, r.sets)),
             borderWidth: 0,
             borderRadius: 3,
           },
@@ -337,7 +383,16 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (c) => `${c.parsed.x} sets in 7 days` } },
+          tooltip: {
+            callbacks: {
+              label: (c) => {
+                const t = MUSCLE_TARGETS[rows[c.dataIndex].muscle];
+                return t
+                  ? `${c.parsed.x} sets · target ${t.min}–${t.max}`
+                  : `${c.parsed.x} sets`;
+              },
+            },
+          },
         },
         scales: {
           x: {
@@ -350,6 +405,94 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         },
       },
       plugins: [band, labels],
+    });
+  }
+
+  private buildRecovery(days: WorkoutDay[], lastDate: string): void {
+    const end = new Date(`${lastDate}T00:00:00Z`).getTime();
+    const dayMs = 24 * 60 * 60 * 1000;
+
+    // Most recent day each muscle was worked; days-since measured from lastDate.
+    const lastSeen = new Map<string, string>();
+    for (const day of days) {
+      for (const [muscle, count] of Object.entries(day.muscles ?? {})) {
+        if (count > 0 && (!lastSeen.has(muscle) || day.date > lastSeen.get(muscle)!)) {
+          lastSeen.set(muscle, day.date);
+        }
+      }
+    }
+
+    // Muscles not trained anywhere in the loaded window sink to the bottom,
+    // capped so one dormant group doesn't blow out the axis.
+    const CAP = 30;
+    const rows = MAJOR_MUSCLES.map((m) => {
+      const seen = lastSeen.get(m);
+      const since = seen
+        ? Math.round((end - new Date(`${seen}T00:00:00Z`).getTime()) / dayMs)
+        : CAP;
+      return { muscle: m, since: Math.min(since, CAP), capped: !seen || since > CAP };
+    }).sort((a, b) => b.since - a.since);
+
+    // Longer since = more overdue for frequency (2x+/week is the aim).
+    const recoveryColor = (since: number): string =>
+      since <= 3 ? ZONE_OPTIMAL : since <= 6 ? ZONE_OVER : ZONE_UNDER;
+
+    const labels = {
+      id: "recoveryLabels",
+      afterDatasetsDraw: (chart: Chart) => {
+        const { ctx } = chart;
+        ctx.save();
+        ctx.fillStyle = "#cccccc";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.textBaseline = "middle";
+        chart.getDatasetMeta(0).data.forEach((bar, i) => {
+          const text = rows[i].capped ? `${CAP}+ d` : `${rows[i].since} d`;
+          ctx.fillText(text, (bar as { x: number }).x + 6, (bar as { y: number }).y);
+        });
+        ctx.restore();
+      },
+    };
+
+    this.make("chart-recovery", {
+      type: "bar",
+      data: {
+        labels: rows.map((r) => r.muscle),
+        datasets: [
+          {
+            label: "days",
+            data: rows.map((r) => r.since),
+            backgroundColor: rows.map((r) => recoveryColor(r.since)),
+            borderWidth: 0,
+            borderRadius: 3,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (c) =>
+                rows[c.dataIndex].capped
+                  ? "not in the last 30 days"
+                  : `${c.parsed.x} days since last trained`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            suggestedMax: CAP + 5,
+            title: { display: true, text: "days since last trained" },
+            grid: { color: GRID },
+          },
+          y: { grid: { display: false } },
+        },
+      },
+      plugins: [labels],
     });
   }
 
