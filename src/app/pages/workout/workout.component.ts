@@ -24,7 +24,9 @@ import {
 const MUSCLE_COLORS: Record<string, string> = {
   Chest: "#2a78d6",
   Back: "#eb6834",
-  Legs: "#1baf7a",
+  Quads: "#1baf7a",
+  Hamstrings: "#0e7d5a",
+  Glutes: "#7bd45a",
   Shoulders: "#eda100",
   Biceps: "#e87ba4",
   Triceps: "#4a3aa7",
@@ -58,7 +60,9 @@ const WINDOW_DAYS = 7;
 const MUSCLE_TARGETS: Record<string, { min: number; max: number }> = {
   Chest: { min: 10, max: 22 },
   Back: { min: 10, max: 25 },
-  Legs: { min: 8, max: 20 },
+  Quads: { min: 8, max: 20 },
+  Hamstrings: { min: 6, max: 16 },
+  Glutes: { min: 4, max: 16 },
   Shoulders: { min: 8, max: 26 },
   Biceps: { min: 8, max: 18 },
   Triceps: { min: 6, max: 18 },
