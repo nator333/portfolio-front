@@ -23,10 +23,12 @@ import {
  *  group reads the same in both. */
 const MUSCLE_COLORS: Record<string, string> = {
   Chest: "#2a78d6",
-  Back: "#eb6834",
-  Quads: "#1baf7a",
-  Hamstrings: "#0e7d5a",
-  Glutes: "#7bd45a",
+  Lats: "#eb6834",
+  // Three distinct hues (cyan / violet / rose) so the leg groups read apart from
+  // each other and from Traps' green — not three shades of one green.
+  Quads: "#06b6d4",
+  Hamstrings: "#8b5cf6",
+  Glutes: "#f43f5e",
   Shoulders: "#eda100",
   Biceps: "#e87ba4",
   Triceps: "#4a3aa7",
@@ -54,12 +56,12 @@ const WINDOW_DAYS = 7;
  * Per-muscle weekly set range (min ≈ minimum effective volume, max ≈ maximum
  * recoverable), adapted from Renaissance Periodization's MEV–MRV landmarks.
  * These are heuristics, not prescriptions. Ranges for arms, traps and forearms
- * sit lower on purpose: our set counts are direct-only (a row is Back, not Back
+ * sit lower on purpose: our set counts are direct-only (a row is Lats, not Lats
  * + Biceps), so those muscles' indirect volume is not captured here.
  */
 const MUSCLE_TARGETS: Record<string, { min: number; max: number }> = {
   Chest: { min: 10, max: 22 },
-  Back: { min: 10, max: 25 },
+  Lats: { min: 10, max: 25 },
   Quads: { min: 8, max: 20 },
   Hamstrings: { min: 6, max: 16 },
   Glutes: { min: 4, max: 16 },
