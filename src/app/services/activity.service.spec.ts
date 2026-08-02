@@ -15,7 +15,7 @@ describe("ActivityService", () => {
     range: { from: "2025-07-24", to: "2026-07-24" },
     entries: [
       { date: "2026-07-24", type: "github", title: "Pushed to master in o/r" },
-      { date: "2026-07-23", type: "gym", title: "Workout: 14 sets — Legs" },
+      { date: "2026-07-23", type: "gym", title: "Workout: 14 sets — Quads" },
       { date: "2026-07-01", type: "blog", title: "A post", url: "/blog/a" },
     ],
     counts: { github: 1, blog: 1, gym: 1, total: 3 },
