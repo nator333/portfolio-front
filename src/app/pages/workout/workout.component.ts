@@ -113,6 +113,10 @@ const zoneColor = (muscle: string, sets: number): string => {
               <span class="metric-label">week streak</span>
             </div>
             <div class="metric">
+              <span class="metric-value">{{ daysSinceLastGym() }}</span>
+              <span class="metric-label">days since last workout</span>
+            </div>
+            <div class="metric">
               <span class="metric-value">{{ data.totals.workoutDays | number }}</span>
               <span class="metric-label">workout days</span>
             </div>
@@ -238,6 +242,21 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     const fmt = (d: Date) =>
       d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
     return `${fmt(start)} – ${fmt(end)}`;
+  });
+
+  /** Whole days between the last logged workout and today, in UTC so it lines
+   *  up with the date-only fields the API ships. Floored at 0 in case a future
+   *  date ever sneaks in. */
+  readonly daysSinceLastGym = computed(() => {
+    const last = this.summary()?.totals.lastDate;
+    if (!last) {
+      return 0;
+    }
+    const dayMs = 24 * 60 * 60 * 1000;
+    const lastMs = new Date(`${last}T00:00:00Z`).getTime();
+    const now = new Date();
+    const todayMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    return Math.max(Math.round((todayMs - lastMs) / dayMs), 0);
   });
 
   /** All-time average sessions per year: workout days over the span logged,
