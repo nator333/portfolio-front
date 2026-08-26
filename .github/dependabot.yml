@@ -30,6 +30,19 @@ updates:
       - dependency-name: "typescript"
         update-types:
           - version-update:semver-major
+      # jasmine-core 7 freezes the env DSL (describe/it/beforeEach) as read-only
+      # properties, and zone.js's zone-testing patch still assigns to them
+      # directly, so every spec dies at load with "Cannot assign to read only
+      # property 'describe'". zone.js has no jasmine-7-compatible release yet
+      # (0.16.2, the newest in @angular/core's peer range, still fails), so the
+      # major is unusable until Angular's toolchain supports it. @types/jasmine
+      # is pinned in lockstep so the types don't drift ahead of the runtime.
+      - dependency-name: "jasmine-core"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "@types/jasmine"
+        update-types:
+          - version-update:semver-major
     groups:
       angular:
         patterns:
