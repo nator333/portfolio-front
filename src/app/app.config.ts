@@ -1,10 +1,14 @@
 import {
   ApplicationConfig,
+  inject,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { provideHttpClient, withXhr } from "@angular/common/http";
+
+import { AnalyticsService } from "./services/analytics.service";
 
 import "prismjs";
 import "prismjs/components/prism-typescript.min.js";
@@ -26,5 +30,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withXhr()),
+    provideAppInitializer(() => inject(AnalyticsService).init()),
   ],
 };
