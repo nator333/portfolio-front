@@ -119,6 +119,44 @@ describe("BlogPostEditComponent", () => {
     expect(saved.posts[0].draft).toBeUndefined();
   });
 
+  it("should omit lang when it is the default", async () => {
+    const component = await setup(null);
+    component.form.reset({
+      title: "Default Lang",
+      date: "2025-01-01",
+      summary: "",
+      tags: "",
+      url: "/blog/default-lang",
+      image: "",
+      content: "Body",
+      draft: false,
+      lang: "en",
+    });
+    component.save();
+
+    const saved = blogService.updateBlog.calls.mostRecent().args[0];
+    expect(saved.posts[0].lang).toBeUndefined();
+  });
+
+  it("should persist a non-default post language", async () => {
+    const component = await setup(null);
+    component.form.reset({
+      title: "日本語の投稿",
+      date: "2025-01-01",
+      summary: "",
+      tags: "",
+      url: "/blog/nihongo",
+      image: "",
+      content: "本文",
+      draft: false,
+      lang: "ja",
+    });
+    component.save();
+
+    const saved = blogService.updateBlog.calls.mostRecent().args[0];
+    expect(saved.posts[0].lang).toBe("ja");
+  });
+
   it("should reject a url that collides with another post", async () => {
     const component = await setup("newer-post");
     component.form.get("url")?.setValue("/blog/older-post");

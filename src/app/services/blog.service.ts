@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, of, catchError, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { BlogData, BlogPostEntry } from '../models/blog-data';
+import { BlogData, BlogPostEntry, DEFAULT_BLOG_LANG } from '../models/blog-data';
 import { renderBlogMarkdown } from '../utils/blog-markdown.util';
 import { AuthService } from './auth.service';
 
@@ -18,6 +18,8 @@ export interface BlogPost {
   url: string;
   /** True for draft posts; only ever set for authenticated viewers. */
   draft: boolean;
+  /** BCP-47 language of the post text; falls back to the site default. */
+  lang: string;
 }
 
 const CACHE_KEY = 'blog-cache-v1';
@@ -138,6 +140,7 @@ export class BlogService {
       tags: entry.tags,
       url: entry.url,
       draft: entry.draft ?? false,
+      lang: entry.lang ?? DEFAULT_BLOG_LANG,
     };
   }
 

@@ -19,8 +19,18 @@ export interface BlogPostEntry {
    * "Draft" badge. Absent is treated as false.
    */
   draft?: boolean;
+  /**
+   * BCP-47 language of the post's title, summary and content, e.g. "ja".
+   * Surfaced as a `lang` attribute on the rendered text so browsers and screen
+   * readers treat it correctly (and offer to translate it). Absent means the
+   * site default, {@link DEFAULT_BLOG_LANG}.
+   */
+  lang?: string;
 }
 
 export interface BlogData {
   posts: BlogPostEntry[];
 }
+
+/** Language a post is assumed to be in when it carries no explicit `lang`. */
+export const DEFAULT_BLOG_LANG = "en";
