@@ -71,17 +71,18 @@ describe("buildCalendarModel", () => {
   it("should place end in the last column and mark later days out of range", () => {
     const model = buildCalendarModel([], { end, weeks: 4 });
     const lastWeek = model.weeks[model.weeks.length - 1];
-    // Thursday (index 4) is `end`; Fri/Sat are future padding.
-    expect(lastWeek.days[4].date).toBe("2026-07-23");
-    expect(lastWeek.days[4].inRange).toBeTrue();
+    // Thursday (index 3, Monday-start week) is `end`; Fri/Sat/Sun are padding.
+    expect(lastWeek.days[3].date).toBe("2026-07-23");
+    expect(lastWeek.days[3].inRange).toBeTrue();
+    expect(lastWeek.days[4].inRange).toBeFalse();
     expect(lastWeek.days[5].inRange).toBeFalse();
     expect(lastWeek.days[6].inRange).toBeFalse();
   });
 
-  it("should start each week on Sunday", () => {
+  it("should start each week on Monday", () => {
     const model = buildCalendarModel([], { end, weeks: 4 });
     const firstDay = new Date(model.weeks[0].days[0].date + "T00:00:00");
-    expect(firstDay.getDay()).toBe(0);
+    expect(firstDay.getDay()).toBe(1);
   });
 
   it("should sum counts within range into the total", () => {
@@ -130,14 +131,13 @@ describe("buildCalendarModel", () => {
   });
 
   it("should drop the leading month label when its column stub is too short", () => {
-    // 2026-04-05 is a Sunday, so a window ending here starts on a Sunday whose
-    // month (the window start) yields only a stub before the next month.
+    // A window ending mid-month whose leading column is a short month stub.
     const model = buildCalendarModel([], {
       end: new Date(2026, 6, 5), // Sun 2026-07-05
       weeks: 15,
     });
-    // First column is Sun 2026-03-22 (March stub, 2 columns), so March may or
-    // may not survive; whichever labels remain must not sit within 2 columns.
+    // First column is Mon 2026-03-23 (March stub), so March may or may not
+    // survive; whichever labels remain must not sit within 2 columns.
     for (let i = 1; i < model.months.length; i++) {
       expect(model.months[i].weekIndex - model.months[i - 1].weekIndex).toBeGreaterThanOrEqual(2);
     }

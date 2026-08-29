@@ -26,11 +26,12 @@ const MOBILE_BREAKPOINT_PX = 768;
 /** Weeks per month, for phrasing the scope label. */
 const WEEKS_PER_MONTH = 4.345;
 
-/** Weekday rows (Mon, Wed, Fri) that carry a label, GitHub-style. */
+/** Weekday rows (Mon, Wed, Fri) that carry a label, GitHub-style. Rows run
+ * Monday (0) through Sunday (6), so Mon/Wed/Fri sit on the even rows. */
 const WEEKDAY_LABELS: readonly { row: number; text: string }[] = [
-  { row: 1, text: "Mon" },
-  { row: 3, text: "Wed" },
-  { row: 5, text: "Fri" },
+  { row: 0, text: "Mon" },
+  { row: 2, text: "Wed" },
+  { row: 4, text: "Fri" },
 ];
 
 /**

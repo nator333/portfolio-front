@@ -38,8 +38,9 @@ describe("ContributionCalendarComponent", () => {
     fixture.componentRef.setInput("contributions", []);
     fixture.detectChanges();
     const rects = fixture.nativeElement.querySelectorAll("rect.day-cell");
-    // 4 weeks * 7 days, minus Fri/Sat of the current week (future padding).
-    expect(rects.length).toBe(4 * 7 - 2);
+    // 4 weeks * 7 days, minus Fri/Sat/Sun of the current week (future padding).
+    // end is Thursday, index 3 in a Monday-start week, so three days trail it.
+    expect(rects.length).toBe(4 * 7 - 3);
   });
 
   it("should apply the level class matching the day's intensity", () => {

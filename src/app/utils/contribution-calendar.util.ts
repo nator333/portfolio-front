@@ -24,7 +24,7 @@ export interface CalendarCell {
 }
 
 export interface CalendarWeek {
-  /** Seven cells, Sunday (index 0) through Saturday (index 6). */
+  /** Seven cells, Monday (index 0) through Sunday (index 6). */
   days: CalendarCell[];
 }
 
@@ -154,10 +154,12 @@ export function buildCalendarModel(
   }
   const maxCount = counts.size ? Math.max(...counts.values()) : 0;
 
-  // The current week's Sunday anchors the last column; step back to reach the
-  // first column's Sunday.
-  const currentSunday = addDays(end, -end.getDay());
-  const firstSunday = addDays(currentSunday, -(weeksCount - 1) * DAYS_IN_WEEK);
+  // The current week's Monday anchors the last column; step back to reach the
+  // first column's Monday. ISO weeks run Monday→Sunday, matching how the
+  // training page buckets sessions, so both views agree on where a week begins.
+  // getDay() is 0 for Sunday, so (getDay() + 6) % 7 is days since Monday.
+  const currentMonday = addDays(end, -((end.getDay() + 6) % 7));
+  const firstMonday = addDays(currentMonday, -(weeksCount - 1) * DAYS_IN_WEEK);
 
   const weeks: CalendarWeek[] = [];
   const months: MonthLabel[] = [];
@@ -165,11 +167,11 @@ export function buildCalendarModel(
   let lastMonth = -1;
 
   for (let w = 0; w < weeksCount; w++) {
-    const sunday = addDays(firstSunday, w * DAYS_IN_WEEK);
+    const monday = addDays(firstMonday, w * DAYS_IN_WEEK);
     const days: CalendarCell[] = [];
 
     for (let d = 0; d < DAYS_IN_WEEK; d++) {
-      const day = addDays(sunday, d);
+      const day = addDays(monday, d);
       const iso = toIsoDate(day);
       const inRange = day.getTime() <= end.getTime();
       const count = inRange ? (counts.get(iso) ?? 0) : 0;
@@ -180,8 +182,8 @@ export function buildCalendarModel(
     }
     weeks.push({ days });
 
-    // Label a column when its Sunday opens a month not yet labelled.
-    const month = sunday.getMonth();
+    // Label a column when its Monday opens a month not yet labelled.
+    const month = monday.getMonth();
     if (month !== lastMonth) {
       months.push({ label: MONTH_NAMES[month], weekIndex: w });
       lastMonth = month;
