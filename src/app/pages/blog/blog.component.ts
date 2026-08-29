@@ -10,7 +10,7 @@ import { BlogService, BlogPost } from "../../services/blog.service";
   standalone: true,
   imports: [CommonModule, RouterLink, HttpClientModule, HeroComponent],
   template: `
-    <app-hero title="Blog" subtitle="My Thoughts & Insights"> </app-hero>
+    <app-hero title="Blog" subtitle="My Thoughts"> </app-hero>
 
     <section class="section">
       <div class="container">
