@@ -48,7 +48,7 @@ describe("LoginComponent", () => {
   });
 
   afterEach(() => {
-    sessionStorage.removeItem(RETURN_URL_STORAGE_KEY);
+    localStorage.removeItem(RETURN_URL_STORAGE_KEY);
   });
 
   it("should show the sign-in button when logged out", () => {
@@ -64,14 +64,14 @@ describe("LoginComponent", () => {
 
     fixture.nativeElement.querySelector("button").click();
 
-    expect(sessionStorage.getItem(RETURN_URL_STORAGE_KEY)).toBe(
+    expect(localStorage.getItem(RETURN_URL_STORAGE_KEY)).toBe(
       "/projects-edit",
     );
     expect(authService.signInWithGoogle).toHaveBeenCalled();
   });
 
   it("should exchange the code and navigate to the stored return url", () => {
-    sessionStorage.setItem(RETURN_URL_STORAGE_KEY, "/cv-agent");
+    localStorage.setItem(RETURN_URL_STORAGE_KEY, "/cv-agent");
     authService.handleRedirectCallback.and.returnValue(of(undefined));
 
     createComponent({ code: "auth-code" });
@@ -82,7 +82,7 @@ describe("LoginComponent", () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith("/cv-agent", {
       replaceUrl: true,
     });
-    expect(sessionStorage.getItem(RETURN_URL_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(RETURN_URL_STORAGE_KEY)).toBeNull();
   });
 
   it("should show an error when the code exchange fails", () => {
