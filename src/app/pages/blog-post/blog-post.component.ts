@@ -35,7 +35,9 @@ import * as Prism from "prismjs";
               @if (post.draft) {
                 <span class="tag is-warning mb-2">Draft</span>
               }
-              <h1 class="title is-2 has-text-white">{{ post.title }}</h1>
+              <h1 class="title is-2 has-text-white" [attr.lang]="post.lang">
+                {{ post.title }}
+              </h1>
               <p class="subtitle is-5 has-text-grey-light">
                 {{ post.date | date: "longDate" }}
               </p>
@@ -58,7 +60,10 @@ import * as Prism from "prismjs";
               </div>
             }
 
-            <div class="blog-post-content has-text-white-bis">
+            <div
+              class="blog-post-content has-text-white-bis"
+              [attr.lang]="post.lang"
+            >
               <!-- Using innerHTML to render pre-generated HTML content -->
               <div [innerHTML]="post.content"></div>
             </div>

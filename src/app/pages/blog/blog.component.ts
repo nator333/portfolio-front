@@ -37,7 +37,7 @@ import { BlogService, BlogPost } from "../../services/blog.service";
                   <div class="card-content">
                     <div class="media">
                       <div class="media-content">
-                        <p class="title is-4 has-text-white">
+                        <p class="title is-4 has-text-white" [attr.lang]="post.lang">
                           @if (post.draft) {
                             <span class="tag is-warning mr-2">Draft</span>
                           }
@@ -49,7 +49,7 @@ import { BlogService, BlogPost } from "../../services/blog.service";
                       </div>
                     </div>
                     <div class="content has-text-white-bis">
-                      {{ post.summary }}
+                      <span [attr.lang]="post.lang">{{ post.summary }}</span>
                       <br />
                       <div class="tags">
                         @for (tag of post.tags; track tag) {

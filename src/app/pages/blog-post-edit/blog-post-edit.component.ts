@@ -18,8 +18,20 @@ import { MarkdownEditorComponent } from "../../components/markdown-editor/markdo
 import { AuthService } from "../../services/auth.service";
 import { BlogService } from "../../services/blog.service";
 import { MediaAsset, MediaService } from "../../services/media.service";
-import { BlogData, BlogPostEntry } from "../../models/blog-data";
+import {
+  BlogData,
+  BlogPostEntry,
+  DEFAULT_BLOG_LANG,
+} from "../../models/blog-data";
 import { blogUrlFromSlug } from "../blog-edit/blog-edit.util";
+
+/** Languages offered in the editor's post-language picker. */
+export const BLOG_LANG_OPTIONS: ReadonlyArray<{ code: string; label: string }> =
+  [
+    { code: "en", label: "English" },
+    { code: "ja", label: "日本語 (Japanese)" },
+    { code: "fr", label: "Français (French)" },
+  ];
 
 /**
  * Dedicated editor for a single blog post, new or existing. The blog is stored
@@ -80,7 +92,11 @@ export class BlogPostEditComponent implements OnInit {
     image: [""],
     content: [""],
     draft: [false],
+    lang: [DEFAULT_BLOG_LANG],
   });
+
+  /** Options for the post-language `<select>`. */
+  readonly langOptions = BLOG_LANG_OPTIONS;
 
   ngOnInit(): void {
     this.loadMedia();
@@ -139,6 +155,7 @@ export class BlogPostEditComponent implements OnInit {
       image: entry.image ?? "",
       content: entry.content,
       draft: entry.draft ?? false,
+      lang: entry.lang ?? DEFAULT_BLOG_LANG,
     });
   }
 
@@ -251,6 +268,7 @@ export class BlogPostEditComponent implements OnInit {
       image: string;
       content: string;
       draft: boolean;
+      lang: string;
     };
     return {
       title: value.title.trim(),
@@ -266,6 +284,8 @@ export class BlogPostEditComponent implements OnInit {
       content: value.content,
       // Omitted when false so published posts stay clean.
       draft: value.draft || undefined,
+      // Omitted when it matches the site default so existing docs stay clean.
+      lang: value.lang !== DEFAULT_BLOG_LANG ? value.lang : undefined,
     };
   }
 }
