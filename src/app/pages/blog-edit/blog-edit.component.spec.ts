@@ -25,6 +25,8 @@ const savedBlog: BlogData = {
       image: "assets/blog/newer.png",
       content: "## Newer",
       draft: true,
+      createdAt: "2024-05-01T09:00:00.000Z",
+      updatedAt: "2024-06-02T12:30:00.000Z",
     },
   ],
 };
@@ -63,7 +65,7 @@ describe("BlogEditComponent (list)", () => {
 
   it("should link each post to its editor by slug", () => {
     const links: HTMLAnchorElement[] = Array.from(
-      fixture.nativeElement.querySelectorAll(".post-row"),
+      fixture.nativeElement.querySelectorAll(".post-title-link"),
     );
     const hrefs = links.map((a) => a.getAttribute("href"));
     expect(hrefs).toContain("/blog-edit/newer-post");
@@ -80,6 +82,19 @@ describe("BlogEditComponent (list)", () => {
   it("should badge draft posts", () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector(".tag.is-warning")?.textContent).toContain("Draft");
+  });
+
+  it("should render a row per post with the audit columns", () => {
+    const rows = fixture.nativeElement.querySelectorAll("tbody .post-row");
+    expect(rows.length).toBe(2);
+    // Six columns: thumbnail, title, published, created, updated, status.
+    expect(rows[0].querySelectorAll("td").length).toBe(6);
+  });
+
+  it("should show an em dash when a post has no audit timestamps", () => {
+    // Older Post carries no createdAt/updatedAt, so both cells fall back to —.
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain("—");
   });
 
   it("should flag a failed load without wiping the list to empty rows", () => {

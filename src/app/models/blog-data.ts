@@ -26,6 +26,14 @@ export interface BlogPostEntry {
    * site default, {@link DEFAULT_BLOG_LANG}.
    */
   lang?: string;
+  /**
+   * Audit timestamps (ISO strings), managed automatically by the editor rather
+   * than typed by hand: `createdAt` is stamped once on the first save and
+   * preserved thereafter; `updatedAt` is refreshed on every save. Absent on
+   * posts last saved before these fields existed.
+   */
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BlogData {
