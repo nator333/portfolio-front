@@ -25,6 +25,8 @@ const savedBlog: BlogData = {
       url: "/blog/newer-post",
       image: "assets/blog/newer.png",
       content: "## Newer",
+      createdAt: "2024-05-01T09:00:00.000Z",
+      updatedAt: "2024-06-01T09:00:00.000Z",
     },
   ],
 };
@@ -136,6 +138,45 @@ describe("BlogPostEditComponent", () => {
 
     const saved = blogService.updateBlog.calls.mostRecent().args[0];
     expect(saved.posts[0].lang).toBeUndefined();
+  });
+
+  it("should stamp createdAt and updatedAt together on a new post", async () => {
+    const component = await setup(null);
+    const before = Date.now();
+    component.form.reset({
+      title: "Timestamped",
+      date: "2025-01-01",
+      summary: "",
+      tags: "",
+      url: "/blog/timestamped",
+      image: "",
+      content: "Body",
+      draft: false,
+      lang: "en",
+    });
+    component.save();
+
+    const saved = blogService.updateBlog.calls.mostRecent().args[0];
+    const created = saved.posts[0].createdAt as string;
+    const updated = saved.posts[0].updatedAt as string;
+    // A brand-new post is created and updated at the same instant.
+    expect(created).toBe(updated);
+    expect(Date.parse(created)).toBeGreaterThanOrEqual(before);
+  });
+
+  it("should preserve createdAt but refresh updatedAt when editing", async () => {
+    const component = await setup("newer-post");
+    component.form.get("title")?.setValue("Renamed");
+    component.save();
+
+    const saved = blogService.updateBlog.calls.mostRecent().args[0];
+    const edited = saved.posts.find((p) => p.url === "/blog/newer-post");
+    // createdAt carries over from the stored post; updatedAt moves forward.
+    expect(edited?.createdAt).toBe("2024-05-01T09:00:00.000Z");
+    expect(edited?.updatedAt).not.toBe("2024-06-01T09:00:00.000Z");
+    expect(Date.parse(edited?.updatedAt as string)).toBeGreaterThan(
+      Date.parse("2024-06-01T09:00:00.000Z"),
+    );
   });
 
   it("should persist a non-default post language", async () => {

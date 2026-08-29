@@ -1,36 +1,59 @@
+.posts-table {
+  th {
+    white-space: nowrap;
+  }
+
+  td {
+    vertical-align: middle;
+  }
+}
+
 .post-row {
+  &.is-clickable {
+    cursor: pointer;
+  }
+
+  // Keyboard focus needs to be visible since the whole row is a control.
+  &:focus-visible {
+    outline: 2px solid #3273dc;
+    outline-offset: -2px;
+  }
+}
+
+.thumb-col {
+  width: 1%;
+}
+
+.thumb-cell {
+  width: 1%;
+}
+
+.thumb {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 0.5rem;
-  border-bottom: 1px solid #dbdbdb;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.thumb-placeholder {
+  background-color: #f0f0f0;
+  font-size: 1.1rem;
+}
+
+.post-title-link {
+  font-weight: 600;
   color: inherit;
 
-  &:last-of-type {
-    border-bottom: none;
-  }
-
   &:hover {
-    background-color: #fafafa;
+    text-decoration: underline;
   }
 }
 
-.post-row-main {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-
-.post-title {
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.date-cell {
   white-space: nowrap;
-}
-
-.post-date {
-  flex-shrink: 0;
   color: #7a7a7a;
   font-size: 0.875rem;
 }

@@ -49,6 +49,11 @@ export class BlogEditComponent implements OnInit {
     return blogSlug(post.url);
   }
 
+  /** Open a post's editor — the whole table row is clickable. */
+  edit(post: BlogPostEntry): void {
+    this.router.navigate(["/blog-edit", this.slugOf(post)]);
+  }
+
   private loadBlog(): void {
     this.loading = true;
     this.blogService.getBlogData().subscribe((data) => {

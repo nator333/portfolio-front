@@ -21,17 +21,62 @@
       <p>No posts yet. Use “Add post” to write your first one.</p>
     } @else {
       <div class="box">
-        @for (post of posts; track post.url) {
-          <a class="post-row" [routerLink]="['/blog-edit', slugOf(post)]">
-            <div class="post-row-main">
-              <span class="post-title">{{ post.title }}</span>
-              @if (post.draft) {
-                <span class="tag is-warning ml-2">Draft</span>
+        <div class="table-container">
+          <table class="table is-fullwidth is-hoverable posts-table">
+            <thead>
+              <tr>
+                <th class="thumb-col"><span class="is-sr-only">Image</span></th>
+                <th>Title</th>
+                <th>Published</th>
+                <th>Created</th>
+                <th>Updated</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (post of posts; track post.url) {
+                <tr
+                  class="post-row is-clickable"
+                  tabindex="0"
+                  (click)="edit(post)"
+                  (keydown.enter)="edit(post)"
+                >
+                  <td class="thumb-cell">
+                    @if (post.image) {
+                      <img class="thumb" [src]="post.image" [alt]="post.title" />
+                    } @else {
+                      <span class="thumb thumb-placeholder" aria-hidden="true"
+                        >📝</span
+                      >
+                    }
+                  </td>
+                  <td>
+                    <a
+                      class="post-title-link"
+                      [routerLink]="['/blog-edit', slugOf(post)]"
+                      (click)="$event.stopPropagation()"
+                      >{{ post.title }}</a
+                    >
+                  </td>
+                  <td class="date-cell">{{ post.date | date: "mediumDate" }}</td>
+                  <td class="date-cell">
+                    {{ post.createdAt ? (post.createdAt | date: "medium") : "—" }}
+                  </td>
+                  <td class="date-cell">
+                    {{ post.updatedAt ? (post.updatedAt | date: "medium") : "—" }}
+                  </td>
+                  <td>
+                    @if (post.draft) {
+                      <span class="tag is-warning">Draft</span>
+                    } @else {
+                      <span class="tag is-light">Public</span>
+                    }
+                  </td>
+                </tr>
               }
-            </div>
-            <span class="post-date">{{ post.date | date: "mediumDate" }}</span>
-          </a>
-        }
+            </tbody>
+          </table>
+        </div>
       </div>
     }
   </div>

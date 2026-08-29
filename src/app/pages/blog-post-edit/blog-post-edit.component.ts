@@ -270,6 +270,11 @@ export class BlogPostEditComponent implements OnInit {
       draft: boolean;
       lang: string;
     };
+    // Audit timestamps are managed here, not in the form: createdAt is carried
+    // over from the existing post (backfilled for older posts that predate it),
+    // and updatedAt is stamped fresh on every save.
+    const now = new Date().toISOString();
+    const existing = this.allPosts.find((p) => p.url === this.originalUrl);
     return {
       title: value.title.trim(),
       date: value.date,
@@ -286,6 +291,8 @@ export class BlogPostEditComponent implements OnInit {
       draft: value.draft || undefined,
       // Omitted when it matches the site default so existing docs stay clean.
       lang: value.lang !== DEFAULT_BLOG_LANG ? value.lang : undefined,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
     };
   }
 }
