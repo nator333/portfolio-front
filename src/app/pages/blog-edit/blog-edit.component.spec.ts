@@ -91,6 +91,17 @@ describe('BlogEditComponent', () => {
     expect(component.successMessage).toBe('Blog saved.');
   });
 
+  it('should round-trip the draft flag, omitting it when false', () => {
+    component.postControls[0].get('draft')?.setValue(true);
+    component.save();
+
+    const saved = blogService.updateBlog.calls.mostRecent().args[0];
+    // Newest-first: index 0 is the post we flagged.
+    expect(saved.posts[0].draft).toBe(true);
+    // The unflagged post omits the field rather than storing false.
+    expect(saved.posts[1].draft).toBeUndefined();
+  });
+
   it('should not save while a required field is missing', () => {
     component.addPost();
     component.save();

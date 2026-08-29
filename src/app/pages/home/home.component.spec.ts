@@ -61,6 +61,16 @@ describe("HomeComponent", () => {
     expect(el.querySelector(".motto-section h3")).toBeNull();
   });
 
+  it("should render no motto lines when mottoesHidden is set, even with saved mottoes", () => {
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/home`)
+      .flush({ mottoes: ["First Line", "Second Line"], mottoesHidden: true });
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector(".motto-section h1")).toBeNull();
+    expect(el.querySelector(".motto-section h2")).toBeNull();
+  });
+
   it("should render no motto lines when the saved list was cleared", () => {
     flushHome([]);
     const el: HTMLElement = fixture.nativeElement;

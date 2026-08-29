@@ -39,6 +39,12 @@
             Lines render largest to smallest, top to bottom. Removing every line
             hides the motto section entirely.
           </p>
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" formControlName="mottoesHidden" />
+              Hide the mottoes on the live home page (keeps them saved)
+            </label>
+          </div>
           <div formArrayName="mottoes">
             @for (control of mottoControls; track $index) {
               <div class="field motto-field">

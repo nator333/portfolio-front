@@ -149,6 +149,7 @@ export class BlogEditComponent implements OnInit {
       ],
       image: [entry?.image ?? ""],
       content: [entry?.content ?? ""],
+      draft: [entry?.draft ?? false],
     });
   }
 
@@ -181,6 +182,7 @@ export class BlogEditComponent implements OnInit {
         url: string;
         image: string;
         content: string;
+        draft: boolean;
       }[];
     };
     return {
@@ -196,6 +198,8 @@ export class BlogEditComponent implements OnInit {
         // Omitted when blank so the stored document stays clean.
         image: entry.image.trim() || undefined,
         content: entry.content,
+        // Omitted when false so published posts stay clean.
+        draft: entry.draft || undefined,
       })),
     };
   }

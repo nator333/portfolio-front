@@ -13,6 +13,12 @@ export interface BlogPostEntry {
   image?: string;
   /** Markdown source of the post. */
   content: string;
+  /**
+   * Draft posts are withheld from the public GET /blog and only reach the front
+   * through the Cognito-gated GET /blog/all. When present they render with a
+   * "Draft" badge. Absent is treated as false.
+   */
+  draft?: boolean;
 }
 
 export interface BlogData {
