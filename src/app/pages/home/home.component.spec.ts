@@ -124,4 +124,32 @@ describe("HomeComponent", () => {
     component.onDaySelected("2026-07-20");
     expect(component.selectedDate()).toBeNull();
   });
+
+  it("should isolate the tapped type from the all-on state", () => {
+    flushHome(null);
+    component.entries.set([
+      { date: "2026-07-20", type: "blog", title: "a" },
+      { date: "2026-07-20", type: "gym", title: "b" },
+      { date: "2026-07-20", type: "github", title: "c" },
+    ]);
+    // Every type starts active.
+    expect(component.activeTypeList()).toEqual(["blog", "gym", "github"]);
+    component.onTypeToggled("gym");
+    // The other two switch off, leaving only the tapped type.
+    expect(component.activeTypeList()).toEqual(["gym"]);
+  });
+
+  it("should toggle a single type once the state is already narrowed", () => {
+    flushHome(null);
+    component.entries.set([
+      { date: "2026-07-20", type: "blog", title: "a" },
+      { date: "2026-07-20", type: "gym", title: "b" },
+      { date: "2026-07-20", type: "github", title: "c" },
+    ]);
+    component.onTypeToggled("gym"); // isolate: only gym
+    component.onTypeToggled("blog"); // add blog back on
+    expect(component.activeTypeList()).toEqual(["blog", "gym"]);
+    component.onTypeToggled("gym"); // plain toggle off
+    expect(component.activeTypeList()).toEqual(["blog"]);
+  });
 });

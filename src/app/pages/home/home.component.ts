@@ -95,8 +95,16 @@ export class HomeComponent implements OnInit {
   }
 
   // Flip a type on or off; a new Set keeps the signal change detectable.
+  // From the all-on state, tapping a badge isolates it — the other types
+  // switch off — so a single tap narrows to one source instead of merely
+  // dropping the tapped one.
   onTypeToggled(type: ActivityType): void {
+    const available = this.availableTypes();
     this.activeTypes.update((current) => {
+      const allOn = available.every((t) => current.has(t));
+      if (allOn && available.length > 1) {
+        return new Set([type]);
+      }
       const next = new Set(current);
       if (next.has(type)) {
         next.delete(type);
