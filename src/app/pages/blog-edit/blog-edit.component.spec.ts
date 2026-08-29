@@ -1,46 +1,44 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
-import { BlogEditComponent } from './blog-edit.component';
-import { BlogService } from '../../services/blog.service';
-import { AuthService } from '../../services/auth.service';
-import { MediaService } from '../../services/media.service';
-import { BlogData } from '../../models/blog-data';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideRouter } from "@angular/router";
+import { of } from "rxjs";
+import { BlogEditComponent } from "./blog-edit.component";
+import { BlogService } from "../../services/blog.service";
+import { AuthService } from "../../services/auth.service";
+import { BlogData } from "../../models/blog-data";
 
 const savedBlog: BlogData = {
   posts: [
     {
-      title: 'Older Post',
-      date: '2023-01-01T00:00:00.000Z',
-      summary: 'The older one.',
-      tags: ['Angular'],
-      url: '/blog/older-post',
-      content: '## Older',
+      title: "Older Post",
+      date: "2023-01-01T00:00:00.000Z",
+      summary: "The older one.",
+      tags: ["Angular"],
+      url: "/blog/older-post",
+      content: "## Older",
     },
     {
-      title: 'Newer Post',
-      date: '2024-06-01T00:00:00.000Z',
-      summary: 'The newer one.',
-      tags: ['AWS', 'DynamoDB'],
-      url: '/blog/newer-post',
-      image: 'assets/blog/newer.png',
-      content: '## Newer',
+      title: "Newer Post",
+      date: "2024-06-01T00:00:00.000Z",
+      summary: "The newer one.",
+      tags: ["AWS", "DynamoDB"],
+      url: "/blog/newer-post",
+      image: "assets/blog/newer.png",
+      content: "## Newer",
+      draft: true,
     },
   ],
 };
 
-describe('BlogEditComponent', () => {
+describe("BlogEditComponent (list)", () => {
   let fixture: ComponentFixture<BlogEditComponent>;
   let component: BlogEditComponent;
   let blogService: jasmine.SpyObj<BlogService>;
 
   beforeEach(async () => {
-    blogService = jasmine.createSpyObj<BlogService>('BlogService', [
-      'getBlogData',
-      'updateBlog',
+    blogService = jasmine.createSpyObj<BlogService>("BlogService", [
+      "getBlogData",
     ]);
     blogService.getBlogData.and.returnValue(of(savedBlog));
-    blogService.updateBlog.and.callFake((data) => of(data));
 
     await TestBed.configureTestingModule({
       imports: [BlogEditComponent],
@@ -48,7 +46,6 @@ describe('BlogEditComponent', () => {
         provideRouter([]),
         { provide: BlogService, useValue: blogService },
         { provide: AuthService, useValue: { logout: () => undefined } },
-        { provide: MediaService, useValue: { list: () => of([]) } },
       ],
     }).compileComponents();
 
@@ -57,84 +54,43 @@ describe('BlogEditComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should populate the form newest first with date-only values and joined tags', () => {
-    const groups = component.postControls;
-    expect(groups.length).toBe(2);
-    expect(groups[0].value.title).toBe('Newer Post');
-    expect(groups[0].value.date).toBe('2024-06-01');
-    expect(groups[0].value.tags).toBe('AWS, DynamoDB');
-    expect(groups[1].value.title).toBe('Older Post');
+  it("should list posts newest first", () => {
+    expect(component.posts.map((p) => p.title)).toEqual([
+      "Newer Post",
+      "Older Post",
+    ]);
   });
 
-  it('should block saving when the blog document cannot be loaded', () => {
+  it("should link each post to its editor by slug", () => {
+    const links: HTMLAnchorElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll(".post-row"),
+    );
+    const hrefs = links.map((a) => a.getAttribute("href"));
+    expect(hrefs).toContain("/blog-edit/newer-post");
+    expect(hrefs).toContain("/blog-edit/older-post");
+  });
+
+  it("should offer an add-new link", () => {
+    const add = fixture.nativeElement.querySelector(
+      'a[href="/blog-edit/new"]',
+    ) as HTMLAnchorElement;
+    expect(add).toBeTruthy();
+  });
+
+  it("should badge draft posts", () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector(".tag.is-warning")?.textContent).toContain("Draft");
+  });
+
+  it("should flag a failed load without wiping the list to empty rows", () => {
     blogService.getBlogData.and.returnValue(of(null));
     const failed = TestBed.createComponent(BlogEditComponent);
     failed.detectChanges();
-
-    const failedComponent = failed.componentInstance;
-    expect(failedComponent.errorMessage).toBe('Could not load the saved blog.');
-    expect(failedComponent.loadFailed).toBe(true);
-
-    failedComponent.save();
-    expect(blogService.updateBlog).not.toHaveBeenCalled();
+    expect(failed.componentInstance.loadFailed).toBe(true);
+    expect(failed.componentInstance.posts).toEqual([]);
   });
 
-  it('should save the document with split tags and omit a blank image', () => {
-    component.save();
-
-    expect(blogService.updateBlog).toHaveBeenCalledTimes(1);
-    const saved = blogService.updateBlog.calls.mostRecent().args[0];
-    expect(saved.posts.length).toBe(2);
-    expect(saved.posts[0].tags).toEqual(['AWS', 'DynamoDB']);
-    expect(saved.posts[0].image).toBe('assets/blog/newer.png');
-    expect(saved.posts[1].image).toBeUndefined();
-    expect(component.successMessage).toBe('Blog saved.');
-  });
-
-  it('should round-trip the draft flag, omitting it when false', () => {
-    component.postControls[0].get('draft')?.setValue(true);
-    component.save();
-
-    const saved = blogService.updateBlog.calls.mostRecent().args[0];
-    // Newest-first: index 0 is the post we flagged.
-    expect(saved.posts[0].draft).toBe(true);
-    // The unflagged post omits the field rather than storing false.
-    expect(saved.posts[1].draft).toBeUndefined();
-  });
-
-  it('should not save while a required field is missing', () => {
-    component.addPost();
-    component.save();
-
-    expect(blogService.updateBlog).not.toHaveBeenCalled();
-    expect(component.errorMessage).toBe(
-      'Fix the highlighted fields before saving.',
-    );
-  });
-
-  it('should surface a save failure', () => {
-    blogService.updateBlog.and.returnValue(
-      throwError(() => new Error('nope')),
-    );
-    component.save();
-    expect(component.errorMessage).toBe('Could not save the blog.');
-  });
-
-  it('should suggest a url slug from the title for new posts', () => {
-    component.addPost();
-    const group = component.postControls[0];
-    group.get('title')?.setValue('My New Post!');
-    component.suggestUrl(group);
-    expect(group.get('url')?.value).toBe('/blog/my-new-post');
-
-    // An existing url is never overwritten.
-    group.get('title')?.setValue('Renamed');
-    component.suggestUrl(group);
-    expect(group.get('url')?.value).toBe('/blog/my-new-post');
-  });
-
-  it('should render a markdown editor for each post', () => {
-    const editors = fixture.nativeElement.querySelectorAll('app-markdown-editor');
-    expect(editors.length).toBe(component.postControls.length);
+  it("should derive the slug from a post url", () => {
+    expect(component.slugOf(savedBlog.posts[0])).toBe("older-post");
   });
 });
