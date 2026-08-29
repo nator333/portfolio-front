@@ -58,6 +58,22 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "blog-edit/new",
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import("./pages/blog-post-edit/blog-post-edit.component").then(
+        (m) => m.BlogPostEditComponent,
+      ),
+  },
+  {
+    path: "blog-edit/:slug",
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import("./pages/blog-post-edit/blog-post-edit.component").then(
+        (m) => m.BlogPostEditComponent,
+      ),
+  },
+  {
     path: "projects-edit",
     canActivate: [authGuard],
     loadComponent: () =>

@@ -1,10 +1,36 @@
-.entry {
-  position: relative;
-  padding: 1.5rem 0;
+.post-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0.5rem;
   border-bottom: 1px solid #dbdbdb;
+  color: inherit;
 
   &:last-of-type {
     border-bottom: none;
   }
+
+  &:hover {
+    background-color: #fafafa;
+  }
 }
 
+.post-row-main {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.post-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-date {
+  flex-shrink: 0;
+  color: #7a7a7a;
+  font-size: 0.875rem;
+}

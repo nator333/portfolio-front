@@ -1,0 +1,149 @@
+<app-hero title="Blog Editor" [subtitle]="heroSubtitle"></app-hero>
+
+<section class="section">
+  <div class="container">
+    <div class="level">
+      <div class="level-left">
+        <button class="button is-light" type="button" (click)="cancel()">
+          ← Back to posts
+        </button>
+      </div>
+    </div>
+
+    @if (loading) {
+      <p>Loading post...</p>
+    } @else if (notFound) {
+      <p class="has-text-danger">That post no longer exists.</p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="save()">
+        @if (errorMessage) {
+          <p class="has-text-danger">{{ errorMessage }}</p>
+        }
+        @if (successMessage) {
+          <p class="has-text-success">{{ successMessage }}</p>
+        }
+
+        <div class="box">
+          <div class="columns">
+            <div class="column is-two-thirds">
+              <label class="label">Title</label>
+              <input
+                class="input"
+                type="text"
+                formControlName="title"
+                (blur)="suggestUrl()"
+              />
+              @if (form.get('title')?.touched && form.get('title')?.invalid) {
+                <p class="help is-danger">Title is required.</p>
+              }
+            </div>
+            <div class="column">
+              <label class="label">Date</label>
+              <input class="input" type="date" formControlName="date" />
+              @if (form.get('date')?.touched && form.get('date')?.invalid) {
+                <p class="help is-danger">Date is required.</p>
+              }
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">URL (route path)</label>
+            <input
+              class="input"
+              type="text"
+              formControlName="url"
+              placeholder="/blog/my-post-slug"
+            />
+            @if (form.get('url')?.touched && form.get('url')?.invalid) {
+              <p class="help is-danger">Must look like /blog/my-post-slug.</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="label">Summary</label>
+            <textarea class="textarea" rows="2" formControlName="summary"></textarea>
+          </div>
+
+          <div class="columns">
+            <div class="column">
+              <label class="label">Tags (comma-separated)</label>
+              <input
+                class="input"
+                type="text"
+                formControlName="tags"
+                placeholder="Angular, AWS"
+              />
+            </div>
+            <div class="column">
+              <app-image-upload
+                [control]="$any(form.get('image'))"
+                [assets]="mediaAssets"
+                category="blog"
+                label="Eye-catch image (optional)"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">Content (markdown)</label>
+            <app-markdown-editor
+              formControlName="content"
+              [assets]="mediaAssets"
+              category="blog"
+            />
+          </div>
+
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" formControlName="draft" />
+              Draft — hidden from the public blog; visible only when signed in
+            </label>
+          </div>
+        </div>
+
+        <div class="level">
+          <div class="level-left">
+            <div class="field is-grouped">
+              <div class="control">
+                <button
+                  class="button is-primary"
+                  type="submit"
+                  [disabled]="saving || loadFailed"
+                >
+                  Save
+                </button>
+              </div>
+              <div class="control">
+                <button class="button is-light" type="button" (click)="cancel()">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+          @if (!isNew) {
+            <div class="level-right">
+              @if (confirmingDelete) {
+                <button
+                  class="button is-danger"
+                  type="button"
+                  [disabled]="deleting"
+                  (click)="delete()"
+                >
+                  Confirm delete
+                </button>
+              } @else {
+                <button
+                  class="button is-danger is-light"
+                  type="button"
+                  (click)="delete()"
+                >
+                  Delete post
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </form>
+    }
+  </div>
+</section>
