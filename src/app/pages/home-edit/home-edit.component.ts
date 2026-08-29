@@ -47,6 +47,8 @@ export class HomeEditComponent implements OnInit {
 
   homeForm: FormGroup = this.fb.group({
     mottoes: this.fb.array([]),
+    // Hide the mottoes on the live hero without clearing them.
+    mottoesHidden: this.fb.nonNullable.control(false),
   });
 
   ngOnInit(): void {
@@ -86,6 +88,7 @@ export class HomeEditComponent implements OnInit {
     this.successMessage = "";
     const data: HomeData = {
       mottoes: this.mottoControls.map((control) => control.value.trim()),
+      mottoesHidden: this.homeForm.get("mottoesHidden")?.value ?? false,
     };
     this.homeService.updateHome(data).subscribe({
       next: () => {
@@ -123,6 +126,9 @@ export class HomeEditComponent implements OnInit {
       next: (data) => {
         // A never-saved document comes back null; start from an empty list.
         this.setMottoes(data.mottoes ?? []);
+        this.homeForm
+          .get("mottoesHidden")
+          ?.setValue(data.mottoesHidden ?? false);
         this.loading = false;
       },
       error: () => {

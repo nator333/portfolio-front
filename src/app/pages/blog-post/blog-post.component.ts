@@ -32,6 +32,9 @@ import * as Prism from "prismjs";
             </div>
           } @else if (post) {
             <div class="blog-post-header">
+              @if (post.draft) {
+                <span class="tag is-warning mb-2">Draft</span>
+              }
               <h1 class="title is-2 has-text-white">{{ post.title }}</h1>
               <p class="subtitle is-5 has-text-grey-light">
                 {{ post.date | date: "longDate" }}

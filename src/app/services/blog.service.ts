@@ -16,6 +16,8 @@ export interface BlogPost {
   image: string;
   tags: string[];
   url: string;
+  /** True for draft posts; only ever set for authenticated viewers. */
+  draft: boolean;
 }
 
 const CACHE_KEY = 'blog-cache-v1';
@@ -76,9 +78,12 @@ export class BlogService {
       // REST API Cognito authorizers expect the raw JWT, not a Bearer-prefixed value.
       Authorization: this.authService.getIdToken(),
     });
+    // The saved document may contain drafts, which must never sit in the shared
+    // public cache — so invalidate it and let the next public read re-fetch the
+    // server-stripped list rather than writing the response back.
     return this.http
       .put<BlogData>(`${environment.apiBaseUrl}/blog`, data, { headers })
-      .pipe(tap((saved) => this.writeCache(saved)));
+      .pipe(tap(() => this.clearCache()));
   }
 
   /**
@@ -86,6 +91,25 @@ export class BlogService {
    * null when it could not be loaded. Used by the admin blog editor.
    */
   getBlogData(): Observable<BlogData | null> {
+    // Authenticated viewers read the draft-inclusive admin endpoint; drafts must
+    // never be cached under the shared public key, so that path skips the cache
+    // entirely (in both directions) and always fetches fresh.
+    if (this.authService.isAuthenticated()) {
+      const headers = new HttpHeaders({
+        'X-Api-Key': environment.apiKey,
+        // REST API Cognito authorizers expect the raw JWT, not a Bearer value.
+        Authorization: this.authService.getIdToken(),
+      });
+      return this.http
+        .get<BlogData>(`${environment.apiBaseUrl}/blog/all`, { headers })
+        .pipe(
+          catchError((error) => {
+            console.error('Error loading draft-inclusive blog data from API:', error);
+            return of(null);
+          }),
+        );
+    }
+
     const cached = this.readCache();
     if (cached) {
       return of(cached);
@@ -113,6 +137,7 @@ export class BlogService {
       image: entry.image ?? '',
       tags: entry.tags,
       url: entry.url,
+      draft: entry.draft ?? false,
     };
   }
 
@@ -139,6 +164,14 @@ export class BlogService {
       sessionStorage.setItem(CACHE_KEY, JSON.stringify(cached));
     } catch {
       // Cache is best-effort; a full or unavailable sessionStorage is fine.
+    }
+  }
+
+  private clearCache(): void {
+    try {
+      sessionStorage.removeItem(CACHE_KEY);
+    } catch {
+      // Best-effort; an unavailable sessionStorage is fine.
     }
   }
 }

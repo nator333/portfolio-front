@@ -33,16 +33,22 @@ const apiDocument: BlogData = {
 describe("BlogService", () => {
   let service: BlogService;
   let httpMock: HttpTestingController;
+  // Mutable so individual tests can flip the authenticated state.
+  let authState: { authenticated: boolean };
 
   beforeEach(() => {
     sessionStorage.clear();
+    authState = { authenticated: false };
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         {
           provide: AuthService,
-          useValue: { getIdToken: () => "test-id-token" },
+          useValue: {
+            getIdToken: () => "test-id-token",
+            isAuthenticated: () => authState.authenticated,
+          },
         },
       ],
     });
@@ -138,5 +144,52 @@ describe("BlogService", () => {
     expect(req.request.headers.get("Authorization")).toBe("test-id-token");
     expect(req.request.headers.get("X-Api-Key")).toBe(environment.apiKey);
     req.flush(data);
+  });
+
+  it("should read the draft-inclusive /blog/all endpoint when authenticated", () => {
+    authState.authenticated = true;
+    let posts: BlogPost[] = [];
+    service.getAllPosts().subscribe((p) => (posts = p));
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/blog/all`);
+    expect(req.request.method).toBe("GET");
+    expect(req.request.headers.get("Authorization")).toBe("test-id-token");
+    req.flush({
+      posts: [{ ...apiDocument.posts[0], draft: true }],
+    });
+
+    expect(posts.length).toBe(1);
+    expect(posts[0].draft).toBe(true);
+  });
+
+  it("should not cache the authenticated read, so a later read refetches", () => {
+    authState.authenticated = true;
+    service.getAllPosts().subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog/all`).flush(apiDocument);
+
+    service.getAllPosts().subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog/all`).flush(apiDocument);
+  });
+
+  it("should default draft to false for posts without the flag", () => {
+    let posts: BlogPost[] = [];
+    service.getAllPosts().subscribe((p) => (posts = p));
+
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush(apiDocument);
+
+    expect(posts.every((post) => post.draft === false)).toBe(true);
+  });
+
+  it("should invalidate the public cache on save so drafts never linger there", () => {
+    // Prime the public cache.
+    service.getAllPosts().subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush(apiDocument);
+
+    // Saving clears it; the next public read must refetch rather than serve stale.
+    service.updateBlog({ posts: [] }).subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush({ posts: [] });
+
+    service.getAllPosts().subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/blog`).flush(apiDocument);
   });
 });

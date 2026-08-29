@@ -5,19 +5,21 @@
         <!-- Left Column - Text Content -->
         <div class="column is-half">
           <div class="motto-section">
-            @for (motto of mottoes(); track motto; let i = $index) {
-              @switch (i) {
-                @case (0) {
-                  <h1 class="motto-line">{{ motto }}</h1>
-                }
-                @case (1) {
-                  <h2 class="motto-line">{{ motto }}</h2>
-                }
-                @case (2) {
-                  <h3 class="motto-line">{{ motto }}</h3>
-                }
-                @case (3) {
-                  <h4 class="motto-line">{{ motto }}</h4>
+            @if (!mottoesHidden()) {
+              @for (motto of mottoes(); track motto; let i = $index) {
+                @switch (i) {
+                  @case (0) {
+                    <h1 class="motto-line">{{ motto }}</h1>
+                  }
+                  @case (1) {
+                    <h2 class="motto-line">{{ motto }}</h2>
+                  }
+                  @case (2) {
+                    <h3 class="motto-line">{{ motto }}</h3>
+                  }
+                  @case (3) {
+                    <h4 class="motto-line">{{ motto }}</h4>
+                  }
                 }
               }
             }

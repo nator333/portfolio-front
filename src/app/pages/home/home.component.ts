@@ -43,6 +43,10 @@ export class HomeComponent implements OnInit {
   // item (mottoes: null) or a failed read renders no motto lines.
   readonly mottoes = signal<string[]>([]);
 
+  // Admin toggle from /home-edit: when true the hero shows no motto lines even
+  // though `mottoes` is kept, so they can be hidden without being retyped.
+  readonly mottoesHidden = signal<boolean>(false);
+
   readonly profile: string[] = ["Hi, I'm Hiro Nakamata", "Software Engineer"];
   readonly kappiInfo: string[] = [
     "https://www.instagram.com/f_spiritt?utm_source=ig_web_button_share_sheet&igsh=MTZyZXIxaG12cW0xZQ==",
@@ -119,6 +123,7 @@ export class HomeComponent implements OnInit {
     this.homeService.getHome().subscribe({
       next: (data) => {
         this.mottoes.set(data.mottoes ?? []);
+        this.mottoesHidden.set(data.mottoesHidden ?? false);
       },
       error: () => {
         // Leave the hero without motto lines.

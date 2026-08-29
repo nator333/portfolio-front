@@ -38,6 +38,9 @@ import { BlogService, BlogPost } from "../../services/blog.service";
                     <div class="media">
                       <div class="media-content">
                         <p class="title is-4 has-text-white">
+                          @if (post.draft) {
+                            <span class="tag is-warning mr-2">Draft</span>
+                          }
                           {{ post.title }}
                         </p>
                         <p class="subtitle is-6 has-text-grey-light">

@@ -8,6 +8,12 @@ export interface HomeData {
    * an empty array (no motto lines).
    */
   mottoes: string[] | null;
+  /**
+   * When true the hero renders no motto lines even though `mottoes` is kept,
+   * so they can be hidden and restored without retyping. Absent is treated as
+   * false. Keep in sync with the API-side zod schema.
+   */
+  mottoesHidden?: boolean;
 }
 
 // The hero renders one heading per motto (h1..h4 by position), so the count
