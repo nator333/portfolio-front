@@ -15,6 +15,11 @@ interface TokenResponse {
  * Google sign-in through the Cognito hosted domain using the OAuth
  * authorization-code + PKCE flow. The pool's pre-signup trigger restricts
  * sign-in to the admin email, so no other login method exists.
+ *
+ * State lives in localStorage, not sessionStorage, so the token survives an
+ * app relaunch (staying signed in on the installed iOS home-screen PWA) and
+ * the PKCE verifier survives the redirect out to Cognito and back even when
+ * iOS tears down and reloads the standalone web view mid-flow.
  */
 @Injectable({
   providedIn: 'root',
@@ -27,7 +32,7 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   private readStoredToken(): string | null {
-    const token = sessionStorage.getItem(ID_TOKEN_STORAGE_KEY);
+    const token = localStorage.getItem(ID_TOKEN_STORAGE_KEY);
     return token && !isExpired(token) ? token : null;
   }
 
@@ -39,7 +44,7 @@ export class AuthService {
   /** Kicks off Google sign-in by redirecting to the Cognito hosted domain. */
   async signInWithGoogle(): Promise<void> {
     const verifier = randomUrlSafeString(64);
-    sessionStorage.setItem(PKCE_VERIFIER_STORAGE_KEY, verifier);
+    localStorage.setItem(PKCE_VERIFIER_STORAGE_KEY, verifier);
 
     const params = new HttpParams({
       fromObject: {
@@ -58,7 +63,7 @@ export class AuthService {
 
   /** Exchanges the ?code= returned by Cognito for tokens. */
   handleRedirectCallback(code: string): Observable<void> {
-    const verifier = sessionStorage.getItem(PKCE_VERIFIER_STORAGE_KEY) ?? '';
+    const verifier = localStorage.getItem(PKCE_VERIFIER_STORAGE_KEY) ?? '';
     const body = new HttpParams({
       fromObject: {
         grant_type: 'authorization_code',
@@ -74,12 +79,12 @@ export class AuthService {
       .post<TokenResponse>(`${environment.cognitoDomain}/oauth2/token`, body.toString(), { headers })
       .pipe(
         map((response) => {
-          sessionStorage.removeItem(PKCE_VERIFIER_STORAGE_KEY);
+          localStorage.removeItem(PKCE_VERIFIER_STORAGE_KEY);
           if (!response.id_token) {
             throw new Error('Cognito did not return an ID token');
           }
           this.idToken = response.id_token;
-          sessionStorage.setItem(ID_TOKEN_STORAGE_KEY, response.id_token);
+          localStorage.setItem(ID_TOKEN_STORAGE_KEY, response.id_token);
           this.authenticated$.next(true);
         }),
       );
@@ -87,7 +92,7 @@ export class AuthService {
 
   logout(): void {
     this.idToken = null;
-    sessionStorage.removeItem(ID_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(ID_TOKEN_STORAGE_KEY);
     this.authenticated$.next(false);
   }
 

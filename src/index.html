@@ -4,8 +4,22 @@
     <meta charset="utf-8" />
     <title>Hiro's Portfolio</title>
     <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+
+    <!--
+      PWA: installable as a home-screen app (iOS "Add to Home Screen" gives a
+      full-screen, one-tap editor). iOS Safari ignores most manifest fields, so
+      the apple-* tags below are what make the standalone launch and icon work
+      there; the manifest covers Android/desktop.
+    -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Portfolio" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
 
     <!--
       Default social-share preview (Open Graph + Twitter Card).

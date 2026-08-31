@@ -15,7 +15,9 @@ const RETURN_URL_STORAGE_KEY = "cv-editor-return-url";
  * Single sign-in entry point and the registered Cognito OAuth callback.
  * The guard sends unauthenticated visitors here with a ?returnUrl=; the
  * return URL survives the round-trip to the Cognito hosted domain in
- * sessionStorage because Cognito only echoes back the ?code= parameter.
+ * localStorage because Cognito only echoes back the ?code= parameter.
+ * localStorage (not sessionStorage) so the value also survives iOS reloading
+ * the standalone PWA web view during the external redirect.
  */
 @Component({
   selector: "app-login",
@@ -87,7 +89,7 @@ export class LoginComponent implements OnInit {
 
   signInWithGoogle(): void {
     this.errorMessage = "";
-    sessionStorage.setItem(RETURN_URL_STORAGE_KEY, this.returnUrl());
+    localStorage.setItem(RETURN_URL_STORAGE_KEY, this.returnUrl());
     this.authService.signInWithGoogle();
   }
 
@@ -98,7 +100,7 @@ export class LoginComponent implements OnInit {
 }
 
 function consumeReturnUrl(): string {
-  const url = sessionStorage.getItem(RETURN_URL_STORAGE_KEY) ?? "/home";
-  sessionStorage.removeItem(RETURN_URL_STORAGE_KEY);
+  const url = localStorage.getItem(RETURN_URL_STORAGE_KEY) ?? "/home";
+  localStorage.removeItem(RETURN_URL_STORAGE_KEY);
   return url.startsWith("/") ? url : "/home";
 }
