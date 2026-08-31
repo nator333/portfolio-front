@@ -1,4 +1,4 @@
-<label class="label">{{ label }}</label>
+<label class="label">{{ label() }}</label>
 
 <div class="image-upload">
   @if (previewSrc) {
@@ -10,7 +10,7 @@
   <div class="image-upload__controls">
     @if (selectableAssets.length) {
       <div class="select is-small is-fullwidth image-upload__select">
-        <select [value]="control.value" (change)="onSelectSaved($event)">
+        <select [value]="control().value" (change)="onSelectSaved($event)">
           <option value="">Pick a saved image…</option>
           @for (asset of selectableAssets; track asset.assetId) {
             <option [value]="asset.cdnUrl">{{ asset.title || asset.originalFilename }}</option>
@@ -22,7 +22,7 @@
     <input
       class="input"
       type="text"
-      [formControl]="control"
+      [formControl]="control()"
       placeholder="assets/blog/foo.png or https://..."
     />
 
@@ -37,7 +37,7 @@
           (change)="onFileSelected($event)"
         />
       </label>
-      @if (control.value) {
+      @if (control().value) {
         <button
           class="button is-small is-light"
           type="button"

@@ -1,8 +1,8 @@
 import {
   Component,
-  Input,
   OnDestroy,
   inject,
+  input,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MediaAsset, MediaCategory, MediaService } from '../../services/media.service';
@@ -31,11 +31,11 @@ export class ImageUploadComponent implements OnDestroy {
   private media = inject(MediaService);
 
   /** The reactive control holding the image URL (or bundled asset path). */
-  @Input({ required: true }) control!: FormControl<string>;
-  @Input() category: MediaCategory = 'general';
-  @Input() label = 'Image';
+  readonly control = input.required<FormControl<string>>();
+  readonly category = input<MediaCategory>('general');
+  readonly label = input('Image');
   /** Previously uploaded images, offered in the "pick a saved image" dropdown. */
-  @Input() assets: MediaAsset[] = [];
+  readonly assets = input<MediaAsset[]>([]);
 
   readonly accept = ALLOWED_TYPES.join(',');
 
@@ -45,7 +45,7 @@ export class ImageUploadComponent implements OnDestroy {
   private localPreview: string | null = null;
 
   get previewSrc(): string | null {
-    return this.localPreview || this.control.value || null;
+    return this.localPreview || this.control().value || null;
   }
 
   /**
@@ -53,8 +53,8 @@ export class ImageUploadComponent implements OnDestroy {
    * uncategorised ("general") images, which are usable anywhere.
    */
   get selectableAssets(): MediaAsset[] {
-    return this.assets.filter(
-      (asset) => asset.category === this.category || asset.category === 'general',
+    return this.assets().filter(
+      (asset) => asset.category === this.category() || asset.category === 'general',
     );
   }
 
@@ -80,10 +80,10 @@ export class ImageUploadComponent implements OnDestroy {
     this.status = 'uploading';
     this.message = 'Uploading…';
 
-    this.media.upload(file, this.category).subscribe({
+    this.media.upload(file, this.category()).subscribe({
       next: (result) => {
-        this.control.setValue(result.cdnUrl);
-        this.control.markAsDirty();
+        this.control().setValue(result.cdnUrl);
+        this.control().markAsDirty();
         this.status = 'saved';
         this.message = 'Uploaded. The optimized image is served from the CDN.';
       },
@@ -99,15 +99,15 @@ export class ImageUploadComponent implements OnDestroy {
     }
     // Drop any local file preview so the preview reflects the chosen saved image.
     this.revokeLocalPreview();
-    this.control.setValue(url);
-    this.control.markAsDirty();
+    this.control().setValue(url);
+    this.control().markAsDirty();
     this.status = 'idle';
     this.message = '';
   }
 
   clear(): void {
-    this.control.setValue('');
-    this.control.markAsDirty();
+    this.control().setValue('');
+    this.control().markAsDirty();
     this.revokeLocalPreview();
     this.status = 'idle';
     this.message = '';
