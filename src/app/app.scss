@@ -7,6 +7,9 @@
 
 .main-content {
   flex: 1;
+  /* Match the navbar's safe-area drop so routed pages still clear the bar in
+     the installed PWA; 0 in browsers, so no change there. */
+  padding-top: env(safe-area-inset-top);
 }
 
 /* Custom scrollbar for modern browsers */
