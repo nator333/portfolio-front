@@ -72,12 +72,18 @@ export class AnalyticsService {
     }
 
     this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
-        window.gtag("event", "page_view", {
-          page_path: event.urlAfterRedirects,
-          page_location: window.location.href,
-          page_title: this.document.title,
+        const pagePath = event.urlAfterRedirects;
+        // The router sets the document title (via TitleStrategy) synchronously
+        // right after emitting NavigationEnd, so read it on the next microtask
+        // to report the page just navigated to, not the previous one.
+        queueMicrotask(() => {
+          window.gtag("event", "page_view", {
+            page_path: pagePath,
+            page_location: window.location.href,
+            page_title: this.document.title,
+          });
         });
       });
   }
