@@ -8,8 +8,10 @@ import {
 } from "@angular/core";
 import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { Router } from "@angular/router";
+import { Title } from "@angular/platform-browser";
 import { HttpClientModule } from "@angular/common/http";
 import { BlogService, BlogPost } from "../../services/blog.service";
+import { pageTitle } from "../../title-strategy";
 import { runMermaid } from "../../utils/mermaid.util";
 import * as Prism from "prismjs";
 
@@ -96,6 +98,7 @@ export class BlogPostComponent implements OnInit, AfterViewChecked {
 
   private router = inject(Router);
   private blogService = inject(BlogService);
+  private title = inject(Title);
 
   ngOnInit(): void {
     // Scrolling on navigation is handled by the router's scrollPositionRestoration.
@@ -104,6 +107,7 @@ export class BlogPostComponent implements OnInit, AfterViewChecked {
     if (!url) {
       this.error = "Blog post not found";
       this.loading = false;
+      this.title.setTitle(pageTitle("Post not found"));
       return;
     }
 
@@ -113,9 +117,12 @@ export class BlogPostComponent implements OnInit, AfterViewChecked {
         if (post) {
           this.post = post;
           this.loading = false;
+          // The route carries no static title; brand the post's own.
+          this.title.setTitle(pageTitle(post.title));
         } else {
           this.error = "Blog post not found";
           this.loading = false;
+          this.title.setTitle(pageTitle("Post not found"));
         }
       },
       error: (err) => {

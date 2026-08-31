@@ -6,15 +6,18 @@ import { authGuard } from "./guards/auth.guard";
 
 export const routes: Routes = [
   { path: "", redirectTo: "/home", pathMatch: "full" },
+  // Home declares no title, so it keeps the default landing title.
   { path: "home", component: HomeComponent },
-  { path: "projects", component: ProjectsComponent },
-  { path: "blog", component: BlogComponent },
+  { path: "projects", title: "Projects", component: ProjectsComponent },
+  { path: "blog", title: "Blog", component: BlogComponent },
   {
     path: "workout",
+    title: "Workout",
     loadComponent: () =>
       import("./pages/workout/workout.component").then((m) => m.WorkoutComponent),
   },
   {
+    // No route title: the component sets the post's own title once it loads.
     path: "blog/:url",
     loadComponent: () =>
       import("./pages/blog-post/blog-post.component").then(
@@ -23,6 +26,7 @@ export const routes: Routes = [
   },
   {
     path: "profile",
+    title: "Profile",
     loadComponent: () =>
       import("./pages/profile/profile.component").then(
         (m) => m.ProfileComponent,
@@ -30,11 +34,13 @@ export const routes: Routes = [
   },
   {
     path: "login",
+    title: "Sign in",
     loadComponent: () =>
       import("./pages/login/login.component").then((m) => m.LoginComponent),
   },
   {
     path: "home-edit",
+    title: "Edit Home",
     canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/home-edit/home-edit.component").then(
@@ -43,6 +49,7 @@ export const routes: Routes = [
   },
   {
     path: "cv-editor",
+    title: "CV Editor",
     canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/cv-editor/cv-editor.component").then(
@@ -51,6 +58,7 @@ export const routes: Routes = [
   },
   {
     path: "blog-edit",
+    title: "Blog Editor",
     canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/blog-edit/blog-edit.component").then(
@@ -59,6 +67,7 @@ export const routes: Routes = [
   },
   {
     path: "blog-edit/new",
+    title: "New Post",
     canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/blog-post-edit/blog-post-edit.component").then(
@@ -67,6 +76,7 @@ export const routes: Routes = [
   },
   {
     path: "blog-edit/:slug",
+    title: "Edit Post",
     canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/blog-post-edit/blog-post-edit.component").then(
@@ -75,6 +85,7 @@ export const routes: Routes = [
   },
   {
     path: "projects-edit",
+    title: "Edit Projects",
     canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/projects-edit/projects-edit.component").then(
@@ -83,6 +94,7 @@ export const routes: Routes = [
   },
   {
     path: "cv-agent",
+    title: "CV Agent",
     canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/cv-agent/cv-agent.component").then(
@@ -91,6 +103,7 @@ export const routes: Routes = [
   },
   {
     path: "media-library",
+    title: "Media Library",
     canActivate: [authGuard],
     loadComponent: () =>
       import("./pages/media-library/media-library.component").then(

@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import {
   provideRouter,
+  TitleStrategy,
   withComponentInputBinding,
   withInMemoryScrolling,
   withNavigationErrorHandler,
@@ -24,6 +25,7 @@ import {
   authTokenInterceptor,
 } from "./interceptors/api.interceptors";
 import { recoverFromChunkLoadError } from "./utils/chunk-reload";
+import { BrandTitleStrategy } from "./title-strategy";
 
 import "prismjs";
 import "prismjs/components/prism-typescript.min.js";
@@ -64,5 +66,8 @@ export const appConfig: ApplicationConfig = {
       withXhr(),
     ),
     provideAppInitializer(() => inject(AnalyticsService).init()),
+    // Brand each route's title (browser tab, history, bookmarks) as
+    // "Page · Hiro Nakamata" from the routes' `title` fields.
+    { provide: TitleStrategy, useClass: BrandTitleStrategy },
   ],
 };
