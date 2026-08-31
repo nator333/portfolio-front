@@ -3,12 +3,12 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  Input,
   NgZone,
   OnDestroy,
   ViewChild,
   forwardRef,
   inject,
+  input,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import EasyMDE from 'easymde';
@@ -104,8 +104,8 @@ export class MarkdownEditorComponent
   @ViewChild('host') private host!: ElementRef<HTMLTextAreaElement>;
 
   /** Saved images offered in the insert-image dropdown. */
-  @Input() assets: MediaAsset[] = [];
-  @Input() category: MediaCategory = 'general';
+  readonly assets = input<MediaAsset[]>([]);
+  readonly category = input<MediaCategory>('general');
 
   readonly accept = ALLOWED_TYPES.join(',');
 
@@ -216,8 +216,8 @@ export class MarkdownEditorComponent
 
   /** Saved images in this field's category plus reusable "general" ones. */
   get selectableAssets(): MediaAsset[] {
-    return this.assets.filter(
-      (asset) => asset.category === this.category || asset.category === 'general',
+    return this.assets().filter(
+      (asset) => asset.category === this.category() || asset.category === 'general',
     );
   }
 
@@ -264,7 +264,7 @@ export class MarkdownEditorComponent
     this.uploadError = false;
     this.uploadMessage = 'Uploading…';
     this.cdr.detectChanges();
-    this.media.upload(file, this.category).subscribe({
+    this.media.upload(file, this.category()).subscribe({
       next: (result) => {
         this.uploadMessage = '';
         this.insertImage(result.cdnUrl, '');
