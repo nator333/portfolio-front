@@ -1,5 +1,9 @@
 import { TestBed } from "@angular/core/testing";
-import { provideHttpClient, withXhr } from "@angular/common/http";
+import {
+  provideHttpClient,
+  withInterceptors,
+  withXhr,
+} from "@angular/common/http";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -7,6 +11,10 @@ import {
 import { ChatService } from "./chat.service";
 import { ChatMessage, CHAT_MAX_MESSAGES } from "../models/chat-data";
 import { environment } from "../../environments/environment";
+import {
+  apiKeyInterceptor,
+  authTokenInterceptor,
+} from "../interceptors/api.interceptors";
 
 describe("ChatService", () => {
   let service: ChatService;
@@ -14,7 +22,13 @@ describe("ChatService", () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(
+          withInterceptors([apiKeyInterceptor, authTokenInterceptor]),
+          withXhr(),
+        ),
+        provideHttpClientTesting(),
+      ],
     });
     service = TestBed.inject(ChatService);
     httpMock = TestBed.inject(HttpTestingController);

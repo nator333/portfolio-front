@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ProjectsData } from '../models/project-data';
-import { AuthService } from './auth.service';
+import { withAuth } from '../interceptors/api.interceptors';
 
 const CACHE_KEY = 'projects-cache-v1';
 // Reads count against the API's monthly usage-plan quota, so projects
@@ -22,30 +22,23 @@ interface CachedProjects {
   providedIn: 'root',
 })
 export class ProjectsService {
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-  ) {}
+  constructor(private http: HttpClient) {}
 
   getProjects(): Observable<ProjectsData> {
     const cached = this.readCache();
     if (cached) {
       return of(cached);
     }
-    const headers = new HttpHeaders({ 'X-Api-Key': environment.apiKey });
     return this.http
-      .get<ProjectsData>(`${environment.apiBaseUrl}/projects`, { headers })
+      .get<ProjectsData>(`${environment.apiBaseUrl}/projects`)
       .pipe(tap((data) => this.writeCache(data)));
   }
 
   updateProjects(data: ProjectsData): Observable<ProjectsData> {
-    const headers = new HttpHeaders({
-      'X-Api-Key': environment.apiKey,
-      // REST API Cognito authorizers expect the raw JWT, not a Bearer-prefixed value.
-      Authorization: this.authService.getIdToken(),
-    });
     return this.http
-      .put<ProjectsData>(`${environment.apiBaseUrl}/projects`, data, { headers })
+      .put<ProjectsData>(`${environment.apiBaseUrl}/projects`, data, {
+        context: withAuth(),
+      })
       .pipe(tap((saved) => this.writeCache(saved)));
   }
 

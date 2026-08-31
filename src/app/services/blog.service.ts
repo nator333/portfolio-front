@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, map, of, catchError, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { BlogData, BlogPostEntry, DEFAULT_BLOG_LANG } from '../models/blog-data';
 import { renderBlogMarkdown } from '../utils/blog-markdown.util';
 import { AuthService } from './auth.service';
+import { withAuth } from '../interceptors/api.interceptors';
 
 export interface BlogPost {
   id: number;
@@ -75,16 +76,13 @@ export class BlogService {
    * Persist the full blog document (admin blog editor).
    */
   updateBlog(data: BlogData): Observable<BlogData> {
-    const headers = new HttpHeaders({
-      'X-Api-Key': environment.apiKey,
-      // REST API Cognito authorizers expect the raw JWT, not a Bearer-prefixed value.
-      Authorization: this.authService.getIdToken(),
-    });
     // The saved document may contain drafts, which must never sit in the shared
     // public cache — so invalidate it and let the next public read re-fetch the
     // server-stripped list rather than writing the response back.
     return this.http
-      .put<BlogData>(`${environment.apiBaseUrl}/blog`, data, { headers })
+      .put<BlogData>(`${environment.apiBaseUrl}/blog`, data, {
+        context: withAuth(),
+      })
       .pipe(tap(() => this.clearCache()));
   }
 
@@ -97,13 +95,10 @@ export class BlogService {
     // never be cached under the shared public key, so that path skips the cache
     // entirely (in both directions) and always fetches fresh.
     if (this.authService.isAuthenticated()) {
-      const headers = new HttpHeaders({
-        'X-Api-Key': environment.apiKey,
-        // REST API Cognito authorizers expect the raw JWT, not a Bearer value.
-        Authorization: this.authService.getIdToken(),
-      });
       return this.http
-        .get<BlogData>(`${environment.apiBaseUrl}/blog/all`, { headers })
+        .get<BlogData>(`${environment.apiBaseUrl}/blog/all`, {
+          context: withAuth(),
+        })
         .pipe(
           catchError((error) => {
             console.error('Error loading draft-inclusive blog data from API:', error);
@@ -116,9 +111,8 @@ export class BlogService {
     if (cached) {
       return of(cached);
     }
-    const headers = new HttpHeaders({ 'X-Api-Key': environment.apiKey });
     return this.http
-      .get<BlogData>(`${environment.apiBaseUrl}/blog`, { headers })
+      .get<BlogData>(`${environment.apiBaseUrl}/blog`)
       .pipe(
         // Cache even an empty document so retries don't burn the monthly quota.
         tap((data) => this.writeCache(data)),

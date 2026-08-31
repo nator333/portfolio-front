@@ -1,8 +1,9 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Observable, of, catchError, tap } from "rxjs";
 import { environment } from "../../environments/environment";
 import { WorkoutSummary } from "../models/workout-data";
+import { withApiKey } from "../interceptors/api.interceptors";
 
 const CACHE_KEY = "workout-cache-v1";
 // The summary is rebuilt only when a new CSV is imported (rarely), so a longer
@@ -30,9 +31,10 @@ export class WorkoutService {
     if (cached) {
       return of(cached);
     }
-    const headers = new HttpHeaders({ "X-Api-Key": environment.workoutApiKey });
     return this.http
-      .get<WorkoutSummary>(`${environment.apiBaseUrl}/workout`, { headers })
+      .get<WorkoutSummary>(`${environment.apiBaseUrl}/workout`, {
+        context: withApiKey("workout"),
+      })
       .pipe(
         tap((data) => this.writeCache(data)),
         catchError((error) => {

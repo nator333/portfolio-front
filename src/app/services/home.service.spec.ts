@@ -1,5 +1,9 @@
 import { TestBed } from "@angular/core/testing";
-import { provideHttpClient, withXhr } from "@angular/common/http";
+import {
+  provideHttpClient,
+  withInterceptors,
+  withXhr,
+} from "@angular/common/http";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -8,6 +12,10 @@ import { HomeService } from "./home.service";
 import { AuthService } from "./auth.service";
 import { HomeData } from "../models/home-data";
 import { environment } from "../../environments/environment";
+import {
+  apiKeyInterceptor,
+  authTokenInterceptor,
+} from "../interceptors/api.interceptors";
 
 const apiDocument: HomeData = {
   mottoes: ["Line One", "Line Two", "Line Three"],
@@ -21,7 +29,10 @@ describe("HomeService", () => {
     sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withXhr()),
+        provideHttpClient(
+          withInterceptors([apiKeyInterceptor, authTokenInterceptor]),
+          withXhr(),
+        ),
         provideHttpClientTesting(),
         {
           provide: AuthService,

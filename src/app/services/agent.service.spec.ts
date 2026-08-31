@@ -1,5 +1,9 @@
 import { TestBed } from "@angular/core/testing";
-import { provideHttpClient, withXhr } from "@angular/common/http";
+import {
+  provideHttpClient,
+  withInterceptors,
+  withXhr,
+} from "@angular/common/http";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -8,6 +12,10 @@ import { AgentService } from "./agent.service";
 import { AuthService } from "./auth.service";
 import { AgentMessage, AGENT_MAX_MESSAGES } from "../models/agent-data";
 import { environment } from "../../environments/environment";
+import {
+  apiKeyInterceptor,
+  authTokenInterceptor,
+} from "../interceptors/api.interceptors";
 
 describe("AgentService", () => {
   let service: AgentService;
@@ -16,7 +24,10 @@ describe("AgentService", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withXhr()),
+        provideHttpClient(
+          withInterceptors([apiKeyInterceptor, authTokenInterceptor]),
+          withXhr(),
+        ),
         provideHttpClientTesting(),
         {
           provide: AuthService,

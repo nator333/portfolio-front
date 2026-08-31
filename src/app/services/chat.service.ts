@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../environments/environment";
 import {
@@ -8,6 +8,7 @@ import {
   CHAT_MAX_MESSAGES,
   CHAT_MAX_MESSAGE_CHARS,
 } from "../models/chat-data";
+import { withApiKey } from "../interceptors/api.interceptors";
 
 /**
  * Sends visitor questions to the public portfolio-api chat endpoint.
@@ -25,11 +26,10 @@ export class ChatService {
       role: message.role,
       content: message.content.slice(0, CHAT_MAX_MESSAGE_CHARS),
     }));
-    const headers = new HttpHeaders({ "X-Api-Key": environment.chatApiKey });
     return this.http.post<ChatResponse>(
       `${environment.apiBaseUrl}/chat`,
       { messages },
-      { headers },
+      { context: withApiKey("chat") },
     );
   }
 }

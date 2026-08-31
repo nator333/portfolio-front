@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Observable, map, of, catchError, tap } from "rxjs";
 import { environment } from "../../environments/environment";
 import { ActivityEntry } from "../models/activity-data";
@@ -43,9 +43,8 @@ export class ActivityService {
     if (cached) {
       return of(cached);
     }
-    const headers = new HttpHeaders({ "X-Api-Key": environment.apiKey });
     return this.http
-      .get<ActivityResponse>(`${environment.apiBaseUrl}/activity`, { headers })
+      .get<ActivityResponse>(`${environment.apiBaseUrl}/activity`)
       .pipe(
         // Cache even an empty feed so retries don't burn the daily quota.
         tap((data) => this.writeCache(data)),

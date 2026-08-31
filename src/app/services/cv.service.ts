@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CvData } from '../models/cv-data';
-import { AuthService } from './auth.service';
+import { withAuth } from '../interceptors/api.interceptors';
 
 const CACHE_KEY = 'cv-cache-v1';
 // Reads count against the API's monthly usage-plan quota, so profile
@@ -22,30 +22,23 @@ interface CachedCv {
   providedIn: 'root',
 })
 export class CvService {
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-  ) {}
+  constructor(private http: HttpClient) {}
 
   getCv(): Observable<CvData> {
     const cached = this.readCache();
     if (cached) {
       return of(cached);
     }
-    const headers = new HttpHeaders({ 'X-Api-Key': environment.apiKey });
     return this.http
-      .get<CvData>(`${environment.apiBaseUrl}/cv`, { headers })
+      .get<CvData>(`${environment.apiBaseUrl}/cv`)
       .pipe(tap((data) => this.writeCache(data)));
   }
 
   updateCv(data: CvData): Observable<CvData> {
-    const headers = new HttpHeaders({
-      'X-Api-Key': environment.apiKey,
-      // REST API Cognito authorizers expect the raw JWT, not a Bearer-prefixed value.
-      Authorization: this.authService.getIdToken(),
-    });
     return this.http
-      .put<CvData>(`${environment.apiBaseUrl}/cv`, data, { headers })
+      .put<CvData>(`${environment.apiBaseUrl}/cv`, data, {
+        context: withAuth(),
+      })
       .pipe(tap((saved) => this.writeCache(saved)));
   }
 
