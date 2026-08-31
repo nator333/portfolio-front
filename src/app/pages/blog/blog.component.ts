@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { HttpClientModule } from "@angular/common/http";
 import { HeroComponent } from "../../components/hero/hero.component";
@@ -8,7 +8,13 @@ import { BlogService, BlogPost } from "../../services/blog.service";
 @Component({
   selector: "app-blog",
   standalone: true,
-  imports: [CommonModule, RouterLink, HttpClientModule, HeroComponent],
+  imports: [
+    CommonModule,
+    NgOptimizedImage,
+    RouterLink,
+    HttpClientModule,
+    HeroComponent,
+  ],
   template: `
     <app-hero title="Blog" subtitle="My Thoughts"> </app-hero>
 
@@ -30,7 +36,7 @@ import { BlogService, BlogPost } from "../../services/blog.service";
                   @if (post.image) {
                     <div class="card-image">
                       <figure class="image is-4by3">
-                        <img [src]="post.image" [alt]="post.title" />
+                        <img [ngSrc]="post.image" [alt]="post.title" fill />
                       </figure>
                     </div>
                   }
