@@ -5,10 +5,11 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from "@angular/core";
-import { provideRouter } from "@angular/router";
+import { provideRouter, withNavigationErrorHandler } from "@angular/router";
 import { provideHttpClient, withXhr } from "@angular/common/http";
 
 import { AnalyticsService } from "./services/analytics.service";
+import { recoverFromChunkLoadError } from "./utils/chunk-reload";
 
 import "prismjs";
 import "prismjs/components/prism-typescript.min.js";
@@ -28,7 +29,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes, withNavigationErrorHandler(recoverFromChunkLoadError)),
     provideHttpClient(withXhr()),
     provideAppInitializer(() => inject(AnalyticsService).init()),
   ],
