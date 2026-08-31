@@ -6,7 +6,7 @@ import {
   inject,
   input,
 } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { Router } from "@angular/router";
 import { HttpClientModule } from "@angular/common/http";
 import { BlogService, BlogPost } from "../../services/blog.service";
@@ -16,7 +16,7 @@ import * as Prism from "prismjs";
 @Component({
   selector: "app-blog-post",
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, NgOptimizedImage, HttpClientModule],
   template: `
     <section class="section">
       <div class="container">
@@ -54,8 +54,10 @@ import * as Prism from "prismjs";
               <div class="blog-post-image">
                 <figure class="image is-16by9">
                   <img
-                    [src]="post.image"
+                    [ngSrc]="post.image"
                     [alt]="post.title"
+                    fill
+                    priority
                     class="eye-catch-image"
                   />
                 </figure>

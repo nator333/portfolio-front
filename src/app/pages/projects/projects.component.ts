@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import { NgOptimizedImage } from "@angular/common";
 
 import { HeroComponent } from "../../components/hero/hero.component";
 import { ProjectsService } from "../../services/projects.service";
@@ -7,7 +8,7 @@ import { ProjectEntry } from "../../models/project-data";
 @Component({
   selector: "app-projects",
   standalone: true,
-  imports: [HeroComponent],
+  imports: [HeroComponent, NgOptimizedImage],
   template: `
     <app-hero title="Projects" subtitle="My Work & Contributions"> </app-hero>
 
@@ -17,11 +18,13 @@ import { ProjectEntry } from "../../models/project-data";
           @for (project of projects; track $index) {
             <div class="column is-one-third">
               <div class="card project-card">
-                <div class="card-image">
-                  <figure class="image is-4by3">
-                    <img [src]="project.image" [alt]="project.title" />
-                  </figure>
-                </div>
+                @if (project.image) {
+                  <div class="card-image">
+                    <figure class="image is-4by3">
+                      <img [ngSrc]="project.image" [alt]="project.title" fill />
+                    </figure>
+                  </div>
+                }
                 <div class="card-content">
                   <div class="media">
                     <div class="media-content">

@@ -7,6 +7,8 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 
+import { NgOptimizedImage } from "@angular/common";
+
 import { HomeService } from "../../services/home.service";
 import { ActivityService } from "../../services/activity.service";
 import { ContributionCalendarComponent } from "../../components/contribution-calendar/contribution-calendar.component";
@@ -27,6 +29,7 @@ import {
   selector: "app-home",
   standalone: true,
   imports: [
+    NgOptimizedImage,
     ContributionCalendarComponent,
     ActivityFeedComponent,
     ActivityFiltersComponent,
