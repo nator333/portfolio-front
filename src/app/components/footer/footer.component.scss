@@ -8,4 +8,16 @@
     font-size: 0.9rem;
     color: #FFD700;
   }
+
+  /* Blend the admin sign-in trigger into the copyright text. */
+  .admin-login {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+      color: inherit;
+    }
+  }
 }

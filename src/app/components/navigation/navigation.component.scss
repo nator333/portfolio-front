@@ -106,6 +106,7 @@
         transition: all 0.3s ease;
         display: flex;
         align-items: center; /* Vertically center navigation links */
+        cursor: pointer; /* Sign Out is an href-less button */
         
         &:hover {
           background-color: rgba(0, 0, 0, 0.05) !important;

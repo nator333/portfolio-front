@@ -7,7 +7,7 @@ import {
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { RouterLink, RouterLinkActive } from "@angular/router";
+import { Router, RouterLink, RouterLinkActive } from "@angular/router";
 
 import { AuthService } from "../../services/auth.service";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
@@ -146,6 +146,9 @@ import {
             >
               CV Agent
             </a>
+            <a class="navbar-item nav-link" role="button" (click)="signOut()">
+              Sign Out
+            </a>
           }
         </div>
       </div>
@@ -156,6 +159,7 @@ import {
 })
 export class NavigationComponent {
   private authService = inject(AuthService);
+  private router = inject(Router);
   private host = inject(ElementRef<HTMLElement>);
 
   isMenuOpen = signal(false);
@@ -170,6 +174,12 @@ export class NavigationComponent {
 
   toggleMenu(): void {
     this.isMenuOpen.update((value) => !value);
+  }
+
+  /** Clear the session and return to the public home page. */
+  signOut(): void {
+    this.authService.logout();
+    this.router.navigateByUrl("/home");
   }
 
   closeMenu(): void {
