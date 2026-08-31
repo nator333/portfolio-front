@@ -128,6 +128,12 @@
       }
     }
   }
+
+  /* Reserves vertical space for the @defer'd activity content so revealing it
+     on scroll doesn't shift the page. Roughly the height of the calendar row. */
+  .activity-placeholder {
+    min-height: 240px;
+  }
 }
 
 /* Mobile responsiveness */

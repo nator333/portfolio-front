@@ -5,7 +5,13 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from "@angular/core";
-import { provideRouter, withNavigationErrorHandler } from "@angular/router";
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withInMemoryScrolling,
+  withNavigationErrorHandler,
+  withViewTransitions,
+} from "@angular/router";
 import { provideHttpClient, withXhr } from "@angular/common/http";
 
 import { AnalyticsService } from "./services/analytics.service";
@@ -29,7 +35,22 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes, withNavigationErrorHandler(recoverFromChunkLoadError)),
+    provideRouter(
+      routes,
+      // Bind route params (e.g. :url, :slug) straight to component inputs, so
+      // pages read them as signal inputs instead of reaching into ActivatedRoute.
+      withComponentInputBinding(),
+      // Animate route changes with the native View Transitions API (a graceful
+      // cross-fade where supported, an instant swap where not).
+      withViewTransitions(),
+      // Scroll to the top on forward navigation, restore the prior position on
+      // back/forward, and honour #fragment anchors in long pages (blog posts).
+      withInMemoryScrolling({
+        scrollPositionRestoration: "enabled",
+        anchorScrolling: "enabled",
+      }),
+      withNavigationErrorHandler(recoverFromChunkLoadError),
+    ),
     provideHttpClient(withXhr()),
     provideAppInitializer(() => inject(AnalyticsService).init()),
   ],

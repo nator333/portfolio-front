@@ -57,27 +57,37 @@
 <section class="section activity-section">
   <div class="container">
     <h2 class="activity-heading">Activity</h2>
-    @if (availableTypes().length > 1) {
-      <app-activity-filters
-        [types]="availableTypes()"
-        [active]="activeTypeList()"
-        (toggled)="onTypeToggled($event)"
-      />
+    <!--
+      The activity area sits below the full-height hero, so defer it until it
+      scrolls into view. The calendar, feed and filters ship in their own lazy
+      chunk rather than the home route's initial payload. The placeholder holds
+      vertical space so revealing the real content doesn't shift the layout.
+    -->
+    @defer (on viewport) {
+      @if (availableTypes().length > 1) {
+        <app-activity-filters
+          [types]="availableTypes()"
+          [active]="activeTypeList()"
+          (toggled)="onTypeToggled($event)"
+        />
+      }
+      <div class="columns activity-layout">
+        <div class="column is-two-thirds">
+          <app-contribution-calendar
+            [contributions]="contributions()"
+            [selectedDate]="selectedDate()"
+            (daySelected)="onDaySelected($event)"
+          />
+        </div>
+        <div class="column is-one-third">
+          <app-activity-feed
+            [entries]="filteredEntries()"
+            [selectedDate]="selectedDate()"
+          />
+        </div>
+      </div>
+    } @placeholder {
+      <div class="activity-placeholder" aria-hidden="true"></div>
     }
-    <div class="columns activity-layout">
-      <div class="column is-two-thirds">
-        <app-contribution-calendar
-          [contributions]="contributions()"
-          [selectedDate]="selectedDate()"
-          (daySelected)="onDaySelected($event)"
-        />
-      </div>
-      <div class="column is-one-third">
-        <app-activity-feed
-          [entries]="filteredEntries()"
-          [selectedDate]="selectedDate()"
-        />
-      </div>
-    </div>
   </div>
 </section>

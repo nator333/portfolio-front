@@ -1,11 +1,12 @@
 import {
   Component,
   inject,
+  input,
   OnInit,
   ChangeDetectionStrategy,
 } from "@angular/core";
 
-import { ActivatedRoute, Router } from "@angular/router";
+import { Router } from "@angular/router";
 import {
   FormBuilder,
   FormGroup,
@@ -58,7 +59,9 @@ export class BlogPostEditComponent implements OnInit {
   private blogService = inject(BlogService);
   private mediaService = inject(MediaService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
+
+  /** The `:slug` route segment (absent on the /new route), bound via component input binding. */
+  readonly slug = input<string>();
 
   /** Saved images offered in the eye-catch picker. */
   mediaAssets: MediaAsset[] = [];
@@ -116,7 +119,7 @@ export class BlogPostEditComponent implements OnInit {
   }
 
   private loadBlog(): void {
-    const slug = this.route.snapshot.paramMap.get("slug");
+    const slug = this.slug();
     this.isNew = !slug;
     this.loading = true;
 

@@ -20,7 +20,14 @@ import { ChatWidgetComponent } from "./components/chat-widget/chat-widget.compon
         <router-outlet></router-outlet>
       </main>
       <app-footer></app-footer>
-      <app-chat-widget></app-chat-widget>
+      <!--
+        The chat widget (and its ChatService + icons) is not needed for first
+        paint on any page, so defer it until the browser is idle. It ships in
+        its own lazy chunk instead of the initial bundle.
+      -->
+      @defer (on idle) {
+        <app-chat-widget></app-chat-widget>
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,

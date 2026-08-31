@@ -3,9 +3,11 @@ import {
   OnInit,
   AfterViewChecked,
   ChangeDetectionStrategy,
+  inject,
+  input,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { ActivatedRoute, Router } from "@angular/router";
+import { Router } from "@angular/router";
 import { HttpClientModule } from "@angular/common/http";
 import { BlogService, BlogPost } from "../../services/blog.service";
 import { runMermaid } from "../../utils/mermaid.util";
@@ -82,23 +84,21 @@ import * as Prism from "prismjs";
   styleUrl: "./blog-post.component.scss",
 })
 export class BlogPostComponent implements OnInit, AfterViewChecked {
+  /** The `:url` route segment, bound from the router via component input binding. */
+  readonly url = input<string>();
+
   post: BlogPost | undefined;
   loading = true;
   error = "";
   private highlightedCode = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private blogService: BlogService,
-  ) {}
+  private router = inject(Router);
+  private blogService = inject(BlogService);
 
   ngOnInit(): void {
-    // Scroll to top when component initializes
-    window.scrollTo(0, 0);
+    // Scrolling on navigation is handled by the router's scrollPositionRestoration.
 
-    // Get the URL parameter
-    const url = this.route.snapshot.paramMap.get("url");
+    const url = this.url();
     if (!url) {
       this.error = "Blog post not found";
       this.loading = false;

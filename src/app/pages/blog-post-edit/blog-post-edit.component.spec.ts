@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { ActivatedRoute, Router, convertToParamMap } from "@angular/router";
+import { Router } from "@angular/router";
 import { of, throwError } from "rxjs";
 import { BlogPostEditComponent } from "./blog-post-edit.component";
 import { BlogService } from "../../services/blog.service";
@@ -51,19 +51,14 @@ describe("BlogPostEditComponent", () => {
         { provide: Router, useValue: router },
         { provide: AuthService, useValue: { logout: () => undefined } },
         { provide: MediaService, useValue: { list: () => of([]) } },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              paramMap: convertToParamMap(slug ? { slug } : {}),
-            },
-          },
-        },
       ],
     }).compileComponents();
 
     const fixture: ComponentFixture<BlogPostEditComponent> =
       TestBed.createComponent(BlogPostEditComponent);
+    // The `slug` route param is bound as a component input in production; set it
+    // directly here since there is no router to bind it.
+    fixture.componentRef.setInput("slug", slug ?? undefined);
     fixture.detectChanges();
     return fixture.componentInstance;
   }
@@ -233,13 +228,10 @@ describe("BlogPostEditComponent", () => {
         { provide: Router, useValue: router },
         { provide: AuthService, useValue: { logout: () => undefined } },
         { provide: MediaService, useValue: { list: () => of([]) } },
-        {
-          provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: convertToParamMap({}) } },
-        },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(BlogPostEditComponent);
+    // No slug input => new-post mode, matching the previous empty paramMap.
     fixture.detectChanges();
     const component = fixture.componentInstance;
 
