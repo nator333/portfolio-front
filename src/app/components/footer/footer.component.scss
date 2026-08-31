@@ -2,7 +2,10 @@
   margin-top: auto;
   border-top: 1px solid #FFD700;
   background-color: #000000 !important;
-  
+  /* Keep the footer (and its © sign-in tap target) above the iOS home
+     indicator in the installed PWA; 0 in browsers. */
+  padding-bottom: calc(3rem + env(safe-area-inset-bottom));
+
   p {
     margin-top: 1rem;
     font-size: 0.9rem;

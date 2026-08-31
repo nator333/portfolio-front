@@ -12,6 +12,22 @@ body {
   color: #ffffff;
 }
 
+/* Opaque backdrop behind the iOS status bar so content scrolled under the
+   fixed navbar doesn't show through beneath the clock/battery in the installed
+   PWA (black-translucent status bar + viewport-fit=cover). Sits above the
+   navbar (Bulma is-fixed-top is z-index 30); collapses to zero height in
+   browsers and on non-notched devices, so it's invisible there. */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background-color: #000000;
+  z-index: 35;
+}
+
 /* Portfolio Specific Styles */
 .hero {
   background-color: #000000 !important;

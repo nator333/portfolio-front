@@ -6,7 +6,21 @@
   border-bottom: 3px dashed #000000;
   box-shadow: none;
   height: 3.25rem;
-  
+}
+
+/* Installed iOS/iPadOS PWA (black-translucent status bar + viewport-fit=cover):
+   drop the fixed bar below the status bar so the clock, signal and battery no
+   longer sit on top of — and block taps on — the brand and burger. Side insets
+   keep the bar clear of the notch/rounded corners in landscape. env() is 0 in
+   browsers and on non-notched devices, so this is inert outside the PWA. */
+.navbar.is-fixed-top {
+  top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.navbar {
+
   .navbar-brand {
     display: flex;
     align-items: center; /* Vertically center the brand */
