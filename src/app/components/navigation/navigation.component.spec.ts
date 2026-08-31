@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideRouter } from "@angular/router";
+import { Router, provideRouter } from "@angular/router";
 import { BehaviorSubject } from "rxjs";
 import { NavigationComponent } from "./navigation.component";
 import { AuthService } from "../../services/auth.service";
@@ -7,16 +7,18 @@ import { AuthService } from "../../services/auth.service";
 describe("NavigationComponent", () => {
   let fixture: ComponentFixture<NavigationComponent>;
   let authState: BehaviorSubject<boolean>;
+  let logout: jasmine.Spy;
 
   beforeEach(async () => {
     authState = new BehaviorSubject<boolean>(false);
+    logout = jasmine.createSpy("logout");
     await TestBed.configureTestingModule({
       imports: [NavigationComponent],
       providers: [
         provideRouter([]),
         {
           provide: AuthService,
-          useValue: { isAuthenticated$: authState.asObservable() },
+          useValue: { isAuthenticated$: authState.asObservable(), logout },
         },
       ],
     }).compileComponents();
@@ -42,6 +44,31 @@ describe("NavigationComponent", () => {
     expect(hrefs).not.toContain("/projects-edit");
     expect(hrefs).not.toContain("/blog-edit");
     expect(hrefs).not.toContain("/cv-agent");
+  });
+
+  it("should not expose a sign-in link in the navbar", () => {
+    // Sign-in lives discreetly in the footer, not the main nav.
+    expect(renderedHrefs()).not.toContain("/login");
+
+    authState.next(true);
+    fixture.detectChanges();
+    expect(renderedHrefs()).not.toContain("/login");
+  });
+
+  it("should sign out and return home when Sign Out is tapped", () => {
+    authState.next(true);
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    const navigate = spyOn(router, "navigateByUrl");
+
+    const el: HTMLElement = fixture.nativeElement;
+    const signOut = Array.from(
+      el.querySelectorAll("a.nav-link"),
+    ).find((a) => a.textContent?.trim() === "Sign Out") as HTMLElement;
+    signOut.click();
+
+    expect(logout).toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith("/home");
   });
 
   it("should show all edit page links when authenticated", () => {
