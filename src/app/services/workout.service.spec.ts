@@ -3,9 +3,13 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
-import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { WorkoutService } from "./workout.service";
 import { environment } from "../../environments/environment";
+import {
+  apiKeyInterceptor,
+  authTokenInterceptor,
+} from "../interceptors/api.interceptors";
 
 describe("WorkoutService", () => {
   let service: WorkoutService;
@@ -13,7 +17,12 @@ describe("WorkoutService", () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(
+          withInterceptors([apiKeyInterceptor, authTokenInterceptor]),
+        ),
+        provideHttpClientTesting(),
+      ],
     });
     service = TestBed.inject(WorkoutService);
     httpMock = TestBed.inject(HttpTestingController);

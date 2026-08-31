@@ -12,9 +12,17 @@ import {
   withNavigationErrorHandler,
   withViewTransitions,
 } from "@angular/router";
-import { provideHttpClient, withXhr } from "@angular/common/http";
+import {
+  provideHttpClient,
+  withInterceptors,
+  withXhr,
+} from "@angular/common/http";
 
 import { AnalyticsService } from "./services/analytics.service";
+import {
+  apiKeyInterceptor,
+  authTokenInterceptor,
+} from "./interceptors/api.interceptors";
 import { recoverFromChunkLoadError } from "./utils/chunk-reload";
 
 import "prismjs";
@@ -51,7 +59,10 @@ export const appConfig: ApplicationConfig = {
       }),
       withNavigationErrorHandler(recoverFromChunkLoadError),
     ),
-    provideHttpClient(withXhr()),
+    provideHttpClient(
+      withInterceptors([apiKeyInterceptor, authTokenInterceptor]),
+      withXhr(),
+    ),
     provideAppInitializer(() => inject(AnalyticsService).init()),
   ],
 };

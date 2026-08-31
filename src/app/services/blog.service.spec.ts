@@ -1,5 +1,9 @@
 import { TestBed } from "@angular/core/testing";
-import { provideHttpClient, withXhr } from "@angular/common/http";
+import {
+  provideHttpClient,
+  withInterceptors,
+  withXhr,
+} from "@angular/common/http";
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -8,6 +12,10 @@ import { BlogService, BlogPost } from "./blog.service";
 import { AuthService } from "./auth.service";
 import { BlogData } from "../models/blog-data";
 import { environment } from "../../environments/environment";
+import {
+  apiKeyInterceptor,
+  authTokenInterceptor,
+} from "../interceptors/api.interceptors";
 
 const apiDocument: BlogData = {
   posts: [
@@ -41,7 +49,10 @@ describe("BlogService", () => {
     authState = { authenticated: false };
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withXhr()),
+        provideHttpClient(
+          withInterceptors([apiKeyInterceptor, authTokenInterceptor]),
+          withXhr(),
+        ),
         provideHttpClientTesting(),
         {
           provide: AuthService,

@@ -1,5 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient, withXhr } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptors,
+  withXhr,
+} from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -7,6 +11,10 @@ import {
 import { MediaAsset, MediaService, UploadedMedia } from './media.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
+import {
+  apiKeyInterceptor,
+  authTokenInterceptor,
+} from '../interceptors/api.interceptors';
 
 const presignResponse = {
   assetId: 'asset-123',
@@ -30,7 +38,10 @@ describe('MediaService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withXhr()),
+        provideHttpClient(
+          withInterceptors([apiKeyInterceptor, authTokenInterceptor]),
+          withXhr(),
+        ),
         provideHttpClientTesting(),
         { provide: AuthService, useValue: { getIdToken: () => 'test-id-token' } },
       ],

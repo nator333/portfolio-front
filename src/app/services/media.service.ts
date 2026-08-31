@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, map, switchMap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
+import { withAuth } from '../interceptors/api.interceptors';
 
 export type MediaCategory = 'blog' | 'project' | 'general';
 
@@ -63,14 +63,13 @@ export interface MediaMetadata {
 @Injectable({ providedIn: 'root' })
 export class MediaService {
   private http = inject(HttpClient);
-  private auth = inject(AuthService);
 
   upload(file: File, category: MediaCategory = 'general'): Observable<UploadedMedia> {
     return this.http
       .post<CreateUploadResponse>(
         `${environment.apiBaseUrl}/uploads`,
         { filename: file.name, contentType: file.type, category },
-        { headers: this.authHeaders() },
+        { context: withAuth('none') },
       )
       .pipe(
         switchMap((res) => this.postToS3(res.upload, file).pipe(map(() => res))),
@@ -86,7 +85,7 @@ export class MediaService {
   list(): Observable<MediaAsset[]> {
     return this.http
       .get<{ assets: MediaAsset[] }>(`${environment.apiBaseUrl}/media`, {
-        headers: this.authHeaders(),
+        context: withAuth('none'),
       })
       .pipe(map((response) => response.assets ?? []));
   }
@@ -96,20 +95,17 @@ export class MediaService {
     return this.http.patch<MediaAsset>(
       `${environment.apiBaseUrl}/media/${assetId}`,
       patch,
-      { headers: this.authHeaders() },
+      { context: withAuth('none') },
     );
   }
 
   /** Delete an asset and every stored variant. */
   remove(assetId: string): Observable<void> {
     return this.http
-      .delete(`${environment.apiBaseUrl}/media/${assetId}`, { headers: this.authHeaders() })
+      .delete(`${environment.apiBaseUrl}/media/${assetId}`, {
+        context: withAuth('none'),
+      })
       .pipe(map(() => undefined));
-  }
-
-  private authHeaders(): HttpHeaders {
-    // REST API Cognito authorizers expect the raw JWT, not a Bearer value.
-    return new HttpHeaders({ Authorization: this.auth.getIdToken() });
   }
 
   private postToS3(presigned: PresignedPost, file: File): Observable<string> {

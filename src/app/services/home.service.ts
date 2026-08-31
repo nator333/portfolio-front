@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { HomeData } from '../models/home-data';
-import { AuthService } from './auth.service';
+import { withAuth } from '../interceptors/api.interceptors';
 
 const CACHE_KEY = 'home-cache-v1';
 // Reads count against the API's monthly usage-plan quota, and the home page
@@ -22,30 +22,23 @@ interface CachedHome {
   providedIn: 'root',
 })
 export class HomeService {
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-  ) {}
+  constructor(private http: HttpClient) {}
 
   getHome(): Observable<HomeData> {
     const cached = this.readCache();
     if (cached) {
       return of(cached);
     }
-    const headers = new HttpHeaders({ 'X-Api-Key': environment.apiKey });
     return this.http
-      .get<HomeData>(`${environment.apiBaseUrl}/home`, { headers })
+      .get<HomeData>(`${environment.apiBaseUrl}/home`)
       .pipe(tap((data) => this.writeCache(data)));
   }
 
   updateHome(data: HomeData): Observable<HomeData> {
-    const headers = new HttpHeaders({
-      'X-Api-Key': environment.apiKey,
-      // REST API Cognito authorizers expect the raw JWT, not a Bearer-prefixed value.
-      Authorization: this.authService.getIdToken(),
-    });
     return this.http
-      .put<HomeData>(`${environment.apiBaseUrl}/home`, data, { headers })
+      .put<HomeData>(`${environment.apiBaseUrl}/home`, data, {
+        context: withAuth(),
+      })
       .pipe(tap((saved) => this.writeCache(saved)));
   }
 
