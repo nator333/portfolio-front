@@ -3,6 +3,9 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectionStrategy,
+  afterNextRender,
+  inject,
+  Injector,
   signal,
   computed,
 } from "@angular/core";
@@ -273,6 +276,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
   });
 
   private charts: Chart[] = [];
+  private injector = inject(Injector);
 
   constructor(private workoutService: WorkoutService) {}
 
@@ -282,7 +286,12 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         this.summary.set(data);
         this.loaded.set(true);
         if (data && data.days.length) {
-          this.renderWhenReady(data);
+          // The chart canvases live behind an @if, so they enter the DOM on the
+          // render that follows these signal writes. afterNextRender fires once
+          // after that render — no requestAnimationFrame polling for the DOM.
+          afterNextRender(() => this.buildCharts(data), {
+            injector: this.injector,
+          });
         }
       },
       error: () => this.loaded.set(true),
@@ -291,17 +300,6 @@ export class WorkoutComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.charts.forEach((c) => c.destroy());
-  }
-
-  /** The chart canvases live behind an @if, so they enter the DOM a change-
-   *  detection cycle after the data arrives. Poll per frame until they exist
-   *  rather than guessing a fixed delay. */
-  private renderWhenReady(data: WorkoutSummary, attempts = 0): void {
-    if (document.getElementById("chart-strength")) {
-      this.buildCharts(data);
-    } else if (attempts < 60) {
-      requestAnimationFrame(() => this.renderWhenReady(data, attempts + 1));
-    }
   }
 
   private buildCharts(data: WorkoutSummary): void {
