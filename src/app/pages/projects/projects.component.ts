@@ -1,9 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  inject,
+} from "@angular/core";
+import { rxResource } from "@angular/core/rxjs-interop";
 import { NgOptimizedImage } from "@angular/common";
 
 import { HeroComponent } from "../../components/hero/hero.component";
 import { ProjectsService } from "../../services/projects.service";
-import { ProjectEntry } from "../../models/project-data";
 
 @Component({
   selector: "app-projects",
@@ -14,8 +19,15 @@ import { ProjectEntry } from "../../models/project-data";
 
     <section class="section">
       <div class="container">
-        <div class="columns is-multiline">
-          @for (project of projects; track $index) {
+        @if (projectsResource.isLoading()) {
+          <p class="has-text-white has-text-centered">Loading projects…</p>
+        } @else if (projectsResource.error()) {
+          <p class="has-text-danger has-text-centered">
+            Couldn't load projects. Please try again later.
+          </p>
+        } @else {
+          <div class="columns is-multiline">
+            @for (project of projects(); track $index) {
             <div class="column is-one-third">
               <div class="card project-card">
                 @if (project.image) {
@@ -69,25 +81,27 @@ import { ProjectEntry } from "../../models/project-data";
               </div>
             </div>
           }
-        </div>
+          </div>
+        }
       </div>
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./projects.component.scss",
 })
-export class ProjectsComponent implements OnInit {
-  projects: ProjectEntry[] = [];
+export class ProjectsComponent {
+  private projectsService = inject(ProjectsService);
 
-  constructor(private projectsService: ProjectsService) {}
+  /**
+   * Projects fetched through the service (which keeps its sessionStorage
+   * quota-cache), exposed as a signal resource: the template reads its
+   * loading/error/value states directly instead of a manual subscription.
+   */
+  readonly projectsResource = rxResource({
+    stream: () => this.projectsService.getProjects(),
+  });
 
-  ngOnInit(): void {
-    this.projectsService.getProjects().subscribe({
-      next: (data) => {
-        this.projects = data.projects ?? [];
-      },
-      // Leave the list empty on error.
-      error: () => undefined,
-    });
-  }
+  readonly projects = computed(
+    () => this.projectsResource.value()?.projects ?? [],
+  );
 }
