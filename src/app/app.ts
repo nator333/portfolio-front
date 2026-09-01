@@ -3,6 +3,7 @@ import { RouterOutlet } from "@angular/router";
 import { NavigationComponent } from "./components/navigation/navigation.component";
 import { FooterComponent } from "./components/footer/footer.component";
 import { ChatWidgetComponent } from "./components/chat-widget/chat-widget.component";
+import { LoadingBarComponent } from "./components/loading-bar/loading-bar.component";
 
 @Component({
   selector: "app-root",
@@ -12,8 +13,10 @@ import { ChatWidgetComponent } from "./components/chat-widget/chat-widget.compon
     NavigationComponent,
     FooterComponent,
     ChatWidgetComponent,
+    LoadingBarComponent,
   ],
   template: `
+    <app-loading-bar></app-loading-bar>
     <div class="app-container">
       <app-navigation></app-navigation>
       <main class="main-content">
