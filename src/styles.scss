@@ -89,6 +89,18 @@ body::before {
   z-index: 40 !important;
 }
 
+/* On iOS (viewport-fit=cover + translucent status bar) EasyMDE's fullscreen
+   layers are pinned to top:0, so the toolbar hides under the status bar/notch.
+   Offset them by the top safe-area inset — the same treatment the fixed navbar
+   already gets. env() is 0 on non-notched devices, so this is a no-op there. */
+.editor-toolbar.fullscreen {
+  top: env(safe-area-inset-top) !important;
+}
+.CodeMirror-fullscreen,
+.editor-preview-side {
+  top: calc(50px + env(safe-area-inset-top)) !important;
+}
+
 /* Gold accent color for headings and important text */
 .gold-text {
   color: #FFD700;
