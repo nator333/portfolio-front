@@ -1,7 +1,9 @@
 import {
+  afterNextRender,
   Component,
   ElementRef,
   inject,
+  Injector,
   signal,
   ViewChild,
   ChangeDetectionStrategy,
@@ -76,11 +78,11 @@ interface AgentTurn extends AgentMessage {
               <span></span><span></span><span></span>
             </div>
           }
-          @if (errorMessage) {
-            <p class="agent-error">{{ errorMessage }}</p>
+          @if (errorMessage()) {
+            <p class="agent-error">{{ errorMessage() }}</p>
           }
-          @if (successMessage) {
-            <p class="agent-success">{{ successMessage }}</p>
+          @if (successMessage()) {
+            <p class="agent-success">{{ successMessage() }}</p>
           }
         </div>
 
@@ -116,9 +118,13 @@ export class CvAgentComponent {
 
   @ViewChild("conversation") private conversation?: ElementRef<HTMLDivElement>;
 
+  private injector = inject(Injector);
+
   maxMessageChars = AGENT_MAX_MESSAGE_CHARS;
-  errorMessage = "";
-  successMessage = "";
+  // Set from the async agent/save subscriptions, so signals keep the view in
+  // sync under zoneless change detection.
+  readonly errorMessage = signal("");
+  readonly successMessage = signal("");
   draft = "";
 
   turns = signal<AgentTurn[]>([]);
@@ -131,8 +137,8 @@ export class CvAgentComponent {
       return;
     }
     this.draft = "";
-    this.errorMessage = "";
-    this.successMessage = "";
+    this.errorMessage.set("");
+    this.successMessage.set("");
     this.turns.update((all) => [...all, { role: "user", content: question }]);
     this.isLoading.set(true);
     this.scrollToBottom();
@@ -156,12 +162,13 @@ export class CvAgentComponent {
       },
       error: (error: HttpErrorResponse) => {
         this.isLoading.set(false);
-        this.errorMessage =
+        this.errorMessage.set(
           error.status === 401
             ? "Your session expired — sign in again."
             : error.status === 429
               ? "The agent is busy — try again in a minute."
-              : "The agent is unavailable right now — try again later.";
+              : "The agent is unavailable right now — try again later.",
+        );
         this.scrollToBottom();
       },
     });
@@ -169,8 +176,8 @@ export class CvAgentComponent {
 
   apply(proposal: AgentProposal): void {
     this.applying.set(true);
-    this.errorMessage = "";
-    this.successMessage = "";
+    this.errorMessage.set("");
+    this.successMessage.set("");
     const save$: Observable<unknown> =
       proposal.target === "cv"
         ? this.cvService.updateCv(proposal.data)
@@ -178,22 +185,29 @@ export class CvAgentComponent {
     save$.subscribe({
       next: () => {
         this.applying.set(false);
-        this.successMessage =
-          proposal.target === "cv" ? "CV updated." : "Projects updated.";
+        this.successMessage.set(
+          proposal.target === "cv" ? "CV updated." : "Projects updated.",
+        );
       },
       error: () => {
         this.applying.set(false);
-        this.errorMessage = "Saving failed — your session may have expired.";
+        this.errorMessage.set("Saving failed — your session may have expired.");
       },
     });
   }
 
+  // Pin the conversation to the latest message. Registered as a one-shot
+  // after-next-render hook (rather than a setTimeout) so it runs once the new
+  // turn has actually been painted — no zone dependency.
   private scrollToBottom(): void {
-    setTimeout(() => {
-      const el = this.conversation?.nativeElement;
-      if (el) {
-        el.scrollTop = el.scrollHeight;
-      }
-    });
+    afterNextRender(
+      () => {
+        const el = this.conversation?.nativeElement;
+        if (el) {
+          el.scrollTop = el.scrollHeight;
+        }
+      },
+      { injector: this.injector },
+    );
   }
 }
