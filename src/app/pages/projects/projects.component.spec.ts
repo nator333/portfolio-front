@@ -48,31 +48,35 @@ describe("ProjectsComponent", () => {
     sessionStorage.clear();
   });
 
-  function flushProjects(projects: unknown): void {
+  // The page fetches through an rxResource, whose value/error signals settle a
+  // microtask after the response, so await stabilization before asserting.
+  async function flushProjects(projects: unknown): Promise<void> {
     httpMock
       .expectOne(`${environment.apiBaseUrl}/projects`)
       .flush({ projects });
+    await fixture.whenStable();
     fixture.detectChanges();
   }
 
-  function failProjects(): void {
+  async function failProjects(): Promise<void> {
     httpMock
       .expectOne(`${environment.apiBaseUrl}/projects`)
       .flush(
         { message: "quota exceeded" },
         { status: 429, statusText: "Too Many Requests" },
       );
+    await fixture.whenStable();
     fixture.detectChanges();
   }
 
-  it("should render the hero with the Projects title", () => {
-    flushProjects([]);
+  it("should render the hero with the Projects title", async () => {
+    await flushProjects([]);
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector("app-hero h1")?.textContent).toContain("Projects");
   });
 
-  it("should render one card per project with title, tech and tags", () => {
-    flushProjects(SAMPLE_PROJECTS);
+  it("should render one card per project with title, tech and tags", async () => {
+    await flushProjects(SAMPLE_PROJECTS);
     const cards = fixture.nativeElement.querySelectorAll(".project-card");
     expect(cards.length).toBe(SAMPLE_PROJECTS.length);
 
@@ -91,8 +95,8 @@ describe("ProjectsComponent", () => {
     });
   });
 
-  it("should only render footer links for urls the project defines", () => {
-    flushProjects(SAMPLE_PROJECTS);
+  it("should only render footer links for urls the project defines", async () => {
+    await flushProjects(SAMPLE_PROJECTS);
     const cards = fixture.nativeElement.querySelectorAll(".project-card");
     SAMPLE_PROJECTS.forEach((project, i) => {
       const links = Array.from(
@@ -107,15 +111,18 @@ describe("ProjectsComponent", () => {
     });
   });
 
-  it("should render no cards when the API returns none", () => {
-    flushProjects([]);
+  it("should render no cards when the API returns none", async () => {
+    await flushProjects([]);
     const cards = fixture.nativeElement.querySelectorAll(".project-card");
     expect(cards.length).toBe(0);
   });
 
-  it("should render no cards when the API fails", () => {
-    failProjects();
-    const cards = fixture.nativeElement.querySelectorAll(".project-card");
-    expect(cards.length).toBe(0);
+  it("should show an error message and no cards when the API fails", async () => {
+    await failProjects();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector(".project-card")).toBeNull();
+    expect(el.querySelector(".has-text-danger")?.textContent).toContain(
+      "Couldn't load projects",
+    );
   });
 });
