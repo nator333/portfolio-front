@@ -2,6 +2,7 @@ import {
   Component,
   inject,
   OnInit,
+  signal,
   ChangeDetectionStrategy,
 } from "@angular/core";
 
@@ -29,10 +30,10 @@ const RETURN_URL_STORAGE_KEY = "cv-editor-return-url";
     <section class="section">
       <div class="container">
         <div class="box login-box has-text-centered">
-          @if (errorMessage) {
-            <p class="has-text-danger">{{ errorMessage }}</p>
+          @if (errorMessage()) {
+            <p class="has-text-danger">{{ errorMessage() }}</p>
           }
-          @if (signingIn) {
+          @if (signingIn()) {
             <p>Completing sign-in...</p>
           } @else {
             <button
@@ -61,21 +62,23 @@ export class LoginComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  signingIn = false;
-  errorMessage = "";
+  // Set from the async redirect-callback subscription, so signals keep the
+  // view in sync under zoneless change detection.
+  readonly signingIn = signal(false);
+  readonly errorMessage = signal("");
 
   ngOnInit(): void {
     // Returning from the Cognito hosted domain after Google sign-in.
     const code = this.route.snapshot.queryParamMap.get("code");
     if (code && !this.authService.isAuthenticated()) {
-      this.signingIn = true;
+      this.signingIn.set(true);
       this.authService.handleRedirectCallback(code).subscribe({
         next: () => {
           this.router.navigateByUrl(consumeReturnUrl(), { replaceUrl: true });
         },
         error: () => {
-          this.signingIn = false;
-          this.errorMessage = "Sign-in failed. Please try again.";
+          this.signingIn.set(false);
+          this.errorMessage.set("Sign-in failed. Please try again.");
           this.router.navigate([], { queryParams: {}, replaceUrl: true });
         },
       });
@@ -88,7 +91,7 @@ export class LoginComponent implements OnInit {
   }
 
   signInWithGoogle(): void {
-    this.errorMessage = "";
+    this.errorMessage.set("");
     localStorage.setItem(RETURN_URL_STORAGE_KEY, this.returnUrl());
     this.authService.signInWithGoogle();
   }
