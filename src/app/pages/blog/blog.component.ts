@@ -1,9 +1,15 @@
-import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  inject,
+} from "@angular/core";
+import { rxResource } from "@angular/core/rxjs-interop";
 import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { RouterLink } from "@angular/router";
 import { HttpClientModule } from "@angular/common/http";
 import { HeroComponent } from "../../components/hero/hero.component";
-import { BlogService, BlogPost } from "../../services/blog.service";
+import { BlogService } from "../../services/blog.service";
 
 @Component({
   selector: "app-blog",
@@ -20,17 +26,19 @@ import { BlogService, BlogPost } from "../../services/blog.service";
 
     <section class="section">
       <div class="container">
-        @if (loading) {
+        @if (blogResource.isLoading()) {
           <div class="has-text-centered">
             <p class="has-text-white">Loading blog posts...</p>
           </div>
-        } @else if (error) {
+        } @else if (blogResource.error()) {
           <div class="has-text-centered">
-            <p class="has-text-danger">{{ error }}</p>
+            <p class="has-text-danger">
+              Couldn't load blog posts. Please try again later.
+            </p>
           </div>
         } @else {
           <div class="columns is-multiline">
-            @for (post of blogPosts; track post.id) {
+            @for (post of blogPosts(); track post.id) {
               <div class="column is-one-third">
                 <div class="card blog-card">
                   @if (post.image) {
@@ -83,24 +91,17 @@ import { BlogService, BlogPost } from "../../services/blog.service";
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./blog.component.scss",
 })
-export class BlogComponent implements OnInit {
-  blogPosts: BlogPost[] = [];
-  loading = true;
-  error = "";
+export class BlogComponent {
+  private blogService = inject(BlogService);
 
-  constructor(private blogService: BlogService) {}
+  /**
+   * Blog posts fetched through the service (which keeps its sessionStorage
+   * quota-cache), exposed as a signal resource so the template reads its
+   * loading/value states directly instead of a manual subscription.
+   */
+  readonly blogResource = rxResource({
+    stream: () => this.blogService.getAllPosts(),
+  });
 
-  ngOnInit(): void {
-    this.blogService.getAllPosts().subscribe({
-      next: (posts) => {
-        this.blogPosts = posts;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error("Error loading blog posts:", err);
-        this.error = "Error loading blog posts. Please try again later.";
-        this.loading = false;
-      },
-    });
-  }
+  readonly blogPosts = computed(() => this.blogResource.value() ?? []);
 }
