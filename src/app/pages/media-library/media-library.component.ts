@@ -2,6 +2,7 @@ import {
   Component,
   inject,
   OnInit,
+  signal,
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { DatePipe } from "@angular/common";
@@ -39,20 +40,24 @@ export class MediaLibraryComponent implements OnInit {
   private media = inject(MediaService);
   private router = inject(Router);
 
-  loading = false;
-  errorMessage = "";
-  uploadStatus = "";
-  copiedId = "";
+  // These are all mutated from async callbacks (the list/save/delete/upload
+  // subscriptions, the clipboard promise, and the copied-badge/refresh
+  // timeouts), so signals keep the view in sync under zoneless change
+  // detection. The Set and Record are updated immutably for the same reason.
+  readonly loading = signal(false);
+  readonly errorMessage = signal("");
+  readonly uploadStatus = signal("");
+  readonly copiedId = signal("");
 
   readonly categories = CATEGORIES;
   readonly uploadAccept = "image/jpeg,image/png,image/webp,image/gif";
 
   // Index-aligned with the form array below; holds the read-only display data.
-  assets: MediaAsset[] = [];
+  readonly assets = signal<MediaAsset[]>([]);
   form: FormGroup = this.fb.group({ items: this.fb.array([]) });
 
-  private savingIds = new Set<string>();
-  private rowMessages: Record<string, string> = {};
+  private readonly savingIds = signal<ReadonlySet<string>>(new Set());
+  private readonly rowMessages = signal<Record<string, string>>({});
 
   ngOnInit(): void {
     this.load();
@@ -70,33 +75,51 @@ export class MediaLibraryComponent implements OnInit {
     });
   }
 
+  /** Flip a row's saving flag, updating the backing Set immutably. */
+  private setSaving(assetId: string, saving: boolean): void {
+    this.savingIds.update((ids) => {
+      const next = new Set(ids);
+      if (saving) {
+        next.add(assetId);
+      } else {
+        next.delete(assetId);
+      }
+      return next;
+    });
+  }
+
+  /** Set a row's inline status message, updating the backing Record immutably. */
+  private setRowMessage(assetId: string, message: string): void {
+    this.rowMessages.update((messages) => ({ ...messages, [assetId]: message }));
+  }
+
   load(): void {
-    this.loading = true;
-    this.errorMessage = "";
+    this.loading.set(true);
+    this.errorMessage.set("");
     this.media.list().subscribe({
       next: (assets) => {
-        this.assets = assets;
+        this.assets.set(assets);
         const items = this.form.get("items") as FormArray;
         items.clear();
         assets.forEach((asset) => items.push(this.buildItem(asset)));
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
-        this.errorMessage = "Could not load the media library.";
-        this.loading = false;
+        this.errorMessage.set("Could not load the media library.");
+        this.loading.set(false);
       },
     });
   }
 
   save(index: number): void {
-    const asset = this.assets[index];
+    const asset = this.assets()[index];
     const value = this.itemControls[index].value as {
       title: string;
       alt: string;
       category: MediaCategory;
     };
-    this.savingIds.add(asset.assetId);
-    this.rowMessages[asset.assetId] = "";
+    this.setSaving(asset.assetId, true);
+    this.setRowMessage(asset.assetId, "");
     this.media
       .updateMeta(asset.assetId, {
         title: value.title,
@@ -105,41 +128,43 @@ export class MediaLibraryComponent implements OnInit {
       })
       .subscribe({
         next: (updated) => {
-          this.assets[index] = updated;
+          this.assets.update((assets) =>
+            assets.map((a, i) => (i === index ? updated : a)),
+          );
           this.itemControls[index].markAsPristine();
-          this.savingIds.delete(asset.assetId);
-          this.rowMessages[asset.assetId] = "Saved.";
+          this.setSaving(asset.assetId, false);
+          this.setRowMessage(asset.assetId, "Saved.");
         },
         error: () => {
-          this.savingIds.delete(asset.assetId);
-          this.rowMessages[asset.assetId] = "Save failed.";
+          this.setSaving(asset.assetId, false);
+          this.setRowMessage(asset.assetId, "Save failed.");
         },
       });
   }
 
   remove(index: number): void {
-    const asset = this.assets[index];
+    const asset = this.assets()[index];
     if (!confirm(`Delete "${asset.title || asset.originalFilename}"? This cannot be undone.`)) {
       return;
     }
-    this.savingIds.add(asset.assetId);
+    this.setSaving(asset.assetId, true);
     this.media.remove(asset.assetId).subscribe({
       next: () => {
-        this.assets.splice(index, 1);
+        this.assets.update((assets) => assets.filter((_, i) => i !== index));
         (this.form.get("items") as FormArray).removeAt(index);
       },
       error: () => {
-        this.savingIds.delete(asset.assetId);
-        this.rowMessages[asset.assetId] = "Delete failed.";
+        this.setSaving(asset.assetId, false);
+        this.setRowMessage(asset.assetId, "Delete failed.");
       },
     });
   }
 
   copyUrl(index: number): void {
-    const asset = this.assets[index];
+    const asset = this.assets()[index];
     navigator.clipboard.writeText(asset.cdnUrl).then(() => {
-      this.copiedId = asset.assetId;
-      setTimeout(() => (this.copiedId = ""), 1500);
+      this.copiedId.set(asset.assetId);
+      setTimeout(() => this.copiedId.set(""), 1500);
     });
   }
 
@@ -150,16 +175,16 @@ export class MediaLibraryComponent implements OnInit {
     if (!file) {
       return;
     }
-    this.uploadStatus = "Uploading…";
+    this.uploadStatus.set("Uploading…");
     this.media.upload(file, "general").subscribe({
       next: () => {
-        this.uploadStatus = "Uploaded — refreshing…";
+        this.uploadStatus.set("Uploaded — refreshing…");
         setTimeout(() => {
-          this.uploadStatus = "";
+          this.uploadStatus.set("");
           this.load();
         }, REFRESH_AFTER_UPLOAD_MS);
       },
-      error: () => (this.uploadStatus = "Upload failed."),
+      error: () => this.uploadStatus.set("Upload failed."),
     });
   }
 
@@ -168,11 +193,11 @@ export class MediaLibraryComponent implements OnInit {
   }
 
   isSaving(asset: MediaAsset): boolean {
-    return this.savingIds.has(asset.assetId);
+    return this.savingIds().has(asset.assetId);
   }
 
   rowMessage(asset: MediaAsset): string {
-    return this.rowMessages[asset.assetId] ?? "";
+    return this.rowMessages()[asset.assetId] ?? "";
   }
 
   logout(): void {

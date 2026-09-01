@@ -5,16 +5,16 @@
     <div class="level">
       <div class="level-left">
         <label class="button is-primary">
-          <span>{{ uploadStatus || "Upload image" }}</span>
+          <span>{{ uploadStatus() || "Upload image" }}</span>
           <input
             type="file"
             [accept]="uploadAccept"
             hidden
-            [disabled]="!!uploadStatus"
+            [disabled]="!!uploadStatus()"
             (change)="onUpload($event)"
           />
         </label>
-        <button class="button is-light ml-2" type="button" (click)="load()" [disabled]="loading">
+        <button class="button is-light ml-2" type="button" (click)="load()" [disabled]="loading()">
           Refresh
         </button>
       </div>
@@ -23,18 +23,18 @@
       </div>
     </div>
 
-    @if (errorMessage) {
-      <p class="has-text-danger">{{ errorMessage }}</p>
+    @if (errorMessage()) {
+      <p class="has-text-danger">{{ errorMessage() }}</p>
     }
 
-    @if (loading) {
+    @if (loading()) {
       <p>Loading media…</p>
-    } @else if (assets.length === 0) {
+    } @else if (assets().length === 0) {
       <p class="has-text-grey">No images uploaded yet.</p>
     } @else {
       <form [formGroup]="form">
         <div class="columns is-multiline" formArrayName="items">
-          @for (asset of assets; track asset.assetId; let i = $index) {
+          @for (asset of assets(); track asset.assetId; let i = $index) {
             <div class="column is-half">
               <div class="box media-card" [formGroupName]="i">
                 <div class="media-card__body">
@@ -78,7 +78,7 @@
                   </div>
                   <div class="control">
                     <button class="button is-small" type="button" (click)="copyUrl(i)">
-                      {{ copiedId === asset.assetId ? "Copied!" : "Copy URL" }}
+                      {{ copiedId() === asset.assetId ? "Copied!" : "Copy URL" }}
                     </button>
                   </div>
                   <div class="control">
