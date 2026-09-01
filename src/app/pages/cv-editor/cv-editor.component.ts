@@ -3,6 +3,7 @@ import {
   inject,
   OnInit,
   ChangeDetectionStrategy,
+  signal,
 } from "@angular/core";
 
 import { Router } from "@angular/router";
@@ -32,10 +33,10 @@ export class CvEditorComponent implements OnInit {
   private cvService = inject(CvService);
   private router = inject(Router);
 
-  loading = false;
-  saving = false;
-  errorMessage = "";
-  successMessage = "";
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly errorMessage = signal("");
+  readonly successMessage = signal("");
 
   cvForm: FormGroup = this.fb.group({
     personalInfo: this.fb.group({
@@ -164,15 +165,15 @@ export class CvEditorComponent implements OnInit {
   }
 
   private loadCv(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.cvService.getCv().subscribe({
       next: (data) => {
         this.patchForm(data);
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
-        this.errorMessage = "Could not load existing CV data.";
-        this.loading = false;
+        this.errorMessage.set("Could not load existing CV data.");
+        this.loading.set(false);
       },
     });
   }
@@ -237,17 +238,17 @@ export class CvEditorComponent implements OnInit {
   }
 
   save(): void {
-    this.saving = true;
-    this.errorMessage = "";
-    this.successMessage = "";
+    this.saving.set(true);
+    this.errorMessage.set("");
+    this.successMessage.set("");
     this.cvService.updateCv(this.buildCvData()).subscribe({
       next: () => {
-        this.saving = false;
-        this.successMessage = "CV saved.";
+        this.saving.set(false);
+        this.successMessage.set("CV saved.");
       },
       error: () => {
-        this.saving = false;
-        this.errorMessage = "Could not save CV data.";
+        this.saving.set(false);
+        this.errorMessage.set("Could not save CV data.");
       },
     });
   }
