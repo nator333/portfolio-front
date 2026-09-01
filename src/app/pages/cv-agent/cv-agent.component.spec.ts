@@ -79,7 +79,7 @@ describe("CvAgentComponent", () => {
 
     expect(cvService.updateCv).toHaveBeenCalledWith(proposedCv);
     expect(projectsService.updateProjects).not.toHaveBeenCalled();
-    expect(component.successMessage).toBe("CV updated.");
+    expect(component.successMessage()).toBe("CV updated.");
   }));
 
   it("should apply a projects proposal through ProjectsService", fakeAsync(() => {
@@ -90,6 +90,6 @@ describe("CvAgentComponent", () => {
     tick();
 
     expect(projectsService.updateProjects).toHaveBeenCalledWith(proposedProjects);
-    expect(component.successMessage).toBe("Projects updated.");
+    expect(component.successMessage()).toBe("Projects updated.");
   }));
 });
