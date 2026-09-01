@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   NgZone,
@@ -9,6 +8,7 @@ import {
   forwardRef,
   inject,
   input,
+  signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import EasyMDE from 'easymde';
@@ -45,7 +45,7 @@ const MERMAID_TEMPLATE = `\n\`\`\`mermaid\ngraph TD\n  A[Start] --> B[End]\n\`\`
   template: `
     <textarea #host></textarea>
 
-    @if (showImagePicker) {
+    @if (showImagePicker()) {
       <div class="image-picker box">
         <div class="level is-mobile mb-2">
           <div class="level-left"><strong>Insert image</strong></div>
@@ -75,8 +75,8 @@ const MERMAID_TEMPLATE = `\n\`\`\`mermaid\ngraph TD\n  A[Start] --> B[End]\n\`\`
           <input class="input is-small" type="file" [accept]="accept" (change)="onFileSelected($event)" />
         </div>
 
-        @if (uploadMessage) {
-          <p class="help" [class.is-danger]="uploadError">{{ uploadMessage }}</p>
+        @if (uploadMessage()) {
+          <p class="help" [class.is-danger]="uploadError()">{{ uploadMessage() }}</p>
         }
       </div>
     }
@@ -94,12 +94,12 @@ export class MarkdownEditorComponent
 {
   private media = inject(MediaService);
   // EasyMDE fires its toolbar/editor callbacks outside Angular's change
-  // detection, and the parent uses a non-default CD strategy, so a plain
-  // zone tick does not re-check this view. Callbacks that change bound state
-  // (the image picker, upload status) call cdr.detectChanges() directly;
-  // form-value emissions run through the zone so the parent form reacts.
+  // detection. This view's own bound state (the image picker, upload status) is
+  // held in signals, so writing it from those callbacks schedules a refresh with
+  // no manual detectChanges. The CVA value/blur emissions still run through the
+  // zone so the *parent* form reacts (that coupling is untangled at the zoneless
+  // flip, not here).
   private zone = inject(NgZone);
-  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('host') private host!: ElementRef<HTMLTextAreaElement>;
 
@@ -109,9 +109,9 @@ export class MarkdownEditorComponent
 
   readonly accept = ALLOWED_TYPES.join(',');
 
-  showImagePicker = false;
-  uploadMessage = '';
-  uploadError = false;
+  readonly showImagePicker = signal(false);
+  readonly uploadMessage = signal('');
+  readonly uploadError = signal(false);
 
   private editor?: EasyMDE;
   /** Value handed to writeValue before the editor exists yet. */
@@ -222,15 +222,13 @@ export class MarkdownEditorComponent
   }
 
   private toggleImagePicker(): void {
-    this.showImagePicker = !this.showImagePicker;
-    this.uploadMessage = '';
-    this.uploadError = false;
-    this.cdr.detectChanges();
+    this.showImagePicker.update((open) => !open);
+    this.uploadMessage.set('');
+    this.uploadError.set(false);
   }
 
   closeImagePicker(): void {
-    this.showImagePicker = false;
-    this.cdr.detectChanges();
+    this.showImagePicker.set(false);
   }
 
   onSelectSaved(event: Event): void {
@@ -261,12 +259,11 @@ export class MarkdownEditorComponent
       return;
     }
 
-    this.uploadError = false;
-    this.uploadMessage = 'Uploading…';
-    this.cdr.detectChanges();
+    this.uploadError.set(false);
+    this.uploadMessage.set('Uploading…');
     this.media.upload(file, this.category()).subscribe({
       next: (result) => {
-        this.uploadMessage = '';
+        this.uploadMessage.set('');
         this.insertImage(result.cdnUrl, '');
         this.closeImagePicker();
       },
@@ -306,8 +303,7 @@ export class MarkdownEditorComponent
   }
 
   private fail(message: string): void {
-    this.uploadError = true;
-    this.uploadMessage = message;
-    this.cdr.detectChanges();
+    this.uploadError.set(true);
+    this.uploadMessage.set(message);
   }
 }
