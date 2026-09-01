@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
 import { CvAgentComponent } from "./cv-agent.component";
 import { AgentService } from "../../services/agent.service";
@@ -36,12 +36,12 @@ describe("CvAgentComponent", () => {
     fixture.detectChanges();
   });
 
-  it("should render the reply for a plain conversational turn", fakeAsync(() => {
+  it("should render the reply for a plain conversational turn", async () => {
     agentService.sendMessage.and.returnValue(of({ reply: "Sure, tell me more." }));
 
     component.draft = "Help me improve my summary";
     component.send();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const bubbles = Array.from(
@@ -50,9 +50,9 @@ describe("CvAgentComponent", () => {
     expect(bubbles[0]).toBe("Help me improve my summary");
     expect(bubbles[1]).toContain("Sure, tell me more.");
     expect(fixture.nativeElement.querySelector(".agent-proposal")).toBeFalsy();
-  }));
+  });
 
-  it("should render a proposal with an Apply button", fakeAsync(() => {
+  it("should render a proposal with an Apply button", async () => {
     agentService.sendMessage.and.returnValue(
       of({
         reply: "Here is the shorter summary.",
@@ -62,34 +62,34 @@ describe("CvAgentComponent", () => {
 
     component.draft = "Shorten my summary";
     component.send();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const proposal = fixture.nativeElement.querySelector(".agent-proposal");
     expect(proposal).toBeTruthy();
     expect(proposal.textContent).toContain("Proposed CV update");
     expect(proposal.querySelector("button")).toBeTruthy();
-  }));
+  });
 
-  it("should apply a CV proposal through CvService", fakeAsync(() => {
+  it("should apply a CV proposal through CvService", async () => {
     cvService.updateCv.and.returnValue(of(proposedCv));
 
     component.apply({ target: "cv", data: proposedCv });
-    tick();
+    await fixture.whenStable();
 
     expect(cvService.updateCv).toHaveBeenCalledWith(proposedCv);
     expect(projectsService.updateProjects).not.toHaveBeenCalled();
     expect(component.successMessage()).toBe("CV updated.");
-  }));
+  });
 
-  it("should apply a projects proposal through ProjectsService", fakeAsync(() => {
+  it("should apply a projects proposal through ProjectsService", async () => {
     const proposedProjects = { projects: [] };
     projectsService.updateProjects.and.returnValue(of(proposedProjects));
 
     component.apply({ target: "projects", data: proposedProjects });
-    tick();
+    await fixture.whenStable();
 
     expect(projectsService.updateProjects).toHaveBeenCalledWith(proposedProjects);
     expect(component.successMessage()).toBe("Projects updated.");
-  }));
+  });
 });

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, tick, fakeAsync } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { of, throwError } from "rxjs";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChatWidgetComponent } from "./chat-widget.component";
@@ -34,22 +34,22 @@ describe("ChatWidgetComponent", () => {
     expect(fixture.nativeElement.querySelector(".chat-panel")).toBeTruthy();
   });
 
-  it("should render the visitor question and the assistant reply", fakeAsync(() => {
+  it("should render the visitor question and the assistant reply", async () => {
     chatService.sendMessage.and.returnValue(of({ reply: "He knows AWS." }));
 
     component.isOpen.set(true);
     component.draft = "Does Hiro know AWS?";
     component.send();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const bubbles = Array.from(
       fixture.nativeElement.querySelectorAll(".chat-bubble"),
     ).map((b) => (b as HTMLElement).textContent?.trim());
     expect(bubbles).toEqual(["Does Hiro know AWS?", "He knows AWS."]);
-  }));
+  });
 
-  it("should show a busy message when the API is throttled", fakeAsync(() => {
+  it("should show a busy message when the API is throttled", async () => {
     chatService.sendMessage.and.returnValue(
       throwError(() => new HttpErrorResponse({ status: 429 })),
     );
@@ -57,12 +57,12 @@ describe("ChatWidgetComponent", () => {
     component.isOpen.set(true);
     component.draft = "Hello?";
     component.send();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const error = fixture.nativeElement.querySelector(".chat-error");
     expect(error?.textContent).toContain("busy");
-  }));
+  });
 
   it("should not send blank input", () => {
     component.draft = "   ";
