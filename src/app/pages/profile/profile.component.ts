@@ -1,12 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  inject,
+  signal,
+} from "@angular/core";
+import { rxResource } from "@angular/core/rxjs-interop";
 
 import { HeroComponent } from "../../components/hero/hero.component";
 import { CvService } from "../../services/cv.service";
-import {
-  CvEducationEntry,
-  CvExperienceEntry,
-  CvSkillCategory,
-} from "../../models/cv-data";
 import { downloadCvPdf } from "../../utils/cv-pdf.util";
 
 @Component({
@@ -22,30 +24,30 @@ import { downloadCvPdf } from "../../utils/cv-pdf.util";
       <button
         class="button is-primary"
         type="button"
-        [disabled]="downloadingCv"
+        [disabled]="downloadingCv()"
         (click)="downloadCv()"
       >
         Download CV (PDF)
       </button>
-      @if (downloadError) {
-        <p class="has-text-danger">{{ downloadError }}</p>
+      @if (downloadError()) {
+        <p class="has-text-danger">{{ downloadError() }}</p>
       }
     </app-hero>
 
     <section class="section profile-section">
       <div class="container">
-        @if (summary) {
+        @if (summary()) {
           <div class="profile-block">
             <h2 class="title is-3 has-text-centered">Summary</h2>
-            <p class="has-text-centered summary-text">{{ summary }}</p>
+            <p class="has-text-centered summary-text">{{ summary() }}</p>
           </div>
         }
 
-        @if (skillCategories.length) {
+        @if (skillCategories().length) {
           <div class="profile-block">
             <h2 class="title is-3 has-text-centered">Technical Skills</h2>
             <div class="columns is-multiline">
-              @for (category of skillCategories; track category.category) {
+              @for (category of skillCategories(); track category.category) {
                 <div class="column is-half">
                   <div class="skillBox">
                     <h3 class="subtitle is-5 has-text-centered">
@@ -63,10 +65,10 @@ import { downloadCvPdf } from "../../utils/cv-pdf.util";
           </div>
         }
 
-        @if (experience.length) {
+        @if (experience().length) {
           <div class="profile-block">
             <h2 class="title is-3 has-text-centered">Experience</h2>
-            @for (entry of experience; track $index) {
+            @for (entry of experience(); track $index) {
               <div class="timeline-entry">
                 <div class="entry-head">
                   <span class="entry-role">{{ entry.role }}</span>
@@ -93,10 +95,10 @@ import { downloadCvPdf } from "../../utils/cv-pdf.util";
           </div>
         }
 
-        @if (education.length) {
+        @if (education().length) {
           <div class="profile-block">
             <h2 class="title is-3 has-text-centered">Education</h2>
-            @for (entry of education; track $index) {
+            @for (entry of education(); track $index) {
               <div class="timeline-entry">
                 <div class="entry-head">
                   <span class="entry-role">{{ entry.degree }}</span>
@@ -115,38 +117,42 @@ import { downloadCvPdf } from "../../utils/cv-pdf.util";
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./profile.component.scss",
 })
-export class ProfileComponent implements OnInit {
-  downloadingCv = false;
-  downloadError = "";
-  summary = "";
-  skillCategories: CvSkillCategory[] = [];
-  experience: CvExperienceEntry[] = [];
-  education: CvEducationEntry[] = [];
+export class ProfileComponent {
+  private cvService = inject(CvService);
 
-  constructor(private cvService: CvService) {}
+  /**
+   * The CV document, fetched through the service (which keeps its
+   * sessionStorage quota-cache) and exposed as a signal resource; the sections
+   * below derive from it.
+   */
+  private readonly cvResource = rxResource({
+    stream: () => this.cvService.getCv(),
+  });
 
-  ngOnInit(): void {
-    this.cvService.getCv().subscribe({
-      next: (data) => {
-        this.skillCategories = data.technicalSkills ?? [];
-        this.summary = data.summary ?? "";
-        this.experience = data.experience ?? [];
-        this.education = data.education ?? [];
-      },
-      error: () => undefined,
-    });
-  }
+  // Resolved CV, or null while loading or on error (value() throws when the
+  // resource has errored, so guard the reads with hasValue()).
+  private readonly cv = computed(() =>
+    this.cvResource.hasValue() ? this.cvResource.value() : null,
+  );
+
+  readonly summary = computed(() => this.cv()?.summary ?? "");
+  readonly skillCategories = computed(() => this.cv()?.technicalSkills ?? []);
+  readonly experience = computed(() => this.cv()?.experience ?? []);
+  readonly education = computed(() => this.cv()?.education ?? []);
+
+  readonly downloadingCv = signal(false);
+  readonly downloadError = signal("");
 
   downloadCv(): void {
-    this.downloadingCv = true;
-    this.downloadError = "";
+    this.downloadingCv.set(true);
+    this.downloadError.set("");
     this.cvService.getCv().subscribe({
       next: (data) => {
-        downloadCvPdf(data).finally(() => (this.downloadingCv = false));
+        downloadCvPdf(data).finally(() => this.downloadingCv.set(false));
       },
       error: () => {
-        this.downloadError = "Could not download CV right now.";
-        this.downloadingCv = false;
+        this.downloadError.set("Could not download CV right now.");
+        this.downloadingCv.set(false);
       },
     });
   }
