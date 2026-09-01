@@ -24,6 +24,7 @@ import {
   apiKeyInterceptor,
   authTokenInterceptor,
 } from "./interceptors/api.interceptors";
+import { loadingInterceptor } from "./interceptors/loading.interceptor";
 import { recoverFromChunkLoadError } from "./utils/chunk-reload";
 import { BrandTitleStrategy } from "./title-strategy";
 
@@ -62,7 +63,11 @@ export const appConfig: ApplicationConfig = {
       withNavigationErrorHandler(recoverFromChunkLoadError),
     ),
     provideHttpClient(
-      withInterceptors([apiKeyInterceptor, authTokenInterceptor]),
+      withInterceptors([
+        loadingInterceptor,
+        apiKeyInterceptor,
+        authTokenInterceptor,
+      ]),
       withXhr(),
     ),
     provideAppInitializer(() => inject(AnalyticsService).init()),
