@@ -231,11 +231,13 @@ function getHighlightCtor(): HighlightCtor | null {
 }
 
 /**
- * Choose a voice for `lang`, preferring a male one. Candidates are the voices
- * matching the exact BCP-47 tag, or failing that the primary subtag (e.g. "ja"
- * for "ja-JP"); among them the first recognised male voice wins, otherwise the
- * first candidate. Returns null when voices have not loaded yet, which is fine —
- * `utterance.lang` still steers the default voice.
+ * Choose a voice for `lang`, preferring a male one and a natural accent.
+ * Candidates are the voices matching the exact BCP-47 tag, or failing that the
+ * primary subtag (e.g. "ja" for "ja-JP"). Among the male candidates the best
+ * accent wins (see {@link accentRank}) — so on Chrome an OS voice like Alex or
+ * David (US) is chosen over "Google UK English Male"; with no male voice it
+ * falls back to the first candidate. Returns null when voices have not loaded
+ * yet, which is fine — `utterance.lang` still steers the default voice.
  *
  * The Web Speech API exposes no gender field, so "male" is inferred from the
  * voice name against the known catalogues below. It is therefore best-effort and
@@ -252,6 +254,7 @@ function pickVoice(
   }
   const target = lang.toLowerCase();
   const base = target.split("-")[0];
+  const region = target.includes("-") ? target.split("-")[1] : "";
   const exact = voices.filter((v) => v.lang.toLowerCase() === target);
   const candidates =
     exact.length > 0
@@ -260,7 +263,33 @@ function pickVoice(
   if (candidates.length === 0) {
     return null;
   }
-  return candidates.find(isMaleVoice) ?? candidates[0];
+  const males = candidates.filter(isMaleVoice);
+  if (males.length === 0) {
+    return candidates[0];
+  }
+  return males
+    .slice()
+    .sort((a, b) => accentRank(a, region) - accentRank(b, region))[0];
+}
+
+/**
+ * Accent preference among same-language voices (lower is better): the post's
+ * own region if it names one, then US, then any other region, and finally GB —
+ * kept last so a US voice like Alex beats "Google UK English Male".
+ */
+function accentRank(voice: SpeechSynthesisVoice, region: string): number {
+  const lang = voice.lang.toLowerCase();
+  const voiceRegion = lang.includes("-") ? lang.split("-")[1] : "";
+  if (region && voiceRegion === region) {
+    return 0;
+  }
+  if (voiceRegion === "us") {
+    return 1;
+  }
+  if (voiceRegion === "gb") {
+    return 3;
+  }
+  return 2;
 }
 
 /**
