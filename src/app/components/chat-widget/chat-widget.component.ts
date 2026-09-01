@@ -1,7 +1,10 @@
 import {
+  afterNextRender,
   Component,
   ElementRef,
+  Injector,
   ViewChild,
+  inject,
   signal,
   ChangeDetectionStrategy,
 } from "@angular/core";
@@ -99,6 +102,8 @@ import { ChatMessage, CHAT_MAX_MESSAGE_CHARS } from "../../models/chat-data";
 export class ChatWidgetComponent {
   @ViewChild("messageList") private messageList?: ElementRef<HTMLDivElement>;
 
+  private injector = inject(Injector);
+
   chatIcon = faComments;
   closeIcon = faXmark;
   sendIcon = faPaperPlane;
@@ -151,13 +156,18 @@ export class ChatWidgetComponent {
     });
   }
 
+  // Pin the panel to the newest bubble once it has been painted. A one-shot
+  // after-next-render hook (rather than a setTimeout) so it doesn't depend on
+  // the zoneless scheduler's timing.
   private scrollToBottom(): void {
-    // After Angular renders the new bubble.
-    setTimeout(() => {
-      const el = this.messageList?.nativeElement;
-      if (el) {
-        el.scrollTop = el.scrollHeight;
-      }
-    });
+    afterNextRender(
+      () => {
+        const el = this.messageList?.nativeElement;
+        if (el) {
+          el.scrollTop = el.scrollHeight;
+        }
+      },
+      { injector: this.injector },
+    );
   }
 }

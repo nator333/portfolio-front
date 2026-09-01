@@ -1,8 +1,8 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
-  NgZone,
   OnDestroy,
   ViewChild,
   forwardRef,
@@ -95,11 +95,12 @@ export class MarkdownEditorComponent
   private media = inject(MediaService);
   // EasyMDE fires its toolbar/editor callbacks outside Angular's change
   // detection. This view's own bound state (the image picker, upload status) is
-  // held in signals, so writing it from those callbacks schedules a refresh with
-  // no manual detectChanges. The CVA value/blur emissions still run through the
-  // zone so the *parent* form reacts (that coupling is untangled at the zoneless
-  // flip, not here).
-  private zone = inject(NgZone);
+  // held in signals, so writing it from those callbacks schedules a refresh on
+  // its own. The CVA value/blur emissions feed the *parent* form, which isn't
+  // signal-driven, so they mark this view for check — that notifies the zoneless
+  // scheduler to run change detection so the parent's form-derived bindings
+  // (validity messages, disabled states) stay in sync.
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('host') private host!: ElementRef<HTMLTextAreaElement>;
 
@@ -181,10 +182,14 @@ export class MarkdownEditorComponent
     this.editor.value(this.pendingValue);
     this.editor.codemirror.on('change', () => {
       if (!this.writing) {
-        this.zone.run(() => this.onChange(this.editor!.value()));
+        this.onChange(this.editor!.value());
+        this.cdr.markForCheck();
       }
     });
-    this.editor.codemirror.on('blur', () => this.zone.run(() => this.onTouched()));
+    this.editor.codemirror.on('blur', () => {
+      this.onTouched();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {

@@ -3,7 +3,7 @@ import {
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
-  provideZoneChangeDetection,
+  provideZonelessChangeDetection,
 } from "@angular/core";
 import {
   provideRouter,
@@ -45,7 +45,11 @@ import { routes } from "./app.routes";
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    // Zoneless: the app ships no zone.js and change detection is driven by
+    // signals, template events, router navigation, and afterRender hooks. Every
+    // view that mutated state from an async callback or DOM timer was migrated
+    // to signals / render callbacks first (see the phase-2 refactors).
+    provideZonelessChangeDetection(),
     provideRouter(
       routes,
       // Bind route params (e.g. :url, :slug) straight to component inputs, so
