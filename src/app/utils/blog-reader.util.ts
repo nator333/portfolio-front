@@ -24,6 +24,9 @@ export type ReaderStatus = "idle" | "playing" | "paused";
 /** Named highlight registered with CSS.highlights; see the ::highlight() rule. */
 const HIGHLIGHT_NAME = "blog-reader-sentence";
 
+/** Speaking rate, 30% faster than the engine default of 1. */
+const READING_RATE = 1.3;
+
 /**
  * Leaf block elements whose text is read. A block that contains another block
  * from this set is skipped, so its text is not read twice (e.g. a <blockquote>
@@ -152,6 +155,7 @@ export class BlogReader {
     const sentence = this.sentences[this.index];
     const utterance = new SpeechSynthesisUtterance(sentence.text);
     utterance.lang = this.lang;
+    utterance.rate = READING_RATE;
     const voice = pickVoice(this.synth, this.lang);
     if (voice) {
       utterance.voice = voice;
@@ -227,10 +231,18 @@ function getHighlightCtor(): HighlightCtor | null {
 }
 
 /**
- * Prefer an exact BCP-47 voice match, then any voice sharing the primary
- * subtag (e.g. "ja" for "ja-JP"), else let the engine choose from `lang`.
- * Returns null when voices have not loaded yet, which is fine — `utterance.lang`
- * still steers the default voice.
+ * Choose a voice for `lang`, preferring a male one and a natural accent.
+ * Candidates are the voices matching the exact BCP-47 tag, or failing that the
+ * primary subtag (e.g. "ja" for "ja-JP"). Among the male candidates the best
+ * accent wins (see {@link accentRank}) — so on Chrome an OS voice like Alex or
+ * David (US) is chosen over "Google UK English Male"; with no male voice it
+ * falls back to the first candidate. Returns null when voices have not loaded
+ * yet, which is fine — `utterance.lang` still steers the default voice.
+ *
+ * The Web Speech API exposes no gender field, so "male" is inferred from the
+ * voice name against the known catalogues below. It is therefore best-effort and
+ * device-dependent: a listener whose OS/browser ships no male voice for the
+ * language keeps the default one.
  */
 function pickVoice(
   synth: SpeechSynthesis,
@@ -242,11 +254,84 @@ function pickVoice(
   }
   const target = lang.toLowerCase();
   const base = target.split("-")[0];
-  return (
-    voices.find((v) => v.lang.toLowerCase() === target) ??
-    voices.find((v) => v.lang.toLowerCase().startsWith(base)) ??
-    null
-  );
+  const region = target.includes("-") ? target.split("-")[1] : "";
+  const exact = voices.filter((v) => v.lang.toLowerCase() === target);
+  const candidates =
+    exact.length > 0
+      ? exact
+      : voices.filter((v) => v.lang.toLowerCase().startsWith(base));
+  if (candidates.length === 0) {
+    return null;
+  }
+  const males = candidates.filter(isMaleVoice);
+  if (males.length === 0) {
+    return candidates[0];
+  }
+  return males
+    .slice()
+    .sort((a, b) => accentRank(a, region) - accentRank(b, region))[0];
+}
+
+/**
+ * Accent preference among same-language voices (lower is better): the post's
+ * own region if it names one, then US, then any other region, and finally GB —
+ * kept last so a US voice like Alex beats "Google UK English Male".
+ */
+function accentRank(voice: SpeechSynthesisVoice, region: string): number {
+  const lang = voice.lang.toLowerCase();
+  const voiceRegion = lang.includes("-") ? lang.split("-")[1] : "";
+  if (region && voiceRegion === region) {
+    return 0;
+  }
+  if (voiceRegion === "us") {
+    return 1;
+  }
+  if (voiceRegion === "gb") {
+    return 3;
+  }
+  return 2;
+}
+
+/**
+ * Known male voice names across macOS/iOS, Windows/Edge and Chrome, plus the
+ * generic "male" tag Google uses (e.g. "Google UK English Male"). Names are
+ * checked case-insensitively as substrings.
+ */
+const MALE_VOICE_NAMES = [
+  "male",
+  // macOS / iOS — English
+  "alex",
+  "fred",
+  "daniel",
+  "aaron",
+  "arthur",
+  "tom",
+  "reed",
+  "rishi",
+  "oliver",
+  // macOS / iOS — Japanese
+  "otoya",
+  "hattori",
+  // Microsoft — English
+  "david",
+  "mark",
+  "guy",
+  "christopher",
+  "eric",
+  "brian",
+  // Microsoft — Japanese
+  "ichiro",
+  "keita",
+];
+
+/** Best-effort male-voice test by name; see {@link pickVoice}. */
+function isMaleVoice(voice: SpeechSynthesisVoice): boolean {
+  const name = voice.name.toLowerCase();
+  // "female" wins over a stray male substring (e.g. a name containing "mark").
+  if (name.includes("female")) {
+    return false;
+  }
+  return MALE_VOICE_NAMES.some((hint) => name.includes(hint));
 }
 
 /** Walk the post's readable blocks and split each into highlightable sentences. */
