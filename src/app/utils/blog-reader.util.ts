@@ -24,6 +24,9 @@ export type ReaderStatus = "idle" | "playing" | "paused";
 /** Named highlight registered with CSS.highlights; see the ::highlight() rule. */
 const HIGHLIGHT_NAME = "blog-reader-sentence";
 
+/** Speaking rate, 30% faster than the engine default of 1. */
+const READING_RATE = 1.3;
+
 /**
  * Leaf block elements whose text is read. A block that contains another block
  * from this set is skipped, so its text is not read twice (e.g. a <blockquote>
@@ -152,6 +155,7 @@ export class BlogReader {
     const sentence = this.sentences[this.index];
     const utterance = new SpeechSynthesisUtterance(sentence.text);
     utterance.lang = this.lang;
+    utterance.rate = READING_RATE;
     const voice = pickVoice(this.synth, this.lang);
     if (voice) {
       utterance.voice = voice;
