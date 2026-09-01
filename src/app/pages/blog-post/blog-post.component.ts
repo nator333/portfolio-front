@@ -1,25 +1,31 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   ChangeDetectionStrategy,
+  ElementRef,
   afterRenderEffect,
   inject,
   input,
   signal,
+  viewChild,
 } from "@angular/core";
 import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { Router } from "@angular/router";
 import { Title } from "@angular/platform-browser";
 import { HttpClientModule } from "@angular/common/http";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { faPlay, faPause, faStop } from "@fortawesome/free-solid-svg-icons";
 import { BlogService, BlogPost } from "../../services/blog.service";
 import { pageTitle } from "../../title-strategy";
 import { runMermaid } from "../../utils/mermaid.util";
+import { BlogReader, ReaderStatus } from "../../utils/blog-reader.util";
 import * as Prism from "prismjs";
 
 @Component({
   selector: "app-blog-post",
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage, HttpClientModule],
+  imports: [CommonModule, NgOptimizedImage, HttpClientModule, FaIconComponent],
   template: `
     <section class="section">
       <div class="container">
@@ -51,6 +57,46 @@ import * as Prism from "prismjs";
                   <span class="tag is-primary">{{ tag }}</span>
                 }
               </div>
+
+              @if (readerSupported) {
+                <div
+                  class="blog-reader"
+                  role="group"
+                  aria-label="Read this post aloud"
+                >
+                  <button
+                    class="button is-primary is-small"
+                    type="button"
+                    (click)="toggleReader()"
+                    [attr.aria-label]="
+                      readerStatus() === 'playing'
+                        ? 'Pause reading'
+                        : 'Read this post aloud'
+                    "
+                  >
+                    <span class="icon">
+                      <fa-icon
+                        [icon]="
+                          readerStatus() === 'playing' ? pauseIcon : playIcon
+                        "
+                      ></fa-icon>
+                    </span>
+                    <span>{{ readerLabel() }}</span>
+                  </button>
+                  @if (readerStatus() !== "idle") {
+                    <button
+                      class="button is-small ml-2"
+                      type="button"
+                      (click)="stopReader()"
+                      aria-label="Stop reading"
+                    >
+                      <span class="icon">
+                        <fa-icon [icon]="stopIcon"></fa-icon>
+                      </span>
+                    </button>
+                  }
+                </div>
+              }
             </div>
 
             @if (p.image) {
@@ -68,6 +114,7 @@ import * as Prism from "prismjs";
             }
 
             <div
+              #readerContent
               class="blog-post-content has-text-white-bis"
               [attr.lang]="p.lang"
             >
@@ -88,13 +135,26 @@ import * as Prism from "prismjs";
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: "./blog-post.component.scss",
 })
-export class BlogPostComponent implements OnInit {
+export class BlogPostComponent implements OnInit, OnDestroy {
   /** The `:url` route segment, bound from the router via component input binding. */
   readonly url = input<string>();
 
   readonly post = signal<BlogPost | undefined>(undefined);
   readonly loading = signal(true);
   readonly error = signal("");
+
+  /** Read-aloud playback state, driving the play/pause/stop control. */
+  readonly readerStatus = signal<ReaderStatus>("idle");
+  readonly readerSupported = BlogReader.isSupported();
+  readonly playIcon = faPlay;
+  readonly pauseIcon = faPause;
+  readonly stopIcon = faStop;
+
+  /** The rendered content element; source text for the reader. */
+  private readonly contentRef =
+    viewChild<ElementRef<HTMLElement>>("readerContent");
+  /** Built lazily on first play, once the content is in the DOM. */
+  private reader: BlogReader | null = null;
 
   private router = inject(Router);
   private blogService = inject(BlogService);
@@ -147,5 +207,53 @@ export class BlogPostComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(["/blog"]);
+  }
+
+  /** Play/pause the read-aloud, building the reader from the DOM on first use. */
+  toggleReader(): void {
+    this.ensureReader()?.toggle();
+  }
+
+  stopReader(): void {
+    this.reader?.stop();
+  }
+
+  /** Button caption reflecting the current playback state. */
+  readerLabel(): string {
+    switch (this.readerStatus()) {
+      case "playing":
+        return "Pause";
+      case "paused":
+        return "Resume";
+      default:
+        return "Listen";
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Cancel any in-flight speech and release the highlight registration.
+    this.reader?.dispose();
+    this.reader = null;
+  }
+
+  private ensureReader(): BlogReader | null {
+    if (this.reader) {
+      return this.reader;
+    }
+    const element = this.contentRef()?.nativeElement;
+    const post = this.post();
+    if (!element || !post) {
+      return null;
+    }
+    const reader = new BlogReader(element, post.lang, (status) =>
+      this.readerStatus.set(status),
+    );
+    if (!reader.available) {
+      // Nothing readable (e.g. a code-only post); don't keep an idle reader.
+      reader.dispose();
+      return null;
+    }
+    this.reader = reader;
+    return reader;
   }
 }

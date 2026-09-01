@@ -101,6 +101,15 @@ body::before {
   top: calc(50px + env(safe-area-inset-top)) !important;
 }
 
+/* Blog read-aloud: the sentence currently being spoken. Painted via the CSS
+   Custom Highlight API (a Range, no DOM mutation), so it must live at global
+   scope — ::highlight() cannot be view-encapsulated. Gold wash on the dark
+   post surface, matching the site accent. */
+::highlight(blog-reader-sentence) {
+  background-color: rgba(255, 215, 0, 0.28);
+  color: #ffffff;
+}
+
 /* Gold accent color for headings and important text */
 .gold-text {
   color: #FFD700;
