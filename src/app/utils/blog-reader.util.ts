@@ -231,10 +231,16 @@ function getHighlightCtor(): HighlightCtor | null {
 }
 
 /**
- * Prefer an exact BCP-47 voice match, then any voice sharing the primary
- * subtag (e.g. "ja" for "ja-JP"), else let the engine choose from `lang`.
- * Returns null when voices have not loaded yet, which is fine — `utterance.lang`
- * still steers the default voice.
+ * Choose a voice for `lang`, preferring a male one. Candidates are the voices
+ * matching the exact BCP-47 tag, or failing that the primary subtag (e.g. "ja"
+ * for "ja-JP"); among them the first recognised male voice wins, otherwise the
+ * first candidate. Returns null when voices have not loaded yet, which is fine —
+ * `utterance.lang` still steers the default voice.
+ *
+ * The Web Speech API exposes no gender field, so "male" is inferred from the
+ * voice name against the known catalogues below. It is therefore best-effort and
+ * device-dependent: a listener whose OS/browser ships no male voice for the
+ * language keeps the default one.
  */
 function pickVoice(
   synth: SpeechSynthesis,
@@ -246,11 +252,57 @@ function pickVoice(
   }
   const target = lang.toLowerCase();
   const base = target.split("-")[0];
-  return (
-    voices.find((v) => v.lang.toLowerCase() === target) ??
-    voices.find((v) => v.lang.toLowerCase().startsWith(base)) ??
-    null
-  );
+  const exact = voices.filter((v) => v.lang.toLowerCase() === target);
+  const candidates =
+    exact.length > 0
+      ? exact
+      : voices.filter((v) => v.lang.toLowerCase().startsWith(base));
+  if (candidates.length === 0) {
+    return null;
+  }
+  return candidates.find(isMaleVoice) ?? candidates[0];
+}
+
+/**
+ * Known male voice names across macOS/iOS, Windows/Edge and Chrome, plus the
+ * generic "male" tag Google uses (e.g. "Google UK English Male"). Names are
+ * checked case-insensitively as substrings.
+ */
+const MALE_VOICE_NAMES = [
+  "male",
+  // macOS / iOS — English
+  "alex",
+  "fred",
+  "daniel",
+  "aaron",
+  "arthur",
+  "tom",
+  "reed",
+  "rishi",
+  "oliver",
+  // macOS / iOS — Japanese
+  "otoya",
+  "hattori",
+  // Microsoft — English
+  "david",
+  "mark",
+  "guy",
+  "christopher",
+  "eric",
+  "brian",
+  // Microsoft — Japanese
+  "ichiro",
+  "keita",
+];
+
+/** Best-effort male-voice test by name; see {@link pickVoice}. */
+function isMaleVoice(voice: SpeechSynthesisVoice): boolean {
+  const name = voice.name.toLowerCase();
+  // "female" wins over a stray male substring (e.g. a name containing "mark").
+  if (name.includes("female")) {
+    return false;
+  }
+  return MALE_VOICE_NAMES.some((hint) => name.includes(hint));
 }
 
 /** Walk the post's readable blocks and split each into highlightable sentences. */
