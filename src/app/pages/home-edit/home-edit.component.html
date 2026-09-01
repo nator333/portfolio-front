@@ -9,15 +9,15 @@
       </div>
     </div>
 
-    @if (loading) {
+    @if (loading()) {
       <p>Loading home content...</p>
     } @else {
       <form [formGroup]="homeForm" (ngSubmit)="save()">
-        @if (errorMessage) {
-          <p class="has-text-danger">{{ errorMessage }}</p>
+        @if (errorMessage()) {
+          <p class="has-text-danger">{{ errorMessage() }}</p>
         }
-        @if (successMessage) {
-          <p class="has-text-success">{{ successMessage }}</p>
+        @if (successMessage()) {
+          <p class="has-text-success">{{ successMessage() }}</p>
         }
 
         <div class="box">
@@ -75,7 +75,7 @@
 
         <div class="field is-grouped">
           <div class="control">
-            <button class="button is-primary" type="submit" [disabled]="saving">
+            <button class="button is-primary" type="submit" [disabled]="saving()">
               Save
             </button>
           </div>

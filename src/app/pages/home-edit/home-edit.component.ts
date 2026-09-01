@@ -3,6 +3,7 @@ import {
   inject,
   OnInit,
   ChangeDetectionStrategy,
+  signal,
 } from "@angular/core";
 
 import { Router } from "@angular/router";
@@ -40,10 +41,10 @@ export class HomeEditComponent implements OnInit {
   readonly maxMottoCount = MAX_MOTTO_COUNT;
   readonly maxMottoLength = MAX_MOTTO_LENGTH;
 
-  loading = false;
-  saving = false;
-  errorMessage = "";
-  successMessage = "";
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly errorMessage = signal("");
+  readonly successMessage = signal("");
 
   homeForm: FormGroup = this.fb.group({
     mottoes: this.fb.array([]),
@@ -83,21 +84,21 @@ export class HomeEditComponent implements OnInit {
       this.homeForm.markAllAsTouched();
       return;
     }
-    this.saving = true;
-    this.errorMessage = "";
-    this.successMessage = "";
+    this.saving.set(true);
+    this.errorMessage.set("");
+    this.successMessage.set("");
     const data: HomeData = {
       mottoes: this.mottoControls.map((control) => control.value.trim()),
       mottoesHidden: this.homeForm.get("mottoesHidden")?.value ?? false,
     };
     this.homeService.updateHome(data).subscribe({
       next: () => {
-        this.saving = false;
-        this.successMessage = "Home hero saved.";
+        this.saving.set(false);
+        this.successMessage.set("Home hero saved.");
       },
       error: () => {
-        this.saving = false;
-        this.errorMessage = "Could not save the home hero.";
+        this.saving.set(false);
+        this.errorMessage.set("Could not save the home hero.");
       },
     });
   }
@@ -121,7 +122,7 @@ export class HomeEditComponent implements OnInit {
   }
 
   private loadHome(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.homeService.getHome().subscribe({
       next: (data) => {
         // A never-saved document comes back null; start from an empty list.
@@ -129,12 +130,12 @@ export class HomeEditComponent implements OnInit {
         this.homeForm
           .get("mottoesHidden")
           ?.setValue(data.mottoesHidden ?? false);
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
         this.setMottoes([]);
-        this.errorMessage = "Could not load the saved hero.";
-        this.loading = false;
+        this.errorMessage.set("Could not load the saved hero.");
+        this.loading.set(false);
       },
     });
   }

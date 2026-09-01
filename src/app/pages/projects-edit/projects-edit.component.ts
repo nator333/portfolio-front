@@ -3,6 +3,7 @@ import {
   inject,
   OnInit,
   ChangeDetectionStrategy,
+  signal,
 } from "@angular/core";
 
 import { Router } from "@angular/router";
@@ -37,10 +38,10 @@ export class ProjectsEditComponent implements OnInit {
   /** Saved images offered in each project's image picker. */
   mediaAssets: MediaAsset[] = [];
 
-  loading = false;
-  saving = false;
-  errorMessage = "";
-  successMessage = "";
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly errorMessage = signal("");
+  readonly successMessage = signal("");
 
   projectsForm: FormGroup = this.fb.group({
     projects: this.fb.array([]),
@@ -92,7 +93,7 @@ export class ProjectsEditComponent implements OnInit {
   }
 
   private loadProjects(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.projectsService.getProjects().subscribe({
       next: (data) => {
         const projectsArray = this.projectsForm.get("projects") as FormArray;
@@ -100,11 +101,11 @@ export class ProjectsEditComponent implements OnInit {
         (data.projects ?? []).forEach((entry) =>
           projectsArray.push(this.createProjectGroup(entry)),
         );
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
-        this.errorMessage = "Could not load existing projects.";
-        this.loading = false;
+        this.errorMessage.set("Could not load existing projects.");
+        this.loading.set(false);
       },
     });
   }
@@ -138,17 +139,17 @@ export class ProjectsEditComponent implements OnInit {
   }
 
   save(): void {
-    this.saving = true;
-    this.errorMessage = "";
-    this.successMessage = "";
+    this.saving.set(true);
+    this.errorMessage.set("");
+    this.successMessage.set("");
     this.projectsService.updateProjects(this.buildProjectsData()).subscribe({
       next: () => {
-        this.saving = false;
-        this.successMessage = "Projects saved.";
+        this.saving.set(false);
+        this.successMessage.set("Projects saved.");
       },
       error: () => {
-        this.saving = false;
-        this.errorMessage = "Could not save projects.";
+        this.saving.set(false);
+        this.errorMessage.set("Could not save projects.");
       },
     });
   }
