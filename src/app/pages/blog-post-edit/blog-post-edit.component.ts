@@ -3,6 +3,7 @@ import {
   inject,
   input,
   OnInit,
+  signal,
   ChangeDetectionStrategy,
 } from "@angular/core";
 
@@ -63,22 +64,26 @@ export class BlogPostEditComponent implements OnInit {
   /** The `:slug` route segment (absent on the /new route), bound via component input binding. */
   readonly slug = input<string>();
 
-  /** Saved images offered in the eye-catch picker. */
-  mediaAssets: MediaAsset[] = [];
+  // These status fields are set from the async media/blog fetches and the
+  // save/delete callbacks, so signals keep the view in sync under zoneless
+  // change detection.
 
-  loading = false;
-  saving = false;
-  deleting = false;
-  confirmingDelete = false;
+  /** Saved images offered in the eye-catch picker. */
+  readonly mediaAssets = signal<MediaAsset[]>([]);
+
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly deleting = signal(false);
+  readonly confirmingDelete = signal(false);
   /**
    * Saving replaces the whole stored document, so it stays blocked until the
    * current document has actually been loaded — otherwise a failed load
    * followed by Save would wipe the existing posts.
    */
-  loadFailed = false;
-  notFound = false;
-  errorMessage = "";
-  successMessage = "";
+  readonly loadFailed = signal(false);
+  readonly notFound = signal(false);
+  readonly errorMessage = signal("");
+  readonly successMessage = signal("");
 
   isNew = false;
   /** The url of the post being edited, to locate it on save. Empty when new. */
@@ -113,37 +118,37 @@ export class BlogPostEditComponent implements OnInit {
   private loadMedia(): void {
     // Best-effort: the picker just has no saved options if this fails.
     this.mediaService.list().subscribe({
-      next: (assets) => (this.mediaAssets = assets),
-      error: () => (this.mediaAssets = []),
+      next: (assets) => this.mediaAssets.set(assets),
+      error: () => this.mediaAssets.set([]),
     });
   }
 
   private loadBlog(): void {
     const slug = this.slug();
     this.isNew = !slug;
-    this.loading = true;
+    this.loading.set(true);
 
     this.blogService.getBlogData().subscribe((data) => {
       if (!data) {
-        this.loadFailed = true;
-        this.errorMessage = "Could not load the saved blog.";
-        this.loading = false;
+        this.loadFailed.set(true);
+        this.errorMessage.set("Could not load the saved blog.");
+        this.loading.set(false);
         return;
       }
-      this.loadFailed = false;
+      this.loadFailed.set(false);
       this.allPosts = data.posts;
 
       if (!this.isNew) {
         this.originalUrl = blogUrlFromSlug(slug as string);
         const existing = data.posts.find((p) => p.url === this.originalUrl);
         if (!existing) {
-          this.notFound = true;
-          this.loading = false;
+          this.notFound.set(true);
+          this.loading.set(false);
           return;
         }
         this.fillForm(existing);
       }
-      this.loading = false;
+      this.loading.set(false);
     });
   }
 
@@ -182,58 +187,59 @@ export class BlogPostEditComponent implements OnInit {
   }
 
   save(): void {
-    if (this.loadFailed) {
-      this.errorMessage =
-        "Reload the page first — the saved blog could not be loaded.";
+    if (this.loadFailed()) {
+      this.errorMessage.set(
+        "Reload the page first — the saved blog could not be loaded.",
+      );
       return;
     }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.errorMessage = "Fix the highlighted fields before saving.";
+      this.errorMessage.set("Fix the highlighted fields before saving.");
       return;
     }
 
     const entry = this.buildEntry();
     if (this.urlCollides(entry.url)) {
-      this.errorMessage = "Another post already uses that URL.";
+      this.errorMessage.set("Another post already uses that URL.");
       return;
     }
 
-    this.saving = true;
-    this.errorMessage = "";
-    this.successMessage = "";
+    this.saving.set(true);
+    this.errorMessage.set("");
+    this.successMessage.set("");
     this.blogService.updateBlog(this.mergedDocument(entry)).subscribe({
       next: () => {
-        this.saving = false;
+        this.saving.set(false);
         this.router.navigateByUrl("/blog-edit");
       },
       error: () => {
-        this.saving = false;
-        this.errorMessage = "Could not save the post.";
+        this.saving.set(false);
+        this.errorMessage.set("Could not save the post.");
       },
     });
   }
 
   delete(): void {
-    if (this.isNew || this.loadFailed) {
+    if (this.isNew || this.loadFailed()) {
       return;
     }
-    if (!this.confirmingDelete) {
-      this.confirmingDelete = true;
+    if (!this.confirmingDelete()) {
+      this.confirmingDelete.set(true);
       return;
     }
-    this.deleting = true;
-    this.errorMessage = "";
+    this.deleting.set(true);
+    this.errorMessage.set("");
     const remaining = this.allPosts.filter((p) => p.url !== this.originalUrl);
     this.blogService.updateBlog({ posts: remaining }).subscribe({
       next: () => {
-        this.deleting = false;
+        this.deleting.set(false);
         this.router.navigateByUrl("/blog-edit");
       },
       error: () => {
-        this.deleting = false;
-        this.confirmingDelete = false;
-        this.errorMessage = "Could not delete the post.";
+        this.deleting.set(false);
+        this.confirmingDelete.set(false);
+        this.errorMessage.set("Could not delete the post.");
       },
     });
   }

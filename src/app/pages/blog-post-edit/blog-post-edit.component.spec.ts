@@ -79,7 +79,7 @@ describe("BlogPostEditComponent", () => {
 
   it("should flag a missing post", async () => {
     const component = await setup("does-not-exist");
-    expect(component.notFound).toBe(true);
+    expect(component.notFound()).toBe(true);
   });
 
   it("should replace the edited post and keep the others, then navigate back", async () => {
@@ -199,13 +199,13 @@ describe("BlogPostEditComponent", () => {
     component.save();
 
     expect(blogService.updateBlog).not.toHaveBeenCalled();
-    expect(component.errorMessage).toBe("Another post already uses that URL.");
+    expect(component.errorMessage()).toBe("Another post already uses that URL.");
   });
 
   it("should require a confirm click before deleting", async () => {
     const component = await setup("newer-post");
     component.delete();
-    expect(component.confirmingDelete).toBe(true);
+    expect(component.confirmingDelete()).toBe(true);
     expect(blogService.updateBlog).not.toHaveBeenCalled();
 
     component.delete();
@@ -240,14 +240,14 @@ describe("BlogPostEditComponent", () => {
     component.save();
 
     expect(blogService.updateBlog).not.toHaveBeenCalled();
-    expect(component.loadFailed).toBe(true);
+    expect(component.loadFailed()).toBe(true);
   });
 
   it("should surface a save failure without navigating", async () => {
     const component = await setup("newer-post");
     blogService.updateBlog.and.returnValue(throwError(() => new Error("nope")));
     component.save();
-    expect(component.errorMessage).toBe("Could not save the post.");
+    expect(component.errorMessage()).toBe("Could not save the post.");
     expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 });

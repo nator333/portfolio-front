@@ -57,7 +57,7 @@ describe("BlogEditComponent (list)", () => {
   });
 
   it("should list posts newest first", () => {
-    expect(component.posts.map((p) => p.title)).toEqual([
+    expect(component.posts().map((p) => p.title)).toEqual([
       "Newer Post",
       "Older Post",
     ]);
@@ -101,8 +101,8 @@ describe("BlogEditComponent (list)", () => {
     blogService.getBlogData.and.returnValue(of(null));
     const failed = TestBed.createComponent(BlogEditComponent);
     failed.detectChanges();
-    expect(failed.componentInstance.loadFailed).toBe(true);
-    expect(failed.componentInstance.posts).toEqual([]);
+    expect(failed.componentInstance.loadFailed()).toBe(true);
+    expect(failed.componentInstance.posts()).toEqual([]);
   });
 
   it("should derive the slug from a post url", () => {
