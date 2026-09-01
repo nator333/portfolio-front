@@ -13,11 +13,11 @@
       </div>
     </div>
 
-    @if (loading) {
+    @if (loading()) {
       <p>Loading blog posts...</p>
-    } @else if (loadFailed) {
+    } @else if (loadFailed()) {
       <p class="has-text-danger">Could not load the saved blog.</p>
-    } @else if (posts.length === 0) {
+    } @else if (posts().length === 0) {
       <p>No posts yet. Use “Add post” to write your first one.</p>
     } @else {
       <div class="box">
@@ -34,7 +34,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (post of posts; track post.url) {
+              @for (post of posts(); track post.url) {
                 <tr
                   class="post-row is-clickable"
                   tabindex="0"

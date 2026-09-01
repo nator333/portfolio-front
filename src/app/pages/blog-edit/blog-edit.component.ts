@@ -2,6 +2,7 @@ import {
   Component,
   inject,
   OnInit,
+  signal,
   ChangeDetectionStrategy,
 } from "@angular/core";
 
@@ -31,9 +32,11 @@ export class BlogEditComponent implements OnInit {
   private blogService = inject(BlogService);
   private router = inject(Router);
 
-  loading = false;
-  loadFailed = false;
-  posts: BlogPostEntry[] = [];
+  // Set from the async blog fetch, so signals keep the view in sync under
+  // zoneless change detection.
+  readonly loading = signal(false);
+  readonly loadFailed = signal(false);
+  readonly posts = signal<BlogPostEntry[]>([]);
 
   ngOnInit(): void {
     this.loadBlog();
@@ -55,19 +58,19 @@ export class BlogEditComponent implements OnInit {
   }
 
   private loadBlog(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.blogService.getBlogData().subscribe((data) => {
       if (!data) {
-        this.loadFailed = true;
-        this.loading = false;
+        this.loadFailed.set(true);
+        this.loading.set(false);
         return;
       }
-      this.loadFailed = false;
+      this.loadFailed.set(false);
       // Newest first, matching the public list order.
-      this.posts = [...data.posts].sort(
-        (a, b) => Date.parse(b.date) - Date.parse(a.date),
+      this.posts.set(
+        [...data.posts].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)),
       );
-      this.loading = false;
+      this.loading.set(false);
     });
   }
 }

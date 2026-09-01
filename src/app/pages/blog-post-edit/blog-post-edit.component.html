@@ -10,17 +10,17 @@
       </div>
     </div>
 
-    @if (loading) {
+    @if (loading()) {
       <p>Loading post...</p>
-    } @else if (notFound) {
+    } @else if (notFound()) {
       <p class="has-text-danger">That post no longer exists.</p>
     } @else {
       <form [formGroup]="form" (ngSubmit)="save()">
-        @if (errorMessage) {
-          <p class="has-text-danger">{{ errorMessage }}</p>
+        @if (errorMessage()) {
+          <p class="has-text-danger">{{ errorMessage() }}</p>
         }
-        @if (successMessage) {
-          <p class="has-text-success">{{ successMessage }}</p>
+        @if (successMessage()) {
+          <p class="has-text-success">{{ successMessage() }}</p>
         }
 
         <div class="box">
@@ -94,7 +94,7 @@
             <div class="column">
               <app-image-upload
                 [control]="$any(form.get('image'))"
-                [assets]="mediaAssets"
+                [assets]="mediaAssets()"
                 category="blog"
                 label="Eye-catch image (optional)"
               />
@@ -105,7 +105,7 @@
             <label class="label">Content (markdown)</label>
             <app-markdown-editor
               formControlName="content"
-              [assets]="mediaAssets"
+              [assets]="mediaAssets()"
               category="blog"
             />
           </div>
@@ -125,7 +125,7 @@
                 <button
                   class="button is-primary"
                   type="submit"
-                  [disabled]="saving || loadFailed"
+                  [disabled]="saving() || loadFailed()"
                 >
                   Save
                 </button>
@@ -139,11 +139,11 @@
           </div>
           @if (!isNew) {
             <div class="level-right">
-              @if (confirmingDelete) {
+              @if (confirmingDelete()) {
                 <button
                   class="button is-danger"
                   type="button"
-                  [disabled]="deleting"
+                  [disabled]="deleting()"
                   (click)="delete()"
                 >
                   Confirm delete
