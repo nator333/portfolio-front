@@ -31,6 +31,15 @@ describe("AppComponent", () => {
     expect(el.querySelector("app-footer")).toBeTruthy();
   });
 
+  it("should arm swipe navigation on the page body", () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(
+      el.querySelector("main.main-content[appSwipeNavigation]"),
+    ).toBeTruthy();
+  });
+
   it("should render the home page inside the shell after initial navigation", async () => {
     const fixture = TestBed.createComponent(AppComponent);
     const router = TestBed.inject(Router);

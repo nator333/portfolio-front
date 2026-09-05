@@ -4,6 +4,7 @@ import { NavigationComponent } from "./components/navigation/navigation.componen
 import { FooterComponent } from "./components/footer/footer.component";
 import { ChatWidgetComponent } from "./components/chat-widget/chat-widget.component";
 import { LoadingBarComponent } from "./components/loading-bar/loading-bar.component";
+import { SwipeNavigationDirective } from "./directives/swipe-navigation.directive";
 
 @Component({
   selector: "app-root",
@@ -14,12 +15,17 @@ import { LoadingBarComponent } from "./components/loading-bar/loading-bar.compon
     FooterComponent,
     ChatWidgetComponent,
     LoadingBarComponent,
+    SwipeNavigationDirective,
   ],
   template: `
     <app-loading-bar></app-loading-bar>
     <div class="app-container">
       <app-navigation></app-navigation>
-      <main class="main-content">
+      <!--
+        On phones a horizontal swipe over the page body steps through the main
+        pages in navbar order. Inert on desktop, where touch events never fire.
+      -->
+      <main class="main-content" appSwipeNavigation>
         <router-outlet></router-outlet>
       </main>
       <app-footer></app-footer>
