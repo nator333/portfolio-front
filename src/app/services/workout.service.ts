@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, of, catchError, tap } from "rxjs";
 import { environment } from "../../environments/environment";
-import { WorkoutSummary } from "../models/workout-data";
+import { MuscleVolumeStatus, WorkoutSummary } from "../models/workout-data";
 import { withApiKey } from "../interceptors/api.interceptors";
 
 const CACHE_KEY = "workout-cache-v1";
@@ -39,6 +39,33 @@ export class WorkoutService {
         tap((data) => this.writeCache(data)),
         catchError((error) => {
           console.error("Error loading workout data from API:", error);
+          return of(null);
+        }),
+      );
+  }
+
+  /**
+   * Whether each muscle is under, in range or over target, as computed by the
+   * API against the current training plan.
+   *
+   * Deliberately uncached, unlike the summary above. The summary only changes
+   * when a CSV is imported, so a six-hour TTL costs nothing; this answer depends
+   * on the moment it is asked (the window trails wall-clock now) and on the plan
+   * version live at that moment. Serving a cached verdict would put back exactly
+   * the staleness the endpoint exists to remove — a plan revised this morning
+   * still reading as yesterday's targets — and that is worth one request against
+   * the workout key's daily quota.
+   *
+   * Fails soft: the page drops its target bands rather than its charts.
+   */
+  getMuscleVolumeStatus(): Observable<MuscleVolumeStatus | null> {
+    return this.http
+      .get<MuscleVolumeStatus>(`${environment.apiBaseUrl}/muscle-volume-status`, {
+        context: withApiKey("workout"),
+      })
+      .pipe(
+        catchError((error) => {
+          console.error("Error loading muscle volume status from API:", error);
           return of(null);
         }),
       );

@@ -11,6 +11,7 @@ import {
 } from "@angular/core";
 import { DecimalPipe } from "@angular/common";
 import { Chart, ChartConfiguration } from "chart.js/auto";
+import { forkJoin } from "rxjs";
 
 import { HeroComponent } from "../../components/hero/hero.component";
 import { WorkoutService } from "../../services/workout.service";
@@ -20,6 +21,8 @@ import {
   WorkoutWeek,
   WorkoutDay,
   MuscleSummary,
+  MuscleVolumeStatus,
+  VolumeStatus,
 } from "../../models/workout-data";
 
 /** Muscle-group colours, shared by the weekly-volume and balance charts so a
@@ -52,43 +55,42 @@ const WEEKS_CHARTED = 26;
 const AXIS = "#8a8a84";
 const GRID = "rgba(255,255,255,0.08)";
 
-/** Rolling window for the weekly-volume view. */
+/**
+ * Window used only when the status endpoint gave us nothing to go on. Normally
+ * the width comes from the response, since the server is what decides it.
+ */
 const WINDOW_DAYS = 7;
 
-/**
- * Per-muscle weekly set range (min ≈ minimum effective volume, max ≈ maximum
- * recoverable), adapted from Renaissance Periodization's MEV–MRV landmarks.
- * These are heuristics, not prescriptions. Ranges for arms, traps and forearms
- * sit lower on purpose: our set counts are direct-only (a row is Lats, not Lats
- * + Biceps), so those muscles' indirect volume is not captured here.
- */
-const MUSCLE_TARGETS: Record<string, { min: number; max: number }> = {
-  Chest: { min: 10, max: 22 },
-  Lats: { min: 10, max: 25 },
-  Quads: { min: 8, max: 20 },
-  Hamstrings: { min: 6, max: 16 },
-  Glutes: { min: 4, max: 16 },
-  Shoulders: { min: 8, max: 26 },
-  Biceps: { min: 8, max: 18 },
-  Triceps: { min: 6, max: 18 },
-  Traps: { min: 6, max: 20 },
-  Calves: { min: 8, max: 16 },
-  Abs: { min: 6, max: 16 },
-  Forearms: { min: 4, max: 12 },
-};
-/** Muscle groups that are hypertrophy targets — those with a defined range. */
-const MAJOR_MUSCLES = MUSCLE_ORDER.filter((m) => m in MUSCLE_TARGETS);
-/** Widest max across muscles, so the x-axis always shows every target band. */
-const MAX_TARGET = Math.max(...Object.values(MUSCLE_TARGETS).map((t) => t.max));
+/** "2026-09-11" → "Sep 11", read as a UTC date to match the API's date-only fields. */
+const shortDate = (iso: string): string =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 
-/** Bar colour by where a muscle's set count falls against *its own* range. */
+/** Bar colour by where a muscle's volume falls against its own target range. */
 const ZONE_UNDER = "#d9614f";
 const ZONE_OPTIMAL = "#1baf7a";
 const ZONE_OVER = "#eda100";
-const zoneColor = (muscle: string, sets: number): string => {
-  const t = MUSCLE_TARGETS[muscle];
-  if (!t) return ZONE_OPTIMAL;
-  return sets < t.min ? ZONE_UNDER : sets <= t.max ? ZONE_OPTIMAL : ZONE_OVER;
+/** Used where there is no verdict to colour by — the degraded render below. */
+const ZONE_NEUTRAL = "#5f7d8c";
+
+/**
+ * The page no longer decides what "under" means.
+ *
+ * It used to carry its own table of per-muscle weekly ranges, which drifted from
+ * the training plan they were meant to describe: chest was judged against 10-22
+ * and lats against 10-25 while the program asked for 8-9 and 6, so a
+ * fully-completed week was drawn in the red "under" colour. Abs, traps and
+ * forearms had ranges here and none in the plan at all. The ranges now come from
+ * GET /muscle-volume-status, which reads them from the plan's current version;
+ * all that is left here is which colour each verdict is drawn in.
+ */
+const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
+  under: ZONE_UNDER,
+  in_range: ZONE_OPTIMAL,
+  over: ZONE_OVER,
 };
 
 @Component({
@@ -134,20 +136,32 @@ const zoneColor = (muscle: string, sets: number): string => {
           </div>
 
           <div class="chart-block">
-            <h2 class="chart-title">Weekly volume — last 7 days</h2>
-            <p class="chart-sub">
-              Hard sets per muscle over the trailing 7 days ({{ windowLabel() }}). Each shaded band is that muscle's own weekly target range.
-            </p>
-            <div class="zone-legend">
-              <span><i class="zone-swatch" style="background:{{ zoneUnder }}"></i>under</span>
-              <span><i class="zone-swatch" style="background:{{ zoneOptimal }}"></i>in range</span>
-              <span><i class="zone-swatch" style="background:{{ zoneOver }}"></i>over</span>
-            </div>
+            <h2 class="chart-title">Volume vs target — last {{ windowDays() }} days</h2>
+            @if (status(); as s) {
+              <p class="chart-sub">
+                Hard sets per muscle over the trailing {{ s.window.days }} days ({{ windowLabel() }}), against the target ranges in
+                <em>{{ s.plan.name }}</em> v{{ s.plan.version }}. Each shaded band is that muscle's own range.
+                @if (s.bonusWindow) {
+                  This window holds an extra session, so the bonus-week targets apply.
+                }
+                Rolled up {{ asOfLabel() }} — a trailing window moves, so these counts are as of then.
+              </p>
+              <div class="zone-legend">
+                <span><i class="zone-swatch" style="background:{{ zoneUnder }}"></i>under</span>
+                <span><i class="zone-swatch" style="background:{{ zoneOptimal }}"></i>in range</span>
+                <span><i class="zone-swatch" style="background:{{ zoneOver }}"></i>over</span>
+              </div>
+            } @else {
+              <p class="chart-sub">
+                Hard sets per muscle over the trailing {{ windowDays() }} days ({{ windowLabel() }}). Target ranges are unavailable right now, so no
+                muscle is marked under or over.
+              </p>
+            }
             <div class="chart-box chart-box--lanes">
               <canvas
                 id="chart-7day"
                 role="img"
-                aria-label="Horizontal bars of hard sets per muscle group over the last 7 days, each against that muscle's own target band."
+                aria-label="Horizontal bars of hard sets per muscle group over the trailing window, each against that muscle's own target band."
               ></canvas>
             </div>
           </div>
@@ -224,17 +238,29 @@ const zoneColor = (muscle: string, sets: number): string => {
 })
 export class WorkoutComponent implements OnInit, OnDestroy {
   readonly summary = signal<WorkoutSummary | null>(null);
+  /** Null when the status endpoint could not be reached, or no plan is published. */
+  readonly status = signal<MuscleVolumeStatus | null>(null);
   readonly loaded = signal(false);
   readonly weeksShown = signal(0);
 
-  // Exposed for the 7-day chart's zone legend.
+  // Exposed for the volume chart's zone legend.
   readonly zoneUnder = ZONE_UNDER;
   readonly zoneOptimal = ZONE_OPTIMAL;
   readonly zoneOver = ZONE_OVER;
 
-  /** The trailing-window date range, e.g. "Jul 17 – Jul 23". Anchored to the
-   *  last logged day, not today, so import lag never blanks the chart. */
+  /**
+   * The window the volume chart covers, e.g. "Jul 17 – Jul 23".
+   *
+   * Taken from the status response, so the label describes the window the
+   * verdicts were actually computed over rather than one the page picked for
+   * itself. Without it the page falls back to the last logged day, which is the
+   * best it can do when it has no server-computed window to name.
+   */
   readonly windowLabel = computed(() => {
+    const window = this.status()?.window;
+    if (window) {
+      return `${shortDate(window.from)} – ${shortDate(window.to)}`;
+    }
     const last = this.summary()?.totals.lastDate;
     if (!last) {
       return "";
@@ -242,9 +268,29 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     const end = new Date(`${last}T00:00:00Z`);
     const start = new Date(end);
     start.setUTCDate(start.getUTCDate() - (WINDOW_DAYS - 1));
-    const fmt = (d: Date) =>
-      d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
-    return `${fmt(start)} – ${fmt(end)}`;
+    return `${shortDate(start.toISOString().slice(0, 10))} – ${shortDate(last)}`;
+  });
+
+  /** Width of the charted window, in days. */
+  readonly windowDays = computed(() => this.status()?.window.days ?? WINDOW_DAYS);
+
+  /**
+   * When the rollup was computed, as a local time.
+   *
+   * Shown because a trailing window is time-of-request dependent: two people
+   * reading this page an hour apart can legitimately see different counts, and
+   * without a timestamp there is no way to tell that from a bug.
+   */
+  readonly asOfLabel = computed(() => {
+    const asOf = this.status()?.asOf;
+    return asOf
+      ? new Date(asOf).toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : "";
   });
 
   /** Whole days between the last logged workout and today, in UTC so it lines
@@ -281,15 +327,22 @@ export class WorkoutComponent implements OnInit, OnDestroy {
   constructor(private workoutService: WorkoutService) {}
 
   ngOnInit(): void {
-    this.workoutService.getWorkout().subscribe({
-      next: (data) => {
-        this.summary.set(data);
+    // Both in flight together: the summary draws every chart, the status draws
+    // the target bands on one of them, and neither is worth a second round trip
+    // of waiting. Each already fails soft to null, so forkJoin always completes.
+    forkJoin({
+      summary: this.workoutService.getWorkout(),
+      status: this.workoutService.getMuscleVolumeStatus(),
+    }).subscribe({
+      next: ({ summary, status }) => {
+        this.summary.set(summary);
+        this.status.set(status);
         this.loaded.set(true);
-        if (data && data.days.length) {
+        if (summary && summary.days.length) {
           // The chart canvases live behind an @if, so they enter the DOM on the
           // render that follows these signal writes. afterNextRender fires once
           // after that render — no requestAnimationFrame polling for the DOM.
-          afterNextRender(() => this.buildCharts(data), {
+          afterNextRender(() => this.buildCharts(summary, status), {
             injector: this.injector,
           });
         }
@@ -302,40 +355,58 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     this.charts.forEach((c) => c.destroy());
   }
 
-  private buildCharts(data: WorkoutSummary): void {
+  private buildCharts(data: WorkoutSummary, status: MuscleVolumeStatus | null): void {
     Chart.defaults.color = AXIS;
     Chart.defaults.borderColor = GRID;
     Chart.defaults.font.family =
       "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
-    this.buildSevenDay(data.days, data.totals.lastDate);
-    this.buildRecovery(data.days, data.totals.lastDate);
+    this.buildVolume(data.days, data.totals.lastDate, status);
+    this.buildRecovery(data.days, data.totals.lastDate, status);
     this.buildStrength(data.strengthSeries);
     this.buildWeekly(data.weeks);
     this.buildRadar(data.muscles);
     this.buildConsistency(data.weeks);
   }
 
-  private buildSevenDay(days: WorkoutDay[], lastDate: string): void {
-    const end = new Date(`${lastDate}T00:00:00Z`);
-    const start = new Date(end);
-    start.setUTCDate(start.getUTCDate() - (WINDOW_DAYS - 1));
-    const from = start.toISOString().slice(0, 10);
+  /**
+   * Hard sets per muscle over the trailing window, each bar against that
+   * muscle's own target band.
+   *
+   * Every number drawn here — the counts, the bands and the colour of each bar —
+   * comes from the status endpoint. The page deliberately keeps no opinion of
+   * its own: the last time it had one, it disagreed with the plan and drew
+   * completed weeks in red. If the endpoint is unavailable the chart still
+   * renders, from the same day summaries the rest of the page uses, but with no
+   * bands and no verdict — an honest "I don't know" rather than a guess.
+   */
+  private buildVolume(
+    days: WorkoutDay[],
+    lastDate: string,
+    status: MuscleVolumeStatus | null,
+  ): void {
+    const rows = status
+      ? status.muscles
+          .map((m) => ({
+            muscle: m.muscle,
+            sets: m.sets,
+            countedSets: m.countedSets,
+            sharedWith: m.sharedWith,
+            target: m.target,
+            color: ZONE_BY_STATUS[m.status],
+          }))
+          .sort((a, b) => b.sets - a.sets)
+      : this.untargetedRows(days, lastDate);
 
-    const sets = new Map<string, number>();
-    for (const day of days) {
-      if (day.date < from || day.date > lastDate) continue;
-      for (const [muscle, count] of Object.entries(day.muscles ?? {})) {
-        sets.set(muscle, (sets.get(muscle) ?? 0) + count);
-      }
+    if (!rows.length) {
+      return;
     }
 
-    // Every major muscle appears, even at zero, so gaps in the week are visible.
-    const rows = MAJOR_MUSCLES.map((m) => ({ muscle: m, sets: sets.get(m) ?? 0 })).sort(
-      (a, b) => b.sets - a.sets,
+    // Headroom past the widest bar or band so the tip labels never clip.
+    const widest = Math.max(
+      ...rows.map((r) => Math.max(r.sets, r.target?.max ?? 0)),
     );
-    // Headroom past the widest bar/band so the tip labels never clip.
-    const maxSets = Math.max(MAX_TARGET, ...rows.map((r) => r.sets)) + 4;
+    const maxSets = widest + 4;
 
     // Each lane gets its own target band drawn behind its bar, since the
     // productive range differs by muscle.
@@ -348,7 +419,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         const rowH = (chartArea.bottom - chartArea.top) / rows.length;
         ctx.save();
         rows.forEach((r, i) => {
-          const t = MUSCLE_TARGETS[r.muscle];
+          const t = r.target;
           if (!t) return;
           const lo = x.getPixelForValue(t.min);
           const hi = x.getPixelForValue(t.max);
@@ -394,7 +465,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
           {
             label: "sets",
             data: rows.map((r) => r.sets),
-            backgroundColor: rows.map((r) => zoneColor(r.muscle, r.sets)),
+            backgroundColor: rows.map((r) => r.color),
             borderWidth: 0,
             borderRadius: 3,
           },
@@ -409,10 +480,17 @@ export class WorkoutComponent implements OnInit, OnDestroy {
           tooltip: {
             callbacks: {
               label: (c) => {
-                const t = MUSCLE_TARGETS[rows[c.dataIndex].muscle];
-                return t
-                  ? `${c.parsed.x} sets · target ${t.min}–${t.max}`
-                  : `${c.parsed.x} sets`;
+                const r = rows[c.dataIndex];
+                if (!r.target) {
+                  return `${c.parsed.x} sets`;
+                }
+                // A target shared with another muscle is judged on the pair's
+                // total, so say so rather than leaving the bar looking short of
+                // a band it was never measured against alone.
+                const shared = r.sharedWith?.length
+                  ? ` · ${r.countedSets} with ${r.sharedWith.join(" + ")}`
+                  : "";
+                return `${c.parsed.x} sets${shared} · target ${r.target.min}–${r.target.max}`;
               },
             },
           },
@@ -421,7 +499,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
           x: {
             beginAtZero: true,
             suggestedMax: maxSets,
-            title: { display: true, text: "sets (last 7 days)" },
+            title: { display: true, text: `sets (last ${this.windowDays()} days)` },
             grid: { color: GRID },
           },
           y: { grid: { display: false } },
@@ -431,7 +509,66 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  private buildRecovery(days: WorkoutDay[], lastDate: string): void {
+  /**
+   * Bars for the degraded render, when the status endpoint gave us nothing.
+   *
+   * This sums the same stored day tallies the endpoint sums, but draws no
+   * conclusion from them: no target, no verdict, one neutral colour. Summing is
+   * not the part that drifted — deciding what the sum *means* is, and that
+   * decision is not reproduced here. The window is anchored to the last logged
+   * day rather than to now, since without a server-computed window there is no
+   * `asOf` to honour and import lag would otherwise blank the chart.
+   */
+  private untargetedRows(
+    days: WorkoutDay[],
+    lastDate: string,
+  ): {
+    muscle: string;
+    sets: number;
+    countedSets: number;
+    sharedWith: string[];
+    target: { min: number; max: number } | null;
+    color: string;
+  }[] {
+    const end = new Date(`${lastDate}T00:00:00Z`);
+    const start = new Date(end);
+    start.setUTCDate(start.getUTCDate() - (WINDOW_DAYS - 1));
+    const from = start.toISOString().slice(0, 10);
+
+    const sets = new Map<string, number>();
+    for (const day of days) {
+      if (day.date < from || day.date > lastDate) continue;
+      for (const [muscle, count] of Object.entries(day.muscles ?? {})) {
+        sets.set(muscle, (sets.get(muscle) ?? 0) + count);
+      }
+    }
+
+    return MUSCLE_ORDER.filter((m) => (sets.get(m) ?? 0) > 0)
+      .map((muscle) => ({
+        muscle,
+        sets: sets.get(muscle) as number,
+        countedSets: sets.get(muscle) as number,
+        sharedWith: [] as string[],
+        target: null,
+        color: ZONE_NEUTRAL,
+      }))
+      .sort((a, b) => b.sets - a.sets);
+  }
+
+  /**
+   * Days since each muscle was last trained.
+   *
+   * Which muscles are listed follows the plan: the ones it sets a target for are
+   * the ones worth tracking recovery on. That list used to be "the muscles this
+   * file has a range for", which is the same list only for as long as the two
+   * agree — and they had already stopped agreeing. Falling back to every group
+   * actually trained keeps the chart populated when the status read fails.
+   */
+  private buildRecovery(
+    days: WorkoutDay[],
+    lastDate: string,
+    status: MuscleVolumeStatus | null,
+  ): void {
     const end = new Date(`${lastDate}T00:00:00Z`).getTime();
     const dayMs = 24 * 60 * 60 * 1000;
 
@@ -448,7 +585,10 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     // Muscles not trained anywhere in the loaded window sink to the bottom,
     // capped so one dormant group doesn't blow out the axis.
     const CAP = 30;
-    const rows = MAJOR_MUSCLES.map((m) => {
+    const tracked = status
+      ? status.muscles.map((m) => m.muscle)
+      : MUSCLE_ORDER.filter((m) => lastSeen.has(m));
+    const rows = tracked.map((m) => {
       const seen = lastSeen.get(m);
       const since = seen
         ? Math.round((end - new Date(`${seen}T00:00:00Z`).getTime()) / dayMs)

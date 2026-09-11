@@ -59,4 +59,38 @@ describe("WorkoutService", () => {
       .flush("boom", { status: 500, statusText: "Server Error" });
     expect(result).toBeNull();
   });
+
+  it("requests /muscle-volume-status with the dedicated workout key", () => {
+    service.getMuscleVolumeStatus().subscribe();
+    const req = httpMock.expectOne(
+      `${environment.apiBaseUrl}/muscle-volume-status`,
+    );
+    expect(req.request.method).toBe("GET");
+    expect(req.request.headers.get("X-Api-Key")).toBe(environment.workoutApiKey);
+    req.flush({ muscles: [] });
+  });
+
+  it("never caches the volume status, since it is time-of-request dependent", () => {
+    // The summary is cached for hours because it only changes on import. This
+    // answer depends on when it is asked and on the plan version live then, so a
+    // cached copy would put back the staleness the endpoint exists to remove.
+    service.getMuscleVolumeStatus().subscribe();
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/muscle-volume-status`)
+      .flush({ muscles: [], asOf: "2026-09-11T10:00:00.000Z" });
+
+    service.getMuscleVolumeStatus().subscribe();
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/muscle-volume-status`)
+      .flush({ muscles: [], asOf: "2026-09-11T11:00:00.000Z" });
+  });
+
+  it("returns null rather than throwing when the status endpoint fails", () => {
+    let result: unknown = "unset";
+    service.getMuscleVolumeStatus().subscribe((v) => (result = v));
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/muscle-volume-status`)
+      .flush("boom", { status: 500, statusText: "Server Error" });
+    expect(result).toBeNull();
+  });
 });
