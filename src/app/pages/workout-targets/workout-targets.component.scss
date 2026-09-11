@@ -1,0 +1,137 @@
+.targets {
+  max-width: 48rem;
+}
+
+.intro {
+  margin-bottom: 0.25rem;
+}
+
+.meta {
+  margin-bottom: 1.5rem;
+}
+
+.muted {
+  color: #8a8a84;
+  font-size: 0.9rem;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.row {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.muscle {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+input[type="number"] {
+  width: 5.5rem;
+  padding: 0.35rem 0.5rem;
+}
+
+select,
+textarea {
+  padding: 0.35rem 0.5rem;
+}
+
+.prescribed {
+  color: #8a8a84;
+  font-size: 0.85rem;
+  margin: 0 0 0 0.5rem;
+}
+
+.bonus {
+  margin-top: 0.75rem;
+}
+
+.breach {
+  color: #d9614f;
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+.note {
+  color: #eda100;
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+.success {
+  color: #1baf7a;
+  margin: 0.75rem 0 0;
+}
+
+.add {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.change-note {
+  display: block;
+  margin-top: 1.5rem;
+}
+
+.change-note textarea {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.link {
+  background: none;
+  border: 0;
+  color: #2a78d6;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+}
+
+.link.danger {
+  color: #d9614f;
+}
+
+@media (max-width: 40rem) {
+  .fields {
+    gap: 0.5rem;
+  }
+
+  .prescribed {
+    margin-left: 0;
+    width: 100%;
+  }
+}
