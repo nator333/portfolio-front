@@ -88,3 +88,57 @@ export interface WorkoutSummary {
   }[];
   totals: WorkoutTotals;
 }
+
+/** An inclusive set-count range. */
+export interface SetRange {
+  min: number;
+  max: number;
+}
+
+export type VolumeStatus = "under" | "in_range" | "over";
+
+/**
+ * One muscle's verdict from GET /muscle-volume-status.
+ *
+ * `countedSets` rather than `sets` is what `status` reflects: the plan may state
+ * one target across several muscles (glutes and hamstrings share one), and a
+ * shared target only means anything against the shared total.
+ */
+export interface MuscleVolumeRow {
+  muscle: string;
+  /** The target as the plan states it, per week. */
+  weeklyTarget: SetRange;
+  /** `weeklyTarget` restated over the requested window; equal to it at 7 days. */
+  target: SetRange;
+  sets: number;
+  countedSets: number;
+  sharedWith: string[];
+  status: VolumeStatus;
+}
+
+/**
+ * Shape of GET /muscle-volume-status — the single source of truth for whether a
+ * muscle is under, in range or over its target volume.
+ *
+ * The page used to answer this itself from a hard-coded table of ranges, which
+ * drifted from the training plan those ranges were meant to describe: chest and
+ * lats were judged against numbers the plan had never asked for, and abs, traps
+ * and forearms had ranges here that the plan did not carry at all. Nothing on
+ * this page recomputes the verdict now; it renders what the endpoint returns.
+ */
+export interface MuscleVolumeStatus {
+  /** The instant the rollup was computed. A trailing window moves, so two
+   *  readings taken at different times legitimately differ; this is what makes
+   *  them comparable. */
+  asOf: string;
+  window: { days: number; from: string; to: string };
+  plan: { planId: string; version: number; name: string; sessionsPerWeek: number };
+  /** Distinct days trained within the window. */
+  sessions: number;
+  /** True when the window holds more sessions than the rotation prescribes, so
+   *  the bonus-week targets are the ones in force. */
+  bonusWindow: boolean;
+  muscles: MuscleVolumeRow[];
+  /** Trained in the window, but the plan sets no target for it. */
+  untargeted: { muscle: string; sets: number }[];
+}
