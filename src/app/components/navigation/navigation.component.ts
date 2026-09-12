@@ -134,6 +134,13 @@ import {
             </a>
             <a
               class="navbar-item nav-link"
+              routerLink="/workout-targets"
+              routerLinkActive="is-active"
+            >
+              Set Targets
+            </a>
+            <a
+              class="navbar-item nav-link"
               routerLink="/media-library"
               routerLinkActive="is-active"
             >

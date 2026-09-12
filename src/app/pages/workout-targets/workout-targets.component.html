@@ -1,0 +1,152 @@
+<app-hero
+  title="Weekly set targets"
+  subtitle="What the training is aiming at"
+></app-hero>
+
+<section class="section">
+  <div class="container targets">
+    @if (loading()) {
+      <p class="muted">Loading targets…</p>
+    } @else if (loaded(); as data) {
+      <p class="intro">
+        Sets per muscle per week. These are what
+        <a routerLink="/workout">the progress page</a> and every other volume
+        reading are judged against — nothing keeps its own copy.
+      </p>
+      <p class="muted meta">
+        Editing on top of version {{ data.version || "—" }}, against
+        <em>{{ data.menu.name }}</em> v{{ data.menu.version }}
+        ({{ data.menu.sessionsPerWeek }} sessions a week).
+        Saving publishes a new version; nothing is overwritten.
+      </p>
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="rows" formArrayName="targets">
+          @for (row of rowGroups; track $index; let i = $index) {
+            <div class="row" [formGroupName]="i">
+              <div class="row-head">
+                <h2 class="muscle">{{ label(row) }}</h2>
+                <button
+                  type="button"
+                  class="link danger"
+                  (click)="removeTarget(i)"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <div class="fields">
+                <label>
+                  <span>Min</span>
+                  <input type="number" min="0" formControlName="min" (input)="touch()" />
+                </label>
+                <label>
+                  <span>Max</span>
+                  <input type="number" min="0" formControlName="max" (input)="touch()" />
+                </label>
+
+                @if (prescribed(row); as p) {
+                  <p class="prescribed">
+                    Sessions prescribe {{ p.min }}–{{ p.max }} a week.
+                  </p>
+                } @else {
+                  <p class="prescribed">No session prescribes this directly.</p>
+                }
+              </div>
+
+              <div class="bonus">
+                <button type="button" class="link" (click)="toggleBonus(row)">
+                  {{ row.value.bonusEnabled ? "Remove bonus-week range" : "Add a bonus-week range" }}
+                </button>
+                @if (row.value.bonusEnabled) {
+                  <div class="fields">
+                    <label>
+                      <span>Bonus min</span>
+                      <input type="number" min="0" formControlName="bonusMin" (input)="touch()" />
+                    </label>
+                    <label>
+                      <span>Bonus max</span>
+                      <input type="number" min="0" formControlName="bonusMax" (input)="touch()" />
+                    </label>
+                  </div>
+                }
+              </div>
+
+              @if (breachFor(row); as breach) {
+                <p class="breach">{{ breach }}</p>
+              }
+              @if (bonusNoteFor(row); as note) {
+                <p class="note">{{ note }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        @if (untargeted().length) {
+          <div class="add">
+            <label>
+              <span>Add a target for</span>
+              <select #newMuscle>
+                <option value="">Choose a muscle…</option>
+                @for (muscle of untargeted(); track muscle) {
+                  <option [value]="muscle">{{ muscle }}</option>
+                }
+              </select>
+            </label>
+            <button
+              type="button"
+              class="secondary"
+              (click)="addTarget(newMuscle.value); newMuscle.value = ''"
+            >
+              Add
+            </button>
+          </div>
+        }
+
+        <label class="change-note">
+          <span>What changed, and why</span>
+          <textarea
+            formControlName="changeNote"
+            rows="3"
+            placeholder="This becomes the version history — write it for the version of you reading it in six months."
+          ></textarea>
+          @if (form.get("changeNote")?.touched && form.get("changeNote")?.invalid) {
+            <span class="breach">A change note is required.</span>
+          }
+        </label>
+
+        @if (hasBreach()) {
+          <p class="breach">
+            One or more targets sit below what the sessions prescribe. The API
+            will refuse this — raise the target, or cut slots from the sessions
+            first.
+          </p>
+        }
+
+        @if (errorMessage()) {
+          <p class="breach">{{ errorMessage() }}</p>
+          @for (breach of breaches(); track breach) {
+            <p class="breach">{{ breach }}</p>
+          }
+        }
+        @if (successMessage()) {
+          <p class="success">{{ successMessage() }}</p>
+          @for (warning of warnings(); track warning) {
+            <p class="note">{{ warning }}</p>
+          }
+        }
+
+        <div class="actions">
+          <button type="submit" [disabled]="saving() || hasBreach()">
+            {{ saving() ? "Publishing…" : "Publish new version" }}
+          </button>
+          <button type="button" class="secondary" (click)="back()">
+            Back to progress
+          </button>
+        </div>
+      </form>
+    } @else {
+      <p class="breach">{{ errorMessage() }}</p>
+    }
+  </div>
+</section>

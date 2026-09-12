@@ -102,6 +102,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "workout-targets",
+    title: "Weekly Set Targets",
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import("./pages/workout-targets/workout-targets.component").then(
+        (m) => m.WorkoutTargetsComponent,
+      ),
+  },
+  {
     path: "media-library",
     title: "Media Library",
     canActivate: [authGuard],
