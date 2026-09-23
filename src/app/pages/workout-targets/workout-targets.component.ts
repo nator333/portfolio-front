@@ -156,10 +156,28 @@ export class WorkoutTargetsComponent implements OnInit {
     return `On a bonus week the sessions prescribe ${p.max}; this saves with a warning.`;
   }
 
+  /**
+   * The message for a maintenance floor that does not sit below the hypertrophy
+   * range. Maintenance ends where hypertrophy begins, so the API refuses it.
+   */
+  maintenanceErrorFor(row: FormGroup): string {
+    this.revision();
+    const floor = maintenanceValue(row.value.maintenance);
+    const min = Number(row.value.min);
+    if (floor === null || !Number.isFinite(min) || floor < min) return "";
+    return `Maintenance must be below the hypertrophy min of ${min} — it ends where hypertrophy begins.`;
+  }
+
   /** True when any row would be refused, so the button can say why it is disabled. */
   readonly hasBreach = computed(() => {
     this.revision();
     return this.rowGroups.some((row) => this.breachFor(row) !== "");
+  });
+
+  /** True when any row's maintenance floor would be refused. */
+  readonly hasMaintenanceError = computed(() => {
+    this.revision();
+    return this.rowGroups.some((row) => this.maintenanceErrorFor(row) !== "");
   });
 
   addTarget(muscle: string): void {
@@ -197,7 +215,9 @@ export class WorkoutTargetsComponent implements OnInit {
     // hasBreach() is checked here and not only on the button: a form submits on
     // Enter too, and the API would refuse this anyway — better to say so without
     // the round trip than to let the keyboard route around the guard.
-    if (this.form.invalid || this.saving() || this.hasBreach()) return;
+    if (this.form.invalid || this.saving() || this.hasBreach() || this.hasMaintenanceError()) {
+      return;
+    }
 
     const data = this.loaded();
     if (!data) return;
@@ -257,6 +277,10 @@ export class WorkoutTargetsComponent implements OnInit {
       muscles: this.fb.nonNullable.control(target.muscles),
       min: this.fb.nonNullable.control(target.sets.min, [Validators.required, Validators.min(0)]),
       max: this.fb.nonNullable.control(target.sets.max, [Validators.required, Validators.min(0)]),
+      // Optional: an empty field means no maintenance floor.
+      maintenance: this.fb.control<number | null>(target.maintenanceSets ?? null, [
+        Validators.min(0),
+      ]),
       bonusEnabled: this.fb.nonNullable.control(bonus !== null),
       bonusMin: this.fb.nonNullable.control(bonus?.min ?? 0, [Validators.min(0)]),
       bonusMax: this.fb.nonNullable.control(bonus?.max ?? 0, [Validators.min(0)]),
@@ -268,15 +292,21 @@ interface TargetRow {
   muscles: string[];
   min: number;
   max: number;
+  maintenance: number | string | null;
   bonusEnabled: boolean;
   bonusMin: number;
   bonusMax: number;
 }
 
+/** A maintenance field's value as a number, or null when left empty. */
+const maintenanceValue = (value: number | string | null | undefined): number | null =>
+  value === null || value === undefined || value === "" ? null : Number(value);
+
 /** Form row back to the wire shape the API stores. */
 const toTarget = (row: TargetRow): WeeklySetTarget => ({
   muscles: row.muscles,
   sets: { min: Number(row.min), max: Number(row.max) },
+  maintenanceSets: maintenanceValue(row.maintenance),
   bonusWeekSets: row.bonusEnabled
     ? { min: Number(row.bonusMin), max: Number(row.bonusMax) }
     : null,

@@ -137,14 +137,44 @@ describe("WorkoutTargetsComponent", () => {
       baseVersion: 2,
       changeNote: "chest to 8-10",
       weeklySetTargets: [
-        { muscles: ["Chest"], sets: { min: 8, max: 10 }, bonusWeekSets: null },
+        {
+          muscles: ["Chest"],
+          sets: { min: 8, max: 10 },
+          maintenanceSets: null,
+          bonusWeekSets: null,
+        },
         {
           muscles: ["Glutes", "Hamstrings"],
           sets: { min: 9, max: 11 },
+          maintenanceSets: null,
           bonusWeekSets: null,
         },
       ],
     });
+  });
+
+  it("sends a maintenance floor when one is entered", async () => {
+    await render();
+    component().form.patchValue({ changeNote: "chest maintenance at 4" });
+    component().rowGroups[0].patchValue({ maintenance: 4 });
+    component().save();
+
+    const saved = service.saved as { weeklySetTargets: { maintenanceSets: number | null }[] };
+    expect(saved.weeklySetTargets[0].maintenanceSets).toBe(4);
+    expect(saved.weeklySetTargets[1].maintenanceSets).toBeNull();
+  });
+
+  it("refuses a maintenance floor that is not below the hypertrophy min", async () => {
+    await render();
+    const chest = component().rowGroups[0];
+    chest.patchValue({ maintenance: 8 });
+    component().form.patchValue({ changeNote: "too high" });
+    component().touch();
+
+    expect(component().maintenanceErrorFor(chest)).toContain("below the hypertrophy min of 8");
+    expect(component().hasMaintenanceError()).toBe(true);
+    component().save();
+    expect(service.saved).toBeNull();
   });
 
   it("advances the held version after saving, so a second save is not stale", async () => {

@@ -95,7 +95,8 @@ export interface SetRange {
   max: number;
 }
 
-export type VolumeStatus = "under" | "in_range" | "over";
+/** `maintenance`: at or above the maintenance floor, below the hypertrophy range. */
+export type VolumeStatus = "under" | "maintenance" | "in_range" | "over";
 
 /**
  * One muscle's verdict from GET /muscle-volume-status.
@@ -110,6 +111,10 @@ export interface MuscleVolumeRow {
   weeklyTarget: SetRange;
   /** `weeklyTarget` restated over the requested window; equal to it at 7 days. */
   target: SetRange;
+  /** The maintenance floor per week; null where the plan sets none. It runs up to `weeklyTarget.min`. */
+  weeklyMaintenance: number | null;
+  /** `weeklyMaintenance` restated over the window, as `target` is. */
+  maintenance: number | null;
   sets: number;
   countedSets: number;
   sharedWith: string[];

@@ -9,7 +9,9 @@
       <p class="muted">Loading targets…</p>
     } @else if (loaded(); as data) {
       <p class="intro">
-        Sets per muscle per week. These are what
+        Sets per muscle per week. Maintenance is the least volume that holds a
+        muscle where it is, and runs up to where the hypertrophy range begins;
+        leave it empty for no floor. These are what
         <a routerLink="/workout">the progress page</a> and every other volume
         reading are judged against — nothing keeps its own copy.
       </p>
@@ -37,11 +39,21 @@
 
               <div class="fields">
                 <label>
-                  <span>Min</span>
+                  <span>Maintenance</span>
+                  <input
+                    type="number"
+                    min="0"
+                    formControlName="maintenance"
+                    placeholder="—"
+                    (input)="touch()"
+                  />
+                </label>
+                <label>
+                  <span>Hypertrophy min</span>
                   <input type="number" min="0" formControlName="min" (input)="touch()" />
                 </label>
                 <label>
-                  <span>Max</span>
+                  <span>Hypertrophy max</span>
                   <input type="number" min="0" formControlName="max" (input)="touch()" />
                 </label>
 
@@ -72,6 +84,9 @@
                 }
               </div>
 
+              @if (maintenanceErrorFor(row); as error) {
+                <p class="breach">{{ error }}</p>
+              }
               @if (breachFor(row); as breach) {
                 <p class="breach">{{ breach }}</p>
               }
@@ -137,7 +152,7 @@
         }
 
         <div class="actions">
-          <button type="submit" [disabled]="saving() || hasBreach()">
+          <button type="submit" [disabled]="saving() || hasBreach() || hasMaintenanceError()">
             {{ saving() ? "Publishing…" : "Publish new version" }}
           </button>
           <button type="button" class="secondary" (click)="back()">
