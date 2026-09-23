@@ -71,6 +71,7 @@ const shortDate = (iso: string): string =>
 
 /** Bar colour by where a muscle's volume falls against its own target range. */
 const ZONE_UNDER = "#d9614f";
+const ZONE_MAINTENANCE = "#4a90c9";
 const ZONE_OPTIMAL = "#1baf7a";
 const ZONE_OVER = "#eda100";
 /** Used where there is no verdict to colour by — the degraded render below. */
@@ -89,6 +90,7 @@ const ZONE_NEUTRAL = "#5f7d8c";
  */
 const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
   under: ZONE_UNDER,
+  maintenance: ZONE_MAINTENANCE,
   in_range: ZONE_OPTIMAL,
   over: ZONE_OVER,
 };
@@ -140,7 +142,7 @@ const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
             @if (status(); as s) {
               <p class="chart-sub">
                 Hard sets per muscle over the trailing {{ s.window.days }} days ({{ windowLabel() }}), against the target ranges in
-                <em>{{ s.plan.name }}</em> v{{ s.plan.version }}. Each shaded band is that muscle's own range.
+                <em>{{ s.plan.name }}</em> v{{ s.plan.version }}. Each shaded band is that muscle's own hypertrophy range@if (hasMaintenance()) {, with its maintenance zone shaded blue below it}.
                 @if (s.bonusWindow) {
                   This window holds an extra session, so the bonus-week targets apply.
                 }
@@ -148,6 +150,9 @@ const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
               </p>
               <div class="zone-legend">
                 <span><i class="zone-swatch" style="background:{{ zoneUnder }}"></i>under</span>
+                @if (hasMaintenance()) {
+                  <span><i class="zone-swatch" style="background:{{ zoneMaintenance }}"></i>maintenance</span>
+                }
                 <span><i class="zone-swatch" style="background:{{ zoneOptimal }}"></i>in range</span>
                 <span><i class="zone-swatch" style="background:{{ zoneOver }}"></i>over</span>
               </div>
@@ -245,6 +250,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
 
   // Exposed for the volume chart's zone legend.
   readonly zoneUnder = ZONE_UNDER;
+  readonly zoneMaintenance = ZONE_MAINTENANCE;
   readonly zoneOptimal = ZONE_OPTIMAL;
   readonly zoneOver = ZONE_OVER;
 
@@ -273,6 +279,11 @@ export class WorkoutComponent implements OnInit, OnDestroy {
 
   /** Width of the charted window, in days. */
   readonly windowDays = computed(() => this.status()?.window.days ?? WINDOW_DAYS);
+
+  /** Whether any target declares a maintenance floor, so its legend entry is worth showing. */
+  readonly hasMaintenance = computed(
+    () => this.status()?.muscles.some((m) => m.maintenance != null) ?? false,
+  );
 
   /**
    * When the rollup was computed, as a local time.
@@ -393,6 +404,8 @@ export class WorkoutComponent implements OnInit, OnDestroy {
             countedSets: m.countedSets,
             sharedWith: m.sharedWith,
             target: m.target,
+            // `??` so a response from before the field existed reads as "none".
+            maintenance: m.maintenance ?? null,
             color: ZONE_BY_STATUS[m.status],
           }))
           .sort((a, b) => b.sets - a.sets)
@@ -425,6 +438,12 @@ export class WorkoutComponent implements OnInit, OnDestroy {
           const hi = x.getPixelForValue(t.max);
           const top = y.getPixelForValue(i) - rowH * 0.42;
           const h = rowH * 0.84;
+          // Maintenance runs from its floor up to where the range begins.
+          if (r.maintenance !== null && r.maintenance < t.min) {
+            const floor = x.getPixelForValue(r.maintenance);
+            ctx.fillStyle = "rgba(74,144,201,0.12)";
+            ctx.fillRect(floor, top, lo - floor, h);
+          }
           ctx.fillStyle = "rgba(27,175,122,0.12)";
           ctx.fillRect(lo, top, hi - lo, h);
           ctx.strokeStyle = "rgba(27,175,122,0.5)";
@@ -490,7 +509,9 @@ export class WorkoutComponent implements OnInit, OnDestroy {
                 const shared = r.sharedWith?.length
                   ? ` · ${r.countedSets} with ${r.sharedWith.join(" + ")}`
                   : "";
-                return `${c.parsed.x} sets${shared} · target ${r.target.min}–${r.target.max}`;
+                const maintenance =
+                  r.maintenance !== null ? ` · maintenance ${r.maintenance}+` : "";
+                return `${c.parsed.x} sets${shared} · target ${r.target.min}–${r.target.max}${maintenance}`;
               },
             },
           },
@@ -528,6 +549,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     countedSets: number;
     sharedWith: string[];
     target: { min: number; max: number } | null;
+    maintenance: number | null;
     color: string;
   }[] {
     const end = new Date(`${lastDate}T00:00:00Z`);
@@ -550,6 +572,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         countedSets: sets.get(muscle) as number,
         sharedWith: [] as string[],
         target: null,
+        maintenance: null,
         color: ZONE_NEUTRAL,
       }))
       .sort((a, b) => b.sets - a.sets);

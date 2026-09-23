@@ -10,9 +10,15 @@ import { SetRange } from "./workout-data";
  */
 export interface WeeklySetTarget {
   muscles: string[];
+  /** The hypertrophy range. */
   sets: SetRange;
   /** Target on weeks that take the bonus session; null where it is unchanged. */
   bonusWeekSets: SetRange | null;
+  /**
+   * The maintenance floor. One number because its ceiling is `sets.min`, where
+   * hypertrophy begins; null (or absent on older target sets) where none is set.
+   */
+  maintenanceSets?: number | null;
 }
 
 /**

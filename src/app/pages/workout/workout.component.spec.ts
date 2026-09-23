@@ -63,6 +63,8 @@ const STATUS: MuscleVolumeStatus = {
       muscle: "Chest",
       weeklyTarget: { min: 8, max: 9 },
       target: { min: 8, max: 9 },
+      weeklyMaintenance: null,
+      maintenance: null,
       sets: 8,
       countedSets: 8,
       sharedWith: [],
@@ -72,6 +74,8 @@ const STATUS: MuscleVolumeStatus = {
       muscle: "Lats",
       weeklyTarget: { min: 6, max: 6 },
       target: { min: 6, max: 6 },
+      weeklyMaintenance: null,
+      maintenance: null,
       sets: 4,
       countedSets: 4,
       sharedWith: [],
@@ -146,6 +150,26 @@ describe("WorkoutComponent", () => {
   it("says the bonus-week targets apply when the window holds an extra session", async () => {
     await render({ status: { ...STATUS, bonusWindow: true, sessions: 4 } });
     expect(text()).toContain("bonus-week targets");
+  });
+
+  it("shows the maintenance zone only when a target declares a floor", async () => {
+    await render();
+    expect(fixture.componentInstance.hasMaintenance()).toBe(false);
+    expect(text()).not.toContain("maintenance");
+    TestBed.resetTestingModule();
+
+    const [chest, lats] = STATUS.muscles;
+    await render({
+      status: {
+        ...STATUS,
+        muscles: [
+          chest,
+          { ...lats, weeklyMaintenance: 3, maintenance: 3, status: "maintenance" },
+        ],
+      },
+    });
+    expect(fixture.componentInstance.hasMaintenance()).toBe(true);
+    expect(text()).toContain("maintenance");
   });
 
   it("marks no muscle under or over when the status read failed", async () => {
