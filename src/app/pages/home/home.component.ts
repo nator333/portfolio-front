@@ -14,6 +14,7 @@ import { ActivityService } from "../../services/activity.service";
 import { ContributionCalendarComponent } from "../../components/contribution-calendar/contribution-calendar.component";
 import { ActivityFeedComponent } from "../../components/activity-feed/activity-feed.component";
 import { ActivityFiltersComponent } from "../../components/activity-filters/activity-filters.component";
+import { BackgroundPhoto } from "../../models/home-data";
 import {
   ActivityEntry,
   ActivityType,
@@ -49,6 +50,13 @@ export class HomeComponent implements OnInit {
   // Admin toggle from /home-edit: when true the hero shows no motto lines even
   // though `mottoes` is kept, so they can be hidden without being retyped.
   readonly mottoesHidden = signal<boolean>(false);
+
+  // Hero background, picked at random from the saved photos once per page
+  // load; null keeps the plain black hero.
+  readonly background = signal<BackgroundPhoto | null>(null);
+
+  // Set when the photo has decoded, to fade it (and its caption) in.
+  readonly photoLoaded = signal<boolean>(false);
 
   readonly profile: string[] = ["Hi, I'm Hiro Nakamata", "Software Engineer"];
   readonly kappiInfo: string[] = [
@@ -127,6 +135,7 @@ export class HomeComponent implements OnInit {
       next: (data) => {
         this.mottoes.set(data.mottoes ?? []);
         this.mottoesHidden.set(data.mottoesHidden ?? false);
+        this.background.set(pickRandom(data.backgrounds ?? []));
       },
       error: () => {
         // Leave the hero without motto lines.
@@ -142,4 +151,8 @@ export class HomeComponent implements OnInit {
       },
     });
   }
+}
+
+function pickRandom<T>(items: T[]): T | null {
+  return items.length ? items[Math.floor(Math.random() * items.length)] : null;
 }

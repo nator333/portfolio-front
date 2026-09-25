@@ -13,7 +13,7 @@
         <select [value]="control().value" (change)="onSelectSaved($event)">
           <option value="">Pick a saved image…</option>
           @for (asset of selectableAssets; track asset.assetId) {
-            <option [value]="asset.cdnUrl">{{ asset.title || asset.originalFilename }}</option>
+            <option [value]="assetUrl(asset)">{{ asset.title || asset.originalFilename }}</option>
           }
         </select>
       </div>

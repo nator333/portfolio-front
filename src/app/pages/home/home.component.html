@@ -1,4 +1,26 @@
-<section class="hero is-fullheight">
+<section class="hero is-fullheight" [class.has-photo]="background()">
+  @if (background(); as photo) {
+    <!--
+      Starts transparent over the black hero and fades in once decoded, so a
+      slow photo never delays or reflows the page — it only appears.
+    -->
+    <img
+      class="hero-photo"
+      [class.is-loaded]="photoLoaded()"
+      [src]="photo.url"
+      [alt]="photo.alt ?? ''"
+      fetchpriority="high"
+      decoding="async"
+      (load)="photoLoaded.set(true)"
+    />
+    <div class="hero-overlay" aria-hidden="true"></div>
+    @if (photo.caption) {
+      <p class="hero-caption" [class.is-loaded]="photoLoaded()">
+        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+        {{ photo.caption }}
+      </p>
+    }
+  }
   <div class="hero-body">
     <div class="container">
       <div class="columns is-vcentered">

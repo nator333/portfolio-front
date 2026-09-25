@@ -5,7 +5,14 @@ import {
   input,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MediaAsset, MediaCategory, MediaService } from '../../services/media.service';
+import {
+  MediaAsset,
+  MediaCategory,
+  MediaService,
+  MediaVariantLabel,
+  assetVariantUrl,
+  mediaVariantUrl,
+} from '../../services/media.service';
 
 type UploadStatus = 'idle' | 'uploading' | 'saved' | 'error';
 
@@ -36,6 +43,8 @@ export class ImageUploadComponent implements OnDestroy {
   readonly label = input('Image');
   /** Previously uploaded images, offered in the "pick a saved image" dropdown. */
   readonly assets = input<MediaAsset[]>([]);
+  /** Which resize variant the field stores; backgrounds want the widest. */
+  readonly variant = input<MediaVariantLabel>('w1600');
 
   readonly accept = ALLOWED_TYPES.join(',');
 
@@ -56,6 +65,11 @@ export class ImageUploadComponent implements OnDestroy {
     return this.assets().filter(
       (asset) => asset.category === this.category() || asset.category === 'general',
     );
+  }
+
+  /** Url stored when a saved asset is picked from the dropdown. */
+  assetUrl(asset: MediaAsset): string {
+    return assetVariantUrl(asset, this.variant());
   }
 
   onFileSelected(event: Event): void {
@@ -82,7 +96,7 @@ export class ImageUploadComponent implements OnDestroy {
 
     this.media.upload(file, this.category()).subscribe({
       next: (result) => {
-        this.control().setValue(result.cdnUrl);
+        this.control().setValue(mediaVariantUrl(result.assetId, this.variant()));
         this.control().markAsDirty();
         this.status = 'saved';
         this.message = 'Uploaded. The optimized image is served from the CDN.';
