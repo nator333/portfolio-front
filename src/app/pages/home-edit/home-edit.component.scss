@@ -11,3 +11,16 @@
     max-width: 30rem;
   }
 }
+
+.background-field {
+  padding: 1rem 0;
+
+  & + & {
+    border-top: 1px solid #ededed;
+  }
+
+  .background-meta {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+  }
+}

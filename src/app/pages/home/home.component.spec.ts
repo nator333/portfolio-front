@@ -162,4 +162,40 @@ describe("HomeComponent", () => {
     component.onTypeToggled("gym"); // plain toggle off
     expect(component.activeTypeList()).toEqual(["blog"]);
   });
+  it("should keep the plain black hero when no backgrounds are saved", () => {
+    flushHome(["First Line"]);
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector(".hero-photo")).toBeNull();
+    expect(el.querySelector(".hero-caption")).toBeNull();
+  });
+
+  it("should render one of the saved background photos with its caption", () => {
+    const backgrounds = [
+      { url: "https://cdn.example.com/a/w2560.webp", caption: "Mt. Hakkai, Minamiuonuma", alt: "Mt. Hakkai" },
+      { url: "https://cdn.example.com/b/w2560.webp", caption: "Mt. Hakkai, Minamiuonuma", alt: "Mt. Hakkai" },
+    ];
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({ mottoes: [], backgrounds });
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const img = el.querySelector<HTMLImageElement>(".hero-photo");
+    expect(backgrounds.map((b) => b.url)).toContain(img?.getAttribute("src") ?? "");
+    expect(img?.getAttribute("alt")).toBe("Mt. Hakkai");
+    expect(el.querySelector(".hero-caption")?.textContent).toContain("Mt. Hakkai, Minamiuonuma");
+  });
+
+  it("should fade the photo in only once it has loaded", () => {
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
+      mottoes: [],
+      backgrounds: [{ url: "https://cdn.example.com/a/w2560.webp", caption: "" }],
+    });
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const img = el.querySelector<HTMLImageElement>(".hero-photo")!;
+    expect(img.classList).not.toContain("is-loaded");
+    // An empty caption renders no caption element.
+    expect(el.querySelector(".hero-caption")).toBeNull();
+    img.dispatchEvent(new Event("load"));
+    fixture.detectChanges();
+    expect(img.classList).toContain("is-loaded");
+  });
 });

@@ -3,9 +3,83 @@
 .hero {
   background-color: #000000;
   padding-top: 3.25rem; // Account for fixed navbar
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background photo: covers the hero behind everything, fading in on load. */
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transition: opacity 1.2s ease-out;
+
+  &.is-loaded {
+    opacity: 1;
+  }
+}
+
+/* Darkens the photo so the gold mottoes and signature stay legible: heavier
+   on the left behind the mottoes and at the bottom behind the caption. */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.35) 60%, rgba(0, 0, 0, 0.45) 100%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.6) 100%);
+
+  @media (max-width: 768px) {
+    /* Columns stack on mobile, so text spans the full width. */
+    background: rgba(0, 0, 0, 0.55);
+  }
+}
+
+/* Bottom-left: the chat widget's button owns the bottom-right corner. */
+.hero-caption {
+  position: absolute;
+  left: 1.5rem;
+  bottom: 1.25rem;
+  z-index: 2;
+  max-width: calc(100% - 3rem);
+  color: #f5f5f5;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transition: opacity 1.2s ease-out 0.4s;
+
+  &.is-loaded {
+    opacity: 0.9;
+  }
+
+  i {
+    color: #FFD700;
+    margin-right: 0.35rem;
+  }
+
+  @media (max-width: 768px) {
+    left: 1rem;
+    bottom: 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-photo,
+  .hero-caption {
+    transition: none;
+  }
 }
 
 .hero-body {
+  /* Positioned so it paints above the photo and overlay (earlier siblings),
+     but deliberately without a z-index: that would isolate it in its own
+     stacking context and stop the signature blending with the photo. */
+  position: relative;
   display: flex;
   align-items: center;
   min-height: calc(100vh - 3.25rem);
@@ -56,6 +130,12 @@
     height: auto;
     max-height: 300px;
   }
+}
+
+/* The signature art sits on solid black; over a photo, screen-blend it so the
+   black drops out and only the gold strokes remain. */
+.has-photo .signature-image {
+  mix-blend-mode: screen;
 }
 
 .profile-info {

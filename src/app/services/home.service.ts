@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { HomeData } from '../models/home-data';
 import { withAuth } from '../interceptors/api.interceptors';
 
-const CACHE_KEY = 'home-cache-v1';
+const CACHE_KEY = 'home-cache-v2';
 // Reads count against the API's monthly usage-plan quota, and the home page
 // is the landing page — visits within the TTL are served from sessionStorage.
 const CACHE_TTL_MS = 60 * 60 * 1000;

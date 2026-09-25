@@ -6,6 +6,22 @@ import { withAuth } from '../interceptors/api.interceptors';
 
 export type MediaCategory = 'blog' | 'project' | 'general';
 
+/** Resize variants the API emits; see MEDIA_VARIANTS in portfolio-api. */
+export type MediaVariantLabel = 'w2560' | 'w1600' | 'thumb';
+
+/** Deterministic CDN url of one variant of an asset. */
+export function mediaVariantUrl(assetId: string, variant: MediaVariantLabel): string {
+  return `${environment.assetCdnBaseUrl}/${assetId}/${variant}.webp`;
+}
+
+/**
+ * Url of an asset's given variant, falling back to its primary (w1600) url for
+ * assets uploaded before that variant existed.
+ */
+export function assetVariantUrl(asset: MediaAsset, variant: MediaVariantLabel): string {
+  return asset.variants?.[variant]?.url ?? asset.cdnUrl;
+}
+
 interface PresignedPost {
   url: string;
   fields: Record<string, string>;
@@ -75,8 +91,8 @@ export class MediaService {
         switchMap((res) => this.postToS3(res.upload, file).pipe(map(() => res))),
         map((res) => ({
           assetId: res.assetId,
-          cdnUrl: `${environment.assetCdnBaseUrl}/${res.assetId}/w1600.webp`,
-          thumbUrl: `${environment.assetCdnBaseUrl}/${res.assetId}/thumb.webp`,
+          cdnUrl: mediaVariantUrl(res.assetId, 'w1600'),
+          thumbUrl: mediaVariantUrl(res.assetId, 'thumb'),
         })),
       );
   }
