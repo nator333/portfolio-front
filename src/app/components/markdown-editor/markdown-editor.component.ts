@@ -11,30 +11,27 @@ import {
   signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
 import EasyMDE from 'easymde';
 import * as Prism from 'prismjs';
 import { MediaAsset, MediaCategory, MediaService } from '../../services/media.service';
 import { renderBlogMarkdown } from '../../utils/blog-markdown.util';
 import { runMermaid } from '../../utils/mermaid.util';
 import { runDrawio } from '../../utils/drawio.util';
+import {
+  DRAWIO_EMBED_CONFIG,
+  DRAWIO_EMBED_ORIGIN,
+  DRAWIO_EMBED_URL,
+  drawioFence,
+  findDrawioFences,
+  parseDrawioMessage,
+} from '../../utils/drawio-embed.util';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_BYTES = 10 * 1024 * 1024;
 
 const MERMAID_TEMPLATE = `\n\`\`\`mermaid\ngraph TD\n  A[Start] --> B[End]\n\`\`\`\n`;
 
-// Placeholder draw.io diagram (two boxes and an arrow). Replace the XML with
-// the output of draw.io's Extras > Edit Diagram.
-const DRAWIO_TEMPLATE = `
-\`\`\`drawio
-<mxfile><diagram id="diagram" name="Page-1"><mxGraphModel><root>
-<mxCell id="0"/><mxCell id="1" parent="0"/>
-<mxCell id="a" value="Start" style="rounded=1;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="120" height="50" as="geometry"/></mxCell>
-<mxCell id="b" value="End" style="rounded=1;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="200" y="0" width="120" height="50" as="geometry"/></mxCell>
-<mxCell id="e" edge="1" parent="1" source="a" target="b"><mxGeometry relative="1" as="geometry"/></mxCell>
-</root></mxGraphModel></diagram></mxfile>
-\`\`\`
-`;
 
 /**
  * Rich markdown editor for blog content. Wraps EasyMDE as a ControlValueAccessor
@@ -44,8 +41,10 @@ const DRAWIO_TEMPLATE = `
  * draw.io diagrams).
  *
  * The toolbar adds a custom image button (insert a saved image or upload a new
- * one via MediaService), plus Mermaid and draw.io buttons that drop a diagram
- * fence.
+ * one via MediaService), a Mermaid button that drops a diagram fence, and a
+ * draw.io button that opens the draw.io editor in a full-screen iframe. Saved
+ * draw.io diagrams live in the markdown as ```drawio fences, but the editor
+ * collapses each one into a "click to edit" chip so the XML stays out of sight.
  */
 @Component({
   selector: 'app-markdown-editor',
@@ -60,6 +59,12 @@ const DRAWIO_TEMPLATE = `
   ],
   template: `
     <textarea #host></textarea>
+
+    @if (drawioOpen()) {
+      <div class="drawio-overlay">
+        <iframe #drawioFrame [src]="drawioUrl" title="draw.io editor"></iframe>
+      </div>
+    }
 
     @if (showImagePicker()) {
       <div class="image-picker box">
@@ -102,6 +107,18 @@ const DRAWIO_TEMPLATE = `
       .image-picker {
         margin-top: 0.75rem;
       }
+      /* Above the navbar (30) and EasyMDE fullscreen layers (40). */
+      .drawio-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1100;
+        background: #ffffff;
+      }
+      .drawio-overlay iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
     `,
   ],
 })
@@ -119,6 +136,7 @@ export class MarkdownEditorComponent
   private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('host') private host!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('drawioFrame') private drawioFrame?: ElementRef<HTMLIFrameElement>;
 
   /** Saved images offered in the insert-image dropdown. */
   readonly assets = input<MediaAsset[]>([]);
@@ -129,6 +147,17 @@ export class MarkdownEditorComponent
   readonly showImagePicker = signal(false);
   readonly uploadMessage = signal('');
   readonly uploadError = signal(false);
+
+  readonly drawioOpen = signal(false);
+  // Constant, trusted URL of the draw.io embed editor.
+  readonly drawioUrl = inject(DomSanitizer).bypassSecurityTrustResourceUrl(DRAWIO_EMBED_URL);
+  /** XML loaded into the draw.io editor when it reports ready ('' = blank). */
+  private drawioXml = '';
+  /** Collapsed fence being edited, or null when drawing a new diagram. */
+  private drawioTarget: CodeMirror.TextMarker | null = null;
+  /** Chips currently collapsing ```drawio fences, and where they were built. */
+  private drawioMarks: CodeMirror.TextMarker[] = [];
+  private drawioMarksKey = '';
 
   private editor?: EasyMDE;
   /** Value handed to writeValue before the editor exists yet. */
@@ -189,9 +218,9 @@ export class MarkdownEditorComponent
         },
         {
           name: 'drawio',
-          action: () => this.insertDrawio(),
+          action: () => this.openDrawio(null),
           className: 'fa fa-sitemap',
-          title: 'Insert draw.io diagram (paste XML from Extras > Edit Diagram)',
+          title: 'Draw a diagram with draw.io',
         },
         '|',
         'preview',
@@ -203,12 +232,15 @@ export class MarkdownEditorComponent
     });
 
     this.editor.value(this.pendingValue);
+    this.collapseDrawioFences();
     this.editor.codemirror.on('change', () => {
+      this.collapseDrawioFences();
       if (!this.writing) {
         this.onChange(this.editor!.value());
         this.cdr.markForCheck();
       }
     });
+    window.addEventListener('message', this.onDrawioMessage);
     this.editor.codemirror.on('blur', () => {
       this.onTouched();
       this.cdr.markForCheck();
@@ -216,6 +248,7 @@ export class MarkdownEditorComponent
   }
 
   ngOnDestroy(): void {
+    window.removeEventListener('message', this.onDrawioMessage);
     // Restores the original <textarea> and detaches CodeMirror listeners.
     this.editor?.toTextArea();
     this.editor = undefined;
@@ -317,14 +350,114 @@ export class MarkdownEditorComponent
     cm.focus();
   }
 
-  private insertDrawio(): void {
+  /**
+   * Collapse every ```drawio fence into an atomic chip that opens the draw.io
+   * editor on click. Rebuilt only when the set of fences moves, so ordinary
+   * typing elsewhere in a line leaves the chips alone.
+   */
+  private collapseDrawioFences(): void {
     const cm = this.editor?.codemirror;
     if (!cm) {
       return;
     }
-    cm.replaceSelection(DRAWIO_TEMPLATE);
-    cm.focus();
+    const lines: string[] = [];
+    cm.eachLine((line) => {
+      lines.push(line.text);
+    });
+    const fences = findDrawioFences(lines);
+    const key = fences.map((fence) => `${fence.startLine}:${fence.endLine}`).join(',');
+    if (key === this.drawioMarksKey && this.drawioMarks.every((mark) => mark.find())) {
+      return;
+    }
+    this.drawioMarksKey = key;
+    this.drawioMarks.forEach((mark) => mark.clear());
+    this.drawioMarks = fences.map((fence) => {
+      const chip = document.createElement('span');
+      chip.className = 'drawio-chip';
+      chip.textContent = 'draw.io diagram — click to edit';
+      chip.title = 'Open in draw.io';
+      const mark = cm.markText(
+        { line: fence.startLine, ch: 0 },
+        { line: fence.endLine, ch: lines[fence.endLine].length },
+        { replacedWith: chip, atomic: true },
+      );
+      chip.addEventListener('click', () => this.openDrawio(mark));
+      return mark;
+    });
   }
+
+  /** Open the draw.io editor on a collapsed fence, or blank for a new diagram. */
+  private openDrawio(target: CodeMirror.TextMarker | null): void {
+    const cm = this.editor?.codemirror;
+    const range = target?.find() as CodeMirror.MarkerRange | undefined;
+    if (!cm) {
+      return;
+    }
+    this.drawioTarget = range ? target : null;
+    this.drawioXml = range
+      ? (findDrawioFences(cm.getRange(range.from, range.to).split('\n'))[0]?.xml ?? '')
+      : '';
+    this.drawioOpen.set(true);
+  }
+
+  private closeDrawio(): void {
+    this.drawioOpen.set(false);
+    this.drawioTarget = null;
+    this.editor?.codemirror.focus();
+  }
+
+  /** Write a saved diagram back over the fence being edited, or insert it. */
+  private saveDrawio(xml: string): void {
+    const cm = this.editor?.codemirror;
+    if (!cm) {
+      return;
+    }
+    const fence = drawioFence(xml);
+    const range = this.drawioTarget?.find() as CodeMirror.MarkerRange | undefined;
+    let startLine: number;
+    if (range) {
+      startLine = range.from.line;
+      cm.replaceRange(fence, range.from, range.to);
+    } else {
+      startLine = cm.getCursor('from').line + 1;
+      cm.replaceSelection(`\n${fence}\n`);
+    }
+    // The edit re-collapsed the fences; keep pointing at this diagram so a
+    // mid-session save (Ctrl+S) followed by Save & Exit updates it, not a copy.
+    this.drawioTarget =
+      this.drawioMarks.find((mark) => (mark.find() as CodeMirror.MarkerRange)?.from.line === startLine) ??
+      null;
+    this.drawioXml = xml;
+  }
+
+  /** postMessage handler for the draw.io iframe (JSON embed protocol). */
+  private readonly onDrawioMessage = (event: MessageEvent): void => {
+    const frame = this.drawioFrame?.nativeElement.contentWindow;
+    if (event.origin !== DRAWIO_EMBED_ORIGIN || !frame || event.source !== frame) {
+      return;
+    }
+    const message = parseDrawioMessage(event.data);
+    const reply = (data: object) => frame.postMessage(JSON.stringify(data), DRAWIO_EMBED_ORIGIN);
+    switch (message?.event) {
+      case 'configure':
+        reply({ action: 'configure', config: DRAWIO_EMBED_CONFIG });
+        break;
+      case 'init':
+        reply({ action: 'load', xml: this.drawioXml });
+        break;
+      case 'save':
+        if (message.xml) {
+          this.saveDrawio(message.xml);
+        }
+        if (message.exit) {
+          this.closeDrawio();
+        }
+        break;
+      case 'exit':
+        this.closeDrawio();
+        break;
+    }
+  };
 
   /**
    * Inserts an explicit <br>. Markdown collapses blank lines, so this is the way
