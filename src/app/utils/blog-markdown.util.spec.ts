@@ -52,6 +52,17 @@ describe("renderBlogMarkdown", () => {
     expect(html).not.toContain("<b>x</b>");
   });
 
+  it("should emit a drawio pre block (not a code block) for a drawio fence", () => {
+    const html = renderBlogMarkdown('```drawio\n<mxfile><diagram id="a"></diagram></mxfile>\n```');
+
+    expect(html).toContain('<pre class="drawio">');
+    // XML is escaped so the sanitizer and browser keep it as plain text.
+    expect(html).toContain("&lt;mxfile&gt;");
+    expect(html).not.toContain("<mxfile>");
+    expect(html).not.toContain("language-drawio");
+    expect(html).not.toContain("line-numbers");
+  });
+
   it("should omit the language class when given a fence with no language", () => {
     const html = renderBlogMarkdown("```\nplain\n```");
 
