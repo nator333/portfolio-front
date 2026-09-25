@@ -43,7 +43,7 @@ describe("NavigationComponent", () => {
     expect(hrefs).not.toContain("/cv-editor");
     expect(hrefs).not.toContain("/projects-edit");
     expect(hrefs).not.toContain("/blog-edit");
-    expect(hrefs).not.toContain("/cv-agent");
+    expect(hrefs).not.toContain("/edit-agent");
   });
 
   it("should not expose a sign-in link in the navbar", () => {
@@ -79,7 +79,7 @@ describe("NavigationComponent", () => {
     expect(hrefs).toContain("/cv-editor");
     expect(hrefs).toContain("/projects-edit");
     expect(hrefs).toContain("/blog-edit");
-    expect(hrefs).toContain("/cv-agent");
+    expect(hrefs).toContain("/edit-agent");
   });
 
   it("should open social links in a new tab", () => {

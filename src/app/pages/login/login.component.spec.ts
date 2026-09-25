@@ -71,7 +71,7 @@ describe("LoginComponent", () => {
   });
 
   it("should exchange the code and navigate to the stored return url", () => {
-    localStorage.setItem(RETURN_URL_STORAGE_KEY, "/cv-agent");
+    localStorage.setItem(RETURN_URL_STORAGE_KEY, "/edit-agent");
     authService.handleRedirectCallback.and.returnValue(of(undefined));
 
     createComponent({ code: "auth-code" });
@@ -79,7 +79,7 @@ describe("LoginComponent", () => {
     expect(authService.handleRedirectCallback).toHaveBeenCalledWith(
       "auth-code",
     );
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/cv-agent", {
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/edit-agent", {
       replaceUrl: true,
     });
     expect(localStorage.getItem(RETURN_URL_STORAGE_KEY)).toBeNull();

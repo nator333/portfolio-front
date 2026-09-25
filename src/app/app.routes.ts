@@ -93,14 +93,16 @@ export const routes: Routes = [
       ),
   },
   {
-    path: "cv-agent",
-    title: "CV Agent",
+    path: "edit-agent",
+    title: "Edit Agent",
     canActivate: [authGuard],
     loadComponent: () =>
-      import("./pages/cv-agent/cv-agent.component").then(
-        (m) => m.CvAgentComponent,
+      import("./pages/edit-agent/edit-agent.component").then(
+        (m) => m.EditAgentComponent,
       ),
   },
+  // Former name of the edit agent; kept so old bookmarks still land.
+  { path: "cv-agent", redirectTo: "/edit-agent" },
   {
     path: "workout-targets",
     title: "Weekly Set Targets",

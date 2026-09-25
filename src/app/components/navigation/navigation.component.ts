@@ -148,10 +148,10 @@ import {
             </a>
             <a
               class="navbar-item nav-link"
-              routerLink="/cv-agent"
+              routerLink="/edit-agent"
               routerLinkActive="is-active"
             >
-              CV Agent
+              Edit Agent
             </a>
             <a class="navbar-item nav-link" role="button" (click)="signOut()">
               Sign Out
