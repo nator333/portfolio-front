@@ -19,6 +19,7 @@ import { faPlay, faPause, faStop } from "@fortawesome/free-solid-svg-icons";
 import { BlogService, BlogPost } from "../../services/blog.service";
 import { pageTitle } from "../../title-strategy";
 import { runMermaid } from "../../utils/mermaid.util";
+import { runDrawio } from "../../utils/drawio.util";
 import { BlogReader, ReaderStatus } from "../../utils/blog-reader.util";
 import * as Prism from "prismjs";
 
@@ -161,13 +162,14 @@ export class BlogPostComponent implements OnInit, OnDestroy {
   private title = inject(Title);
 
   constructor() {
-    // Highlight code and render Mermaid diagrams once the post's content is in
+    // Highlight code and render Mermaid / draw.io diagrams once the post's content is in
     // the DOM. afterRenderEffect re-runs after render when `post` changes —
     // replacing an ngAfterViewChecked that fired on every change-detection pass.
     afterRenderEffect(() => {
       if (this.post()) {
         Prism.highlightAll();
         void runMermaid(document.body);
+        void runDrawio(document.body);
       }
     });
   }

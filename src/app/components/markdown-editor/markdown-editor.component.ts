@@ -16,20 +16,36 @@ import * as Prism from 'prismjs';
 import { MediaAsset, MediaCategory, MediaService } from '../../services/media.service';
 import { renderBlogMarkdown } from '../../utils/blog-markdown.util';
 import { runMermaid } from '../../utils/mermaid.util';
+import { runDrawio } from '../../utils/drawio.util';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_BYTES = 10 * 1024 * 1024;
 
 const MERMAID_TEMPLATE = `\n\`\`\`mermaid\ngraph TD\n  A[Start] --> B[End]\n\`\`\`\n`;
 
+// Placeholder draw.io diagram (two boxes and an arrow). Replace the XML with
+// the output of draw.io's Extras > Edit Diagram.
+const DRAWIO_TEMPLATE = `
+\`\`\`drawio
+<mxfile><diagram id="diagram" name="Page-1"><mxGraphModel><root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="a" value="Start" style="rounded=1;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="120" height="50" as="geometry"/></mxCell>
+<mxCell id="b" value="End" style="rounded=1;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="200" y="0" width="120" height="50" as="geometry"/></mxCell>
+<mxCell id="e" edge="1" parent="1" source="a" target="b"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root></mxGraphModel></diagram></mxfile>
+\`\`\`
+`;
+
 /**
  * Rich markdown editor for blog content. Wraps EasyMDE as a ControlValueAccessor
  * so it binds to a reactive control exactly like the plain <textarea> it replaces,
  * and keeps the pipeline on markdown: its preview renders through the same
- * renderBlogMarkdown used in production (Prism code blocks + Mermaid diagrams).
+ * renderBlogMarkdown used in production (Prism code blocks + Mermaid and
+ * draw.io diagrams).
  *
  * The toolbar adds a custom image button (insert a saved image or upload a new
- * one via MediaService) and a Mermaid button that drops a diagram fence.
+ * one via MediaService), plus Mermaid and draw.io buttons that drop a diagram
+ * fence.
  */
 @Component({
   selector: 'app-markdown-editor',
@@ -131,12 +147,13 @@ export class MarkdownEditorComponent
       status: ['lines', 'words'],
       placeholder: 'Write the post in markdown…',
       // Preview matches the published page exactly, then highlights code and
-      // renders Mermaid on the freshly-set preview DOM.
+      // renders diagrams on the freshly-set preview DOM.
       previewRender: (plainText, preview) => {
         const html = renderBlogMarkdown(plainText);
         setTimeout(() => {
           Prism.highlightAllUnder(preview);
           void runMermaid(preview);
+          void runDrawio(preview);
         });
         return html;
       },
@@ -169,6 +186,12 @@ export class MarkdownEditorComponent
           action: () => this.insertMermaid(),
           className: 'fa fa-project-diagram',
           title: 'Insert Mermaid diagram',
+        },
+        {
+          name: 'drawio',
+          action: () => this.insertDrawio(),
+          className: 'fa fa-sitemap',
+          title: 'Insert draw.io diagram (paste XML from Extras > Edit Diagram)',
         },
         '|',
         'preview',
@@ -291,6 +314,15 @@ export class MarkdownEditorComponent
       return;
     }
     cm.replaceSelection(MERMAID_TEMPLATE);
+    cm.focus();
+  }
+
+  private insertDrawio(): void {
+    const cm = this.editor?.codemirror;
+    if (!cm) {
+      return;
+    }
+    cm.replaceSelection(DRAWIO_TEMPLATE);
     cm.focus();
   }
 

@@ -17,6 +17,12 @@ function escapeHtml(text: string): string {
  * source; mermaid.run() (see mermaid.util) turns it into an SVG once the HTML is
  * in the DOM. The source is HTML-escaped for safety and decoded back by mermaid
  * via the element's textContent.
+ *
+ * A ```drawio fence works the same way: it becomes a <pre class="drawio"> holding
+ * the diagram's XML (as copied from draw.io's Extras > Edit Diagram), and
+ * runDrawio() (see drawio.util) swaps it for an interactive viewer. The XML
+ * rides in text content rather than an attribute because Angular's [innerHTML]
+ * sanitizer strips unknown attributes but keeps text.
  */
 function renderCode({ text, lang }: Tokens.Code): string {
   const parts = (lang ?? '').split(' ').filter(Boolean);
@@ -24,6 +30,10 @@ function renderCode({ text, lang }: Tokens.Code): string {
 
   if (baseLanguage === 'mermaid') {
     return `<pre class="mermaid">${escapeHtml(text)}</pre>`;
+  }
+
+  if (baseLanguage === 'drawio') {
+    return `<pre class="drawio">${escapeHtml(text)}</pre>`;
   }
 
   const preClasses = ['line-numbers'];
