@@ -27,12 +27,12 @@ interface AgentTurn extends AgentMessage {
 }
 
 @Component({
-  selector: "app-cv-agent",
+  selector: "app-edit-agent",
   standalone: true,
   imports: [CommonModule, FormsModule, HeroComponent],
   template: `
     <app-hero
-      title="CV Agent"
+      title="Edit Agent"
       subtitle="Your private editing copilot"
     ></app-hero>
 
@@ -109,9 +109,9 @@ interface AgentTurn extends AgentMessage {
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
-  styleUrl: "./cv-agent.component.scss",
+  styleUrl: "./edit-agent.component.scss",
 })
-export class CvAgentComponent {
+export class EditAgentComponent {
   private agentService = inject(AgentService);
   private cvService = inject(CvService);
   private projectsService = inject(ProjectsService);

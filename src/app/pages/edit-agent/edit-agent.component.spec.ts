@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
-import { CvAgentComponent } from "./cv-agent.component";
+import { EditAgentComponent } from "./edit-agent.component";
 import { AgentService } from "../../services/agent.service";
 import { CvService } from "../../services/cv.service";
 import { ProjectsService } from "../../services/projects.service";
 import { CvData } from "../../models/cv-data";
 
-describe("CvAgentComponent", () => {
-  let fixture: ComponentFixture<CvAgentComponent>;
-  let component: CvAgentComponent;
+describe("EditAgentComponent", () => {
+  let fixture: ComponentFixture<EditAgentComponent>;
+  let component: EditAgentComponent;
   let agentService: jasmine.SpyObj<AgentService>;
   let cvService: jasmine.SpyObj<CvService>;
   let projectsService: jasmine.SpyObj<ProjectsService>;
@@ -23,7 +23,7 @@ describe("CvAgentComponent", () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [CvAgentComponent],
+      imports: [EditAgentComponent],
       providers: [
         { provide: AgentService, useValue: agentService },
         { provide: CvService, useValue: cvService },
@@ -31,7 +31,7 @@ describe("CvAgentComponent", () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CvAgentComponent);
+    fixture = TestBed.createComponent(EditAgentComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
