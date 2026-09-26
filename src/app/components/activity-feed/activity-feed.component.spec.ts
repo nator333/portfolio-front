@@ -96,4 +96,19 @@ describe("ActivityFeedComponent", () => {
     expect(selected.length).toBe(1);
     expect(selected[0].textContent).toContain("Newer post");
   });
+
+  it("shows a GitHub entry's summary under its row", () => {
+    setEntries([
+      { date: "2026-07-21", type: "github", title: "octo/a: 3 pushes", summary: "Added the calendar" },
+      { date: "2026-07-21", type: "github", title: "octo/b: 1 push" },
+    ]);
+    const summaries = Array.from(
+      fixture.nativeElement.querySelectorAll(".feed-summary"),
+    ) as HTMLElement[];
+    expect(summaries.length).toBe(1);
+    expect(summaries[0].textContent?.trim()).toBe("Added the calendar");
+    expect(summaries[0].closest(".feed-item")?.textContent).toContain(
+      "octo/a: 3 pushes",
+    );
+  });
 });

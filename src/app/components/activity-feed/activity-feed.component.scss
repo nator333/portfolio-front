@@ -100,3 +100,17 @@ $gold: #ffd700;
     }
   }
 }
+
+/* A GitHub entry's one-line work summary, under its row at full width. The API
+   caps it at 75 characters (two lines on a phone), so it is shown in full;
+   overflow-wrap only guards against a long unbroken token such as a path. */
+.feed-summary {
+  grid-column: 1 / -1;
+  margin: 0.15rem 0 0;
+  padding-left: 0.6rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
+  color: #aaaaaa;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}

@@ -26,6 +26,9 @@
           } @else {
             <span class="feed-title">{{ entry.title }}</span>
           }
+          @if (entry.summary) {
+            <p class="feed-summary">{{ entry.summary }}</p>
+          }
         </li>
       }
     </ul>

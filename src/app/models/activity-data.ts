@@ -24,6 +24,11 @@ export interface ActivityEntry {
   title: string;
   /** In-app route ("/blog/x") or external URL; omitted when not linkable. */
   url?: string;
+  /**
+   * GitHub only: a one-line AI summary of that day's work in the repository,
+   * at most 75 characters (enforced by portfolio-api).
+   */
+  summary?: string;
 }
 
 /**
