@@ -26,20 +26,8 @@
           } @else {
             <span class="feed-title">{{ entry.title }}</span>
           }
-          @let summary = summaryFor(entry);
-          @if (summary) {
-            @let open = isSummaryExpanded(entry.date);
-            <div class="feed-summary" [class.is-expanded]="open">
-              <p class="feed-summary-text">{{ summary }}</p>
-              <button
-                type="button"
-                class="feed-summary-toggle"
-                [attr.aria-expanded]="open"
-                (click)="toggleSummary(entry.date)"
-              >
-                {{ open ? "Show less" : "Show more" }}
-              </button>
-            </div>
+          @if (entry.summary) {
+            <p class="feed-summary">{{ entry.summary }}</p>
           }
         </li>
       }

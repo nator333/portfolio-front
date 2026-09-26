@@ -2,14 +2,12 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, map, of, catchError, tap } from "rxjs";
 import { environment } from "../../environments/environment";
-import { ActivityEntry, GitHubDaySummary } from "../models/activity-data";
+import { ActivityEntry } from "../models/activity-data";
 
 /** Response shape of GET /activity in portfolio-api. */
 export interface ActivityResponse {
   range: { from: string; to: string };
   entries: ActivityEntry[];
-  /** Absent from responses cached before the API returned summaries. */
-  summaries?: GitHubDaySummary[];
   counts: { github: number; blog: number; gym: number; total: number };
 }
 
