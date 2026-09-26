@@ -18,6 +18,7 @@ import { BackgroundPhoto } from "../../models/home-data";
 import {
   ActivityEntry,
   ActivityType,
+  GitHubDaySummary,
   ACTIVITY_TYPES,
   activityToContributions,
 } from "../../models/activity-data";
@@ -73,6 +74,11 @@ export class HomeComponent implements OnInit {
   // appears here without this component changing. Empty until it loads, and
   // left empty on failure — the calendar still renders its blank grid.
   readonly entries = signal<ActivityEntry[]>([]);
+
+  // Daily GitHub work summaries, shown in the feed beside that day's GitHub
+  // entries. They follow the GitHub filter because the feed only shows them
+  // next to a GitHub entry.
+  readonly summaries = signal<GitHubDaySummary[]>([]);
 
   // Activity types switched on in the filter badges. Every type starts active,
   // so the calendar and feed show everything until the visitor narrows it down.
@@ -142,9 +148,10 @@ export class HomeComponent implements OnInit {
       },
     });
 
-    this.activityService.getActivity().subscribe({
-      next: (entries) => {
-        this.entries.set(entries);
+    this.activityService.getActivityData().subscribe({
+      next: (data) => {
+        this.entries.set(data?.entries ?? []);
+        this.summaries.set(data?.summaries ?? []);
       },
       error: () => {
         // Leave the calendar and feed empty.

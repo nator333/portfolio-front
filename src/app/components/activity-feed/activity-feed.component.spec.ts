@@ -96,4 +96,57 @@ describe("ActivityFeedComponent", () => {
     expect(selected.length).toBe(1);
     expect(selected[0].textContent).toContain("Newer post");
   });
+
+  describe("daily GitHub summaries", () => {
+    const githubDay: ActivityEntry[] = [
+      { date: "2026-07-21", type: "github", title: "octo/a: 3 pushes" },
+      { date: "2026-07-21", type: "github", title: "octo/b: 1 push" },
+      { date: "2026-07-20", type: "blog", title: "A post" },
+    ];
+
+    function setSummaries(): void {
+      fixture.componentRef.setInput("summaries", [
+        { date: "2026-07-21", summary: "Built the thing.", repos: ["octo/a"] },
+        { date: "2026-07-20", summary: "No GitHub entry shown.", repos: [] },
+      ]);
+    }
+
+    const summaries = (): HTMLElement[] =>
+      Array.from(fixture.nativeElement.querySelectorAll(".feed-summary"));
+
+    it("shows a day's summary once, under its first GitHub entry", () => {
+      setSummaries();
+      setEntries(githubDay);
+      const shown = summaries();
+      expect(shown.length).toBe(1);
+      expect(shown[0].textContent).toContain("Built the thing.");
+      expect(shown[0].closest(".feed-item")?.textContent).toContain(
+        "octo/a: 3 pushes",
+      );
+    });
+
+    it("expands and collapses on toggle", () => {
+      setSummaries();
+      setEntries(githubDay);
+      const toggle = fixture.nativeElement.querySelector(
+        ".feed-summary-toggle",
+      ) as HTMLButtonElement;
+      expect(summaries()[0].classList).not.toContain("is-expanded");
+      toggle.click();
+      fixture.detectChanges();
+      expect(summaries()[0].classList).toContain("is-expanded");
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+      toggle.click();
+      fixture.detectChanges();
+      expect(summaries()[0].classList).not.toContain("is-expanded");
+    });
+
+    it("expands the summary of the day selected on the calendar", () => {
+      setSummaries();
+      setEntries(githubDay);
+      fixture.componentRef.setInput("selectedDate", "2026-07-21");
+      fixture.detectChanges();
+      expect(summaries()[0].classList).toContain("is-expanded");
+    });
+  });
 });

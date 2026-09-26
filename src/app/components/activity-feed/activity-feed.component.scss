@@ -100,3 +100,45 @@ $gold: #ffd700;
     }
   }
 }
+
+/* The day's GitHub work summary, under its first GitHub entry. Spans the whole
+   row and stays to two lines until expanded, so a long day doesn't push the
+   rest of the feed out of its capped window. */
+.feed-summary {
+  grid-column: 1 / -1;
+  margin-top: 0.15rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.feed-summary-text {
+  color: #aaaaaa;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+
+  .is-expanded & {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: none;
+  }
+}
+
+.feed-summary-toggle {
+  background: none;
+  border: none;
+  padding: 0.2rem 0;
+  color: #888888;
+  font-size: 0.75rem;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: $gold;
+  }
+}
