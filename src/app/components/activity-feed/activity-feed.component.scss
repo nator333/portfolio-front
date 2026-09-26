@@ -102,7 +102,7 @@ $gold: #ffd700;
 }
 
 /* A GitHub entry's one-line work summary, under its row at full width. The API
-   caps it at 50 characters (about one line on a phone), so it is shown in full;
+   caps it at 75 characters (two lines on a phone), so it is shown in full;
    overflow-wrap only guards against a long unbroken token such as a path. */
 .feed-summary {
   grid-column: 1 / -1;

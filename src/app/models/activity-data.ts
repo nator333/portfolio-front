@@ -26,7 +26,7 @@ export interface ActivityEntry {
   url?: string;
   /**
    * GitHub only: a one-line AI summary of that day's work in the repository,
-   * at most 50 characters (enforced by portfolio-api).
+   * at most 75 characters (enforced by portfolio-api).
    */
   summary?: string;
 }
