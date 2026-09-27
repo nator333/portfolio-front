@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="background: #000">
   <head>
     <meta charset="utf-8" />
     <title>Hiro Nakamata — Software Engineer</title>
@@ -49,6 +49,28 @@
     <meta name="twitter:image:alt" content="Hiro Nakamata — name in gold calligraphy" />
   </head>
   <body>
-    <app-root></app-root>
+    <app-root>
+      <!--
+        Pre-bootstrap content: Angular replaces it as soon as the app renders,
+        so visitors see it for a moment at most. It is what anything that
+        reads the page without running JavaScript sees, including Google's
+        OAuth branding review, which requires the home page to describe the
+        app and link to its privacy policy. Keep it in step with
+        src/privacy.html.
+      -->
+      <main style="max-width: 48rem; margin: 0 auto; padding: 2rem 1rem; color: #f5f5f5; font-family: sans-serif">
+        <h1 style="color: #ffd700">Hiro Nakamata</h1>
+        <p>
+          The portfolio of Hiro Nakamata, a software engineer in Montreal, Canada: projects,
+          blog, CV and training log.
+        </p>
+        <p>
+          The site also has private tools for its owner only. One of them reads the owner's own
+          Google Health sleep, heart rate variability and resting heart rate data (read-only) to
+          suggest how hard to train each day.
+        </p>
+        <p><a href="/privacy" style="color: #ffd700">Privacy Policy</a></p>
+      </main>
+    </app-root>
   </body>
 </html>
