@@ -101,7 +101,7 @@ $gold: #ffd700;
   }
 }
 
-/* A GitHub entry's one-line work summary, under its row at full width. The API
+/* An entry's one-line AI summary (GitHub or gym), under its row at full width. The API
    caps it at 75 characters (two lines on a phone), so it is shown in full;
    overflow-wrap only guards against a long unbroken token such as a path. */
 .feed-summary {
