@@ -28,6 +28,9 @@ import { AuthService } from "../../services/auth.service";
           }
           {{ currentYear }} Hiro Nakamata. All rights reserved.
         </p>
+        <!-- Own line, centred: at the end of the line above it sat under the
+             floating chat button on phone widths. -->
+        <p><a routerLink="/privacy" class="privacy-link">Privacy Policy</a></p>
       </div>
     </footer>
   `,
