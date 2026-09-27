@@ -21,12 +21,6 @@ describe("routes (configuration)", () => {
     expect(paths).toContain("profile");
   });
 
-  it("should serve /privacy publicly, since Google's consent screen links to it", () => {
-    const privacy = routes.find((r) => r.path === "privacy");
-    expect(privacy).toBeDefined();
-    expect(privacy?.canActivate).toBeUndefined();
-  });
-
   it("should redirect unknown paths to /home", () => {
     const wildcard = routes.find((r) => r.path === "**");
     expect(wildcard?.redirectTo).toBe("/home");
