@@ -29,8 +29,10 @@ import { AuthService } from "../../services/auth.service";
           {{ currentYear }} Hiro Nakamata. All rights reserved.
         </p>
         <!-- Own line, centred: at the end of the line above it sat under the
-             floating chat button on phone widths. -->
-        <p><a routerLink="/privacy" class="privacy-link">Privacy Policy</a></p>
+             floating chat button on phone widths. A plain href, not
+             routerLink: the policy is a static page (src/privacy.html) that
+             Firebase serves outside the SPA. -->
+        <p><a href="/privacy" class="privacy-link">Privacy Policy</a></p>
       </div>
     </footer>
   `,

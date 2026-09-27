@@ -102,13 +102,6 @@ export const routes: Routes = [
       ),
   },
   // Former name of the edit agent; kept so old bookmarks still land.
-  {
-    // Linked from Google's OAuth consent screen, which requires it.
-    path: "privacy",
-    title: "Privacy Policy",
-    loadComponent: () =>
-      import("./pages/privacy/privacy.component").then((m) => m.PrivacyComponent),
-  },
   { path: "cv-agent", redirectTo: "/edit-agent" },
   {
     path: "workout-targets",

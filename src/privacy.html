@@ -1,0 +1,176 @@
+<!doctype html>
+<!--
+  Privacy policy, as a static page rather than an Angular route.
+
+  Google's OAuth review fetches this URL without running JavaScript, and the
+  SPA's index.html is an empty shell until Angular boots — so a routed page
+  read as "insufficient content". firebase.json rewrites /privacy here, ahead
+  of the SPA catch-all.
+
+  It must describe what the site actually does. Re-check it whenever the site
+  starts handling something new: analytics (src/app/services/analytics.service.ts),
+  the activity cache (activity.service.ts), the chat widget (chat.service.ts →
+  the API's /chat), and the owner-only Google Health read (portfolio-api
+  lambda/get-readiness.ts).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Privacy Policy — Hiro Nakamata</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Privacy policy for Hiro Nakamata's portfolio site, nakamata.tech." />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        background: #000;
+        color: #f5f5f5;
+        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      header { background: #ffd700; padding: 0.75rem 1rem; }
+      header a { color: #000; font-weight: 700; font-size: 1.25rem; text-decoration: none; }
+      main { max-width: 48rem; margin: 0 auto; padding: 2rem 1rem 4rem; }
+      h1, h2, h3, a { color: #ffd700; }
+      h1 { margin-bottom: 0.25rem; }
+      h2 { margin-top: 2.25rem; }
+      .updated { color: #bbb; margin-top: 0; }
+      table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+      th, td { border: 1px solid #444; padding: 0.5rem; text-align: left; vertical-align: top; }
+      th { color: #ffd700; }
+      code { color: #ffd700; overflow-wrap: anywhere; }
+    </style>
+  </head>
+  <body>
+    <header><a href="/">NAKAMATA.TECH</a></header>
+    <main>
+      <h1>Privacy Policy</h1>
+      <p class="updated">Hiro Nakamata · nakamata.tech · Last updated 27 September 2026</p>
+
+      <p>
+        This policy covers <strong>Hiro Nakamata</strong>, the personal portfolio website at
+        <a href="https://nakamata.tech/">nakamata.tech</a> and its private, owner-only tools, run
+        by Hiro Nakamata, an individual based in Montreal, Canada ("I", "me"). It explains what
+        information is collected, how it is used, where it is kept, who it is shared with, and
+        how to have it removed.
+      </p>
+
+      <h2>1. Summary</h2>
+      <ul>
+        <li>Visitors are not asked for any personal information. Anonymous page-view statistics are collected with Google Analytics.</li>
+        <li>Signing in and the Google Health connection are for the site owner only. No other person can sign in or connect data.</li>
+        <li>Google user data is used only to provide the owner's own features. It is never sold, never used for advertising, and never shared except as described below.</li>
+      </ul>
+
+      <h2>2. Information collected from visitors</h2>
+      <h3>Analytics</h3>
+      <p>
+        The site uses Google Analytics 4 to count page views. Google Analytics sets cookies and
+        receives the page you visit, the referring page, your browser and device type, and an
+        approximate location derived from your IP address. I use it only to see which pages are
+        read. Google processes this data under the
+        <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a>.
+        You can opt out with the
+        <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener">Google Analytics opt-out browser add-on</a>
+        or your browser's tracking protection; the site works the same without it.
+      </p>
+      <h3>Storage in your browser</h3>
+      <p>
+        To load the activity calendar faster, the site keeps a short-lived copy of it in your
+        browser's session storage. It stays on your device, is never sent to me, and is deleted
+        when you close the tab.
+      </p>
+      <h3>Chat assistant</h3>
+      <p>
+        If you use the chat assistant, the messages you type are sent to the site's server and to
+        an AI model (Anthropic's Claude, provided through Amazon Web Services' Bedrock service) to
+        generate a reply about the portfolio. Messages are not stored by the site and are not used
+        to identify you. Please do not enter personal or sensitive information in the chat.
+      </p>
+
+      <h2>3. Google user data (owner only)</h2>
+      <p>
+        The site requests access to Google user data only from its owner, Hiro Nakamata. Sign-in
+        is restricted to the owner's own Google account; any other account is refused.
+      </p>
+      <table>
+        <tr><th>Data accessed</th><th>Why</th><th>Kept?</th></tr>
+        <tr>
+          <td>Google account email address and basic profile (sign-in)</td>
+          <td>To confirm that the person signing in is the site owner, so they can edit the site's content.</td>
+          <td>The email address is kept with the site's sign-in service for as long as the owner's account exists.</td>
+        </tr>
+        <tr>
+          <td>
+            Google Health sleep data (<code>googlehealth.sleep.readonly</code>): sleep sessions, sleep stages and minutes asleep
+          </td>
+          <td rowspan="2">
+            To give the owner a daily training suggestion (whether to train hard, normally or
+            lightly) based on last night's recovery, when the owner asks for it.
+          </td>
+          <td rowspan="2">
+            <strong>No.</strong> The data is read at the moment the owner asks, used to compute
+            the suggestion, and discarded. It is never saved to a database or file.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Google Health metrics (<code>googlehealth.health_metrics_and_measurements.readonly</code>): daily heart rate variability and daily resting heart rate
+          </td>
+        </tr>
+      </table>
+      <p>
+        Access is <strong>read-only</strong>: the site never writes, changes or deletes anything in
+        Google Health. The only thing stored is the OAuth authorization token that allows these
+        reads, which is kept encrypted in AWS Secrets Manager in my own AWS account and is readable
+        only by me and by the one server function that performs the reads.
+      </p>
+      <h3>How Google user data is shared</h3>
+      <p>
+        Google user data is not sold, rented, or shared with anyone for advertising or any other
+        purpose. It is shown only to the owner: in the site's private tools, and in the owner's own
+        AI assistant (Anthropic's Claude), which the owner connects to the site to ask for the
+        training suggestion. The data leaves the site's servers only to be shown to the owner in
+        that way.
+      </p>
+      <h3>Limited Use</h3>
+      <p>
+        The use and transfer of information received from Google APIs to any other app adheres to
+        the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>,
+        including the Limited Use requirements. Google user data is not used to develop, improve or
+        train generalized AI or machine-learning models, is not used for advertising, and is not
+        read by any person other than the owner.
+      </p>
+
+      <h2>4. Security</h2>
+      <p>
+        All traffic to the site is encrypted with HTTPS. The site's private tools are reachable
+        only with the owner's sign-in. The Google authorization token is stored encrypted, and the
+        server permissions that can read it are limited to the one function that needs it.
+      </p>
+
+      <h2>5. Retention and deletion</h2>
+      <ul>
+        <li>Google Health data: not retained (see section 3).</li>
+        <li>The Google authorization token: kept until the owner revokes access, then deleted.</li>
+        <li>
+          Anyone can revoke the site's access to their Google account at any time from
+          <a href="https://myaccount.google.com/permissions" rel="noopener">Google Account → Third-party connections</a>.
+        </li>
+        <li>Google Analytics data is kept according to the property's retention setting (at most 14 months).</li>
+      </ul>
+
+      <h2>6. Children</h2>
+      <p>The site is not directed at children and does not knowingly collect information from them.</p>
+
+      <h2>7. Changes to this policy</h2>
+      <p>If this policy changes, the updated version will be posted on this page with a new "last updated" date.</p>
+
+      <h2>8. Contact</h2>
+      <p>
+        Questions about this policy or requests about your data: contact Hiro Nakamata through the
+        links on the <a href="/profile">Profile</a> page of nakamata.tech.
+      </p>
+    </main>
+  </body>
+</html>
