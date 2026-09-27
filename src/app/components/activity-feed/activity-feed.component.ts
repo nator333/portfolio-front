@@ -22,7 +22,7 @@ const TRAINING_ROUTE = "/workout";
  * contribution calendar. Newest first; when a day is selected on the calendar,
  * its entries highlight and the first scrolls into view.
  *
- * A GitHub entry's one-line work summary, when it has one, sits under its row
+ * An entry's one-line AI summary (GitHub or gym), when it has one, sits under its row
  * in full: the API caps it at 75 characters (two lines on a phone), so it needs no clamp or toggle.
  */
 @Component({

@@ -111,4 +111,12 @@ describe("ActivityFeedComponent", () => {
       "octo/a: 3 pushes",
     );
   });
+
+  it("shows a gym entry's summary the same way", () => {
+    setEntries([
+      { date: "2026-07-21", type: "gym", title: "Workout: 18 sets", summary: "Hit a squat PR" },
+    ]);
+    const summary = fixture.nativeElement.querySelector(".feed-summary");
+    expect(summary?.textContent?.trim()).toBe("Hit a squat PR");
+  });
 });
