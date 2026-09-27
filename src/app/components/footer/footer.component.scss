@@ -12,6 +12,11 @@
     color: #FFD700;
   }
 
+  .privacy-link {
+    color: inherit;
+    text-decoration: underline;
+  }
+
   /* Blend the admin sign-in trigger into the copyright text. */
   .admin-login {
     color: inherit;
