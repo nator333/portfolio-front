@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, of, catchError, tap } from "rxjs";
 import { environment } from "../../environments/environment";
-import { MuscleVolumeStatus, WorkoutSummary } from "../models/workout-data";
+import { BodyweightSnapshot, MuscleVolumeStatus, WorkoutSummary } from "../models/workout-data";
 import { withApiKey } from "../interceptors/api.interceptors";
 
 const CACHE_KEY = "workout-cache-v1";
@@ -66,6 +66,25 @@ export class WorkoutService {
       .pipe(
         catchError((error) => {
           console.error("Error loading muscle volume status from API:", error);
+          return of(null);
+        }),
+      );
+  }
+
+  /**
+   * Monthly average bodyweight, for the chart beside strength progression.
+   *
+   * Uncached: it is one small request, and the current month's figure is
+   * refreshed daily. Fails soft to null, and the page leaves the chart out.
+   */
+  getBodyweight(): Observable<BodyweightSnapshot | null> {
+    return this.http
+      .get<BodyweightSnapshot>(`${environment.apiBaseUrl}/bodyweight`, {
+        context: withApiKey("workout"),
+      })
+      .pipe(
+        catchError((error) => {
+          console.error("Error loading bodyweight from API:", error);
           return of(null);
         }),
       );

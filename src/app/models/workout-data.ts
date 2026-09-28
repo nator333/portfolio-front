@@ -147,3 +147,24 @@ export interface MuscleVolumeStatus {
   /** Trained in the window, but the plan sets no target for it. */
   untargeted: { muscle: string; sets: number }[];
 }
+
+/**
+ * One month of the owner's bodyweight, as GET /bodyweight serves it: the
+ * average of that month's daily morning weigh-ins from their smart scale.
+ * Only months with at least 7 weigh-in days are published, and nothing finer
+ * than a month is ever stored or served.
+ */
+export interface BodyweightMonth {
+  /** "YYYY-MM". */
+  month: string;
+  kg: number;
+  lb: number;
+  /** False for the month still in progress. */
+  complete: boolean;
+}
+
+export interface BodyweightSnapshot {
+  months: BodyweightMonth[];
+  /** When the averages were last refreshed; null before the first refresh. */
+  updatedAt: string | null;
+}

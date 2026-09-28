@@ -98,3 +98,36 @@ $gold: #ffd700;
   text-align: center;
   padding: 3rem 0;
 }
+
+/* Table view of a chart's values, so none of them depends on a tooltip. */
+.chart-table {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #cccccc;
+
+  summary {
+    cursor: pointer;
+    color: #999999;
+  }
+
+  table {
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 0.2rem 1rem 0.2rem 0;
+    text-align: right;
+  }
+
+  th:first-child,
+  td:first-child {
+    text-align: left;
+  }
+
+  th {
+    color: #999999;
+    font-weight: 600;
+  }
+}

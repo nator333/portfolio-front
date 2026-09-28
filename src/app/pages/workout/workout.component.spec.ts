@@ -4,6 +4,7 @@ import { of } from "rxjs";
 import { WorkoutComponent } from "./workout.component";
 import { WorkoutService } from "../../services/workout.service";
 import {
+  BodyweightSnapshot,
   MuscleVolumeStatus,
   WorkoutSummary,
 } from "../../models/workout-data";
@@ -85,9 +86,26 @@ const STATUS: MuscleVolumeStatus = {
   untargeted: [],
 };
 
+/** Fourteen months, the last still in progress. */
+const BODYWEIGHT: BodyweightSnapshot = {
+  months: [
+    ...Array.from({ length: 13 }, (_, i) => {
+      const d = new Date(Date.UTC(2025, 7 + i, 1));
+      const kg = 81.2 - i * 0.1;
+      return { month: d.toISOString().slice(0, 7), kg, lb: kg * 2.20462, complete: true };
+    }),
+    { month: "2026-09", kg: 80.0, lb: 176.4, complete: false },
+  ],
+  updatedAt: "2026-09-28T16:00:00.000Z",
+};
+
 class StubWorkoutService {
   summary: WorkoutSummary | null = SUMMARY;
   status: MuscleVolumeStatus | null = STATUS;
+  bodyweight: BodyweightSnapshot | null = BODYWEIGHT;
+  getBodyweight() {
+    return of(this.bodyweight);
+  }
   getWorkout() {
     return of(this.summary);
   }
@@ -185,5 +203,41 @@ describe("WorkoutComponent", () => {
     await render({ status: null });
     expect(text()).toContain("sessions / week");
     expect(text()).toContain("workout days");
+  });
+
+  describe("bodyweight", () => {
+    it("charts the monthly averages with the latest month and the year's change in words", async () => {
+      await render();
+      expect(text()).toContain("Bodyweight");
+      // Sep 2025 (81.1) → Sep 2026 so far (80.0): the same month a year earlier.
+      expect(fixture.componentInstance.bodyweightSummary()).toBe(
+        "Latest: Sep 2026 (so far) 80.0 kg · −1.1 kg since Sep 2025",
+      );
+      expect(fixture.nativeElement.querySelector("#chart-bodyweight")).not.toBeNull();
+    });
+
+    it("offers every value as a table, newest first, marking the month in progress", async () => {
+      await render();
+      const rows = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll(".chart-table tbody tr"),
+      ).map((r) => r.textContent?.replace(/\s+/g, " ").trim());
+      expect(rows.length).toBe(14);
+      expect(rows[0]).toContain("Sep 2026 (so far)");
+      expect(rows[1]).not.toContain("so far");
+    });
+
+    it("leaves the chart out when there is no bodyweight to show", async () => {
+      for (const bodyweight of [null, { months: [], updatedAt: null }]) {
+        await render({ bodyweight });
+        expect(fixture.nativeElement.querySelector("#chart-bodyweight")).toBeNull();
+        expect(text()).toContain("sessions / week");
+        TestBed.resetTestingModule();
+      }
+    });
+
+    it("needs two months to draw a line", async () => {
+      await render({ bodyweight: { months: [BODYWEIGHT.months[0]], updatedAt: null } });
+      expect(fixture.nativeElement.querySelector("#chart-bodyweight")).toBeNull();
+    });
   });
 });
