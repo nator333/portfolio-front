@@ -45,7 +45,7 @@
     <header><a href="/">NAKAMATA.TECH</a></header>
     <main>
       <h1>Privacy Policy</h1>
-      <p class="updated">Hiro Nakamata · nakamata.tech · Last updated 27 September 2026</p>
+      <p class="updated">Hiro Nakamata · nakamata.tech · Last updated 28 September 2026</p>
 
       <p>
         This policy covers <strong>Hiro Nakamata</strong>, the personal portfolio website at
@@ -60,9 +60,11 @@
         <strong>Hiro Nakamata</strong> is a personal portfolio website: it shows Hiro Nakamata's
         projects, blog posts, CV and training log to the public. It also has private tools that
         only its owner can use after signing in with Google: an editor for the site's content, and
-        a training assistant that reads the owner's own Google Health data (last night's sleep,
-        heart rate variability and resting heart rate) to suggest whether to train hard, normally
-        or lightly that day. No one other than the owner can sign in or connect Google data.
+        a training assistant that reads the owner's own Google Health data. It uses last night's
+        sleep, heart rate variability and resting heart rate to suggest whether to train hard,
+        normally or lightly that day, and the owner's smart-scale weight and body fat readings to
+        show their bodyweight trend and strength relative to bodyweight. No one other than the
+        owner can sign in or connect Google data.
       </p>
 
       <h2>1. Summary</h2>
@@ -118,14 +120,25 @@
             To give the owner a daily training suggestion (whether to train hard, normally or
             lightly) based on last night's recovery, when the owner asks for it.
           </td>
-          <td rowspan="2">
+          <td rowspan="3">
             <strong>No.</strong> The data is read at the moment the owner asks, used to compute
-            the suggestion, and discarded. It is never saved to a database or file.
+            the answer, and discarded. It is never saved to a database or file.
           </td>
         </tr>
         <tr>
           <td>
             Google Health metrics (<code>googlehealth.health_metrics_and_measurements.readonly</code>): daily heart rate variability and daily resting heart rate
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Google Health metrics (same permission,
+            <code>googlehealth.health_metrics_and_measurements.readonly</code>): body weight and
+            body fat percentage recorded by the owner's smart scale
+          </td>
+          <td>
+            To show the owner their bodyweight trend and its rate of change, and their strength
+            relative to bodyweight, when the owner asks for it.
           </td>
         </tr>
       </table>
@@ -140,7 +153,7 @@
         Google user data is not sold, rented, or shared with anyone for advertising or any other
         purpose. It is shown only to the owner: in the site's private tools, and in the owner's own
         AI assistant (Anthropic's Claude), which the owner connects to the site to ask for the
-        training suggestion. The data leaves the site's servers only to be shown to the owner in
+        training suggestion and the bodyweight trend. The data leaves the site's servers only to be shown to the owner in
         that way.
       </p>
       <h3>Limited Use</h3>
