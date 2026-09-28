@@ -63,8 +63,9 @@
         a training assistant that reads the owner's own Google Health data. It uses last night's
         sleep, heart rate variability and resting heart rate to suggest whether to train hard,
         normally or lightly that day, and the owner's smart-scale weight and body fat readings to
-        show their bodyweight trend and strength relative to bodyweight. No one other than the
-        owner can sign in or connect Google data.
+        show their bodyweight trend and strength relative to bodyweight. At the owner's choice, the
+        public Training page also shows one figure from that data: the owner's monthly average
+        bodyweight. No one other than the owner can sign in or connect Google data.
       </p>
 
       <h2>1. Summary</h2>
@@ -72,6 +73,7 @@
         <li>Visitors are not asked for any personal information. Anonymous page-view statistics are collected with Google Analytics.</li>
         <li>Signing in and the Google Health connection are for the site owner only. No other person can sign in or connect data.</li>
         <li>Google user data is used only to provide the owner's own features. It is never sold, never used for advertising, and never shared except as described below.</li>
+        <li>The only health figure made public is the owner's own monthly average bodyweight, on the Training page, by the owner's choice. Nothing finer than a monthly average is published or stored.</li>
       </ul>
 
       <h2>2. Information collected from visitors</h2>
@@ -120,7 +122,7 @@
             To give the owner a daily training suggestion (whether to train hard, normally or
             lightly) based on last night's recovery, when the owner asks for it.
           </td>
-          <td rowspan="3">
+          <td rowspan="2">
             <strong>No.</strong> The data is read at the moment the owner asks, used to compute
             the answer, and discarded. It is never saved to a database or file.
           </td>
@@ -138,7 +140,14 @@
           </td>
           <td>
             To show the owner their bodyweight trend and its rate of change, and their strength
-            relative to bodyweight, when the owner asks for it.
+            relative to bodyweight, when the owner asks for it; and, by the owner's choice, to
+            publish their monthly average bodyweight on the public Training page.
+          </td>
+          <td>
+            <strong>Only monthly averages.</strong> Once a day, the site computes the average of
+            each month's morning weigh-ins and stores those averages, for months with at least 7
+            weigh-in days, to show on the Training page. Individual weigh-ins and body fat
+            readings are never stored.
           </td>
         </tr>
       </table>
@@ -146,35 +155,40 @@
         Access is <strong>read-only</strong>: the site never writes, changes or deletes anything in
         Google Health. The only thing stored is the OAuth authorization token that allows these
         reads, which is kept encrypted in AWS Secrets Manager in my own AWS account and is readable
-        only by me and by the one server function that performs the reads.
+        only by me and by the two server functions that perform the reads (the owner's private
+        tools, and the daily job that computes the monthly bodyweight averages). The monthly
+        averages are the only health data the site stores.
       </p>
       <h3>How Google user data is shared</h3>
       <p>
         Google user data is not sold, rented, or shared with anyone for advertising or any other
-        purpose. It is shown only to the owner: in the site's private tools, and in the owner's own
-        AI assistant (Anthropic's Claude), which the owner connects to the site to ask for the
-        training suggestion and the bodyweight trend. The data leaves the site's servers only to be shown to the owner in
-        that way.
+        purpose. It is shown to the owner in the site's private tools, and in the owner's own AI
+        assistant (Anthropic's Claude), which the owner connects to the site to ask for the
+        training suggestion and the bodyweight trend. The one exception is the owner's monthly
+        average bodyweight, which the owner has chosen to publish on the public Training page.
+        Nothing else from Google Health is shown publicly.
       </p>
       <h3>Limited Use</h3>
       <p>
         The use and transfer of information received from Google APIs to any other app adheres to
         the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>,
         including the Limited Use requirements. Google user data is not used to develop, improve or
-        train generalized AI or machine-learning models, is not used for advertising, and is not
-        read by any person other than the owner.
+        train generalized AI or machine-learning models, and is not used for advertising. Apart
+        from the monthly average bodyweight the owner chose to publish, it is not read by any
+        person other than the owner.
       </p>
 
       <h2>4. Security</h2>
       <p>
         All traffic to the site is encrypted with HTTPS. The site's private tools are reachable
         only with the owner's sign-in. The Google authorization token is stored encrypted, and the
-        server permissions that can read it are limited to the one function that needs it.
+        server permissions that can read it are limited to the two functions that need it. The
+        public Training page reads only the stored monthly averages and has no access to Google.
       </p>
 
       <h2>5. Retention and deletion</h2>
       <ul>
-        <li>Google Health data: not retained (see section 3).</li>
+        <li>Google Health data: not retained (see section 3), except the monthly average bodyweight, kept until the owner removes it.</li>
         <li>The Google authorization token: kept until the owner revokes access, then deleted.</li>
         <li>
           Anyone can revoke the site's access to their Google account at any time from

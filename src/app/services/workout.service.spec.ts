@@ -93,4 +93,21 @@ describe("WorkoutService", () => {
       .flush("boom", { status: 500, statusText: "Server Error" });
     expect(result).toBeNull();
   });
+
+  it("reads the public monthly bodyweight with the workout key", () => {
+    service.getBodyweight().subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/bodyweight`);
+    expect(req.request.method).toBe("GET");
+    expect(req.request.headers.get("X-Api-Key")).toBe(environment.workoutApiKey);
+    req.flush({ months: [], updatedAt: null });
+  });
+
+  it("returns null rather than throwing when the bodyweight endpoint fails", () => {
+    let result: unknown = "unset";
+    service.getBodyweight().subscribe((v) => (result = v));
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/bodyweight`)
+      .flush("boom", { status: 500, statusText: "Server Error" });
+    expect(result).toBeNull();
+  });
 });

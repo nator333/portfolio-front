@@ -10,7 +10,7 @@ import {
   computed,
 } from "@angular/core";
 import { DecimalPipe } from "@angular/common";
-import { Chart, ChartConfiguration } from "chart.js/auto";
+import { Chart, ChartConfiguration, Plugin } from "chart.js/auto";
 import { forkJoin } from "rxjs";
 
 import { HeroComponent } from "../../components/hero/hero.component";
@@ -23,6 +23,8 @@ import {
   MuscleSummary,
   MuscleVolumeStatus,
   VolumeStatus,
+  BodyweightMonth,
+  BodyweightSnapshot,
 } from "../../models/workout-data";
 
 /** Muscle-group colours, shared by the weekly-volume and balance charts so a
@@ -51,6 +53,20 @@ const MUSCLE_ORDER = Object.keys(MUSCLE_COLORS);
 const LINE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"];
 
 const LIFTS_CHARTED = 5;
+/** Months of bodyweight drawn; the API keeps more history than this. */
+const BODYWEIGHT_MONTHS_CHARTED = 36;
+/** The site's accent: one series, so it needs no categorical slot. */
+const BODYWEIGHT_COLOR = "#eda100";
+/** Text on the chart wears a text colour, never the series colour. */
+const LABEL_TEXT = "#e8e8e3";
+
+/** "2026-09" → "Sep 2026". */
+const monthLabel = (month: string): string =>
+  new Date(`${month}-01T00:00:00Z`).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 const WEEKS_CHARTED = 26;
 const AXIS = "#8a8a84";
 const GRID = "rgba(255,255,255,0.08)";
@@ -197,6 +213,35 @@ const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
             </div>
           </div>
 
+          @if (bodyweightMonths().length >= 2) {
+            <div class="chart-block">
+              <h2 class="chart-title">Bodyweight</h2>
+              <p class="chart-sub">
+                Monthly average of morning weigh-ins from a smart scale, kg. {{ bodyweightSummary() }}
+              </p>
+              <div class="chart-box">
+                <canvas id="chart-bodyweight" role="img" [attr.aria-label]="bodyweightAria()"></canvas>
+              </div>
+              <details class="chart-table">
+                <summary>Show as a table</summary>
+                <table>
+                  <thead>
+                    <tr><th scope="col">Month</th><th scope="col">kg</th><th scope="col">lb</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (m of bodyweightNewestFirst(); track m.month) {
+                      <tr>
+                        <td>{{ monthName(m.month) }}{{ m.complete ? "" : " (so far)" }}</td>
+                        <td>{{ m.kg | number: "1.1-1" }}</td>
+                        <td>{{ m.lb | number: "1.1-1" }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </details>
+            </div>
+          }
+
           <div class="chart-block">
             <h2 class="chart-title">Weekly volume by muscle</h2>
             <p class="chart-sub">Hard sets per muscle group per week, last {{ weeksShown() }} weeks. Guide: ~10–20 per group.</p>
@@ -246,6 +291,45 @@ export class WorkoutComponent implements OnInit, OnDestroy {
   /** Null when the status endpoint could not be reached, or no plan is published. */
   readonly status = signal<MuscleVolumeStatus | null>(null);
   readonly loaded = signal(false);
+  readonly bodyweight = signal<BodyweightSnapshot | null>(null);
+
+  /** The months charted, oldest first. */
+  readonly bodyweightMonths = computed(() =>
+    (this.bodyweight()?.months ?? []).slice(-BODYWEIGHT_MONTHS_CHARTED),
+  );
+  readonly bodyweightNewestFirst = computed(() => [...this.bodyweightMonths()].reverse());
+
+  /**
+   * The chart's headline in words, so the latest figure and the year's change
+   * never depend on hovering: "Latest: Sep 2026 (so far) 80.4 kg · −1.2 kg
+   * since Sep 2025". Compared with the same month a year earlier when it is
+   * charted, else with the first month shown.
+   */
+  readonly bodyweightSummary = computed(() => {
+    const months = this.bodyweightMonths();
+    const latest = months.at(-1);
+    if (!latest) {
+      return "";
+    }
+    const yearAgo = `${Number(latest.month.slice(0, 4)) - 1}${latest.month.slice(4)}`;
+    const base = months.find((m) => m.month === yearAgo) ?? months[0];
+    const latestText =
+      `Latest: ${monthLabel(latest.month)}${latest.complete ? "" : " (so far)"} ${latest.kg.toFixed(1)} kg`;
+    if (base === latest) {
+      return latestText;
+    }
+    const delta = latest.kg - base.kg;
+    const sign = delta > 0 ? "+" : delta < 0 ? "−" : "±";
+    return `${latestText} · ${sign}${Math.abs(delta).toFixed(1)} kg since ${monthLabel(base.month)}`;
+  });
+
+  readonly bodyweightAria = computed(
+    () => `Line chart of monthly average bodyweight in kilograms. ${this.bodyweightSummary()}`,
+  );
+
+  monthName(month: string): string {
+    return monthLabel(month);
+  }
   readonly weeksShown = signal(0);
 
   // Exposed for the volume chart's zone legend.
@@ -344,10 +428,12 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     forkJoin({
       summary: this.workoutService.getWorkout(),
       status: this.workoutService.getMuscleVolumeStatus(),
+      bodyweight: this.workoutService.getBodyweight(),
     }).subscribe({
-      next: ({ summary, status }) => {
+      next: ({ summary, status, bodyweight }) => {
         this.summary.set(summary);
         this.status.set(status);
+        this.bodyweight.set(bodyweight);
         this.loaded.set(true);
         if (summary && summary.days.length) {
           // The chart canvases live behind an @if, so they enter the DOM on the
@@ -375,6 +461,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     this.buildVolume(data.days, data.totals.lastDate, status);
     this.buildRecovery(data.days, data.totals.lastDate, status);
     this.buildStrength(data.strengthSeries);
+    this.buildBodyweight(this.bodyweightMonths());
     this.buildWeekly(data.weeks);
     this.buildRadar(data.muscles);
     this.buildConsistency(data.weeks);
@@ -725,6 +812,84 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         },
       },
     });
+  }
+
+  /**
+   * Monthly average bodyweight: one series, so no legend (the title names it)
+   * and one colour. Only the newest month is labelled on the plot; every value
+   * is in the table beneath. The month still in progress is drawn dashed, since
+   * its average will keep moving until the month ends.
+   */
+  private buildBodyweight(months: BodyweightMonth[]): void {
+    if (months.length < 2) {
+      return;
+    }
+    const lastLabel: Plugin<"line"> = {
+      id: "bodyweight-last-label",
+      afterDatasetsDraw: (chart) => {
+        const meta = chart.getDatasetMeta(0);
+        const point = meta.data.at(-1);
+        const latest = months.at(-1);
+        if (!point || !latest) {
+          return;
+        }
+        const { ctx } = chart;
+        ctx.save();
+        ctx.fillStyle = LABEL_TEXT;
+        ctx.font = "600 12px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(`${latest.kg.toFixed(1)} kg${latest.complete ? "" : " (so far)"}`, point.x, point.y - 10);
+        ctx.restore();
+      },
+    };
+
+    this.make("chart-bodyweight", {
+      type: "line",
+      data: {
+        labels: months.map((m) => m.month),
+        datasets: [
+          {
+            label: "Bodyweight",
+            data: months.map((m) => m.kg),
+            borderColor: BODYWEIGHT_COLOR,
+            backgroundColor: BODYWEIGHT_COLOR,
+            borderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBorderColor: "#000000",
+            pointBorderWidth: 2,
+            tension: 0.25,
+            segment: {
+              borderDash: (ctx) => (months[ctx.p1DataIndex]?.complete === false ? [5, 4] : undefined),
+            },
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 24 } },
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => monthLabel(months[items[0].dataIndex].month),
+              label: (c) => {
+                const m = months[c.dataIndex];
+                return `${m.kg.toFixed(1)} kg (${m.lb.toFixed(1)} lb)${m.complete ? "" : " · month in progress"}`;
+              },
+            },
+          },
+        },
+        scales: {
+          y: { title: { display: true, text: "kg" }, grid: { color: GRID }, grace: "5%" },
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 12, maxRotation: 45 } },
+        },
+      },
+      plugins: [lastLabel],
+    } as ChartConfiguration);
   }
 
   private buildWeekly(weeks: WorkoutWeek[]): void {
