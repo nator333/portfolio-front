@@ -18,6 +18,7 @@ import { WorkoutService } from "../../services/workout.service";
 import {
   WorkoutSummary,
   StrengthSeries,
+  PlanChange,
   WorkoutWeek,
   WorkoutDay,
   MuscleSummary,
@@ -50,9 +51,17 @@ const MUSCLE_COLORS: Record<string, string> = {
 const MUSCLE_ORDER = Object.keys(MUSCLE_COLORS);
 
 /** Distinct line colours for the strength chart, in fixed order. */
-const LINE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"];
+const LINE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#9085e9", "#37a0d6", "#e34948"];
 
-const LIFTS_CHARTED = 5;
+/** Plan lifts charted; one colour each, so no more than there are colours. */
+const LIFTS_CHARTED = LINE_COLORS.length;
+/**
+ * Lifts no longer being logged are drawn thin and grey: kept for the long
+ * story, but out of the way of what the current plan is training.
+ */
+const EARLIER_LIFT_COLOR = "#6b6b66";
+/** Plan-change markers on the strength chart. */
+const PLAN_MARKER = "rgba(232,232,227,0.35)";
 /** Months of bodyweight drawn; the API keeps more history than this. */
 const BODYWEIGHT_MONTHS_CHARTED = 36;
 /** The site's accent: one series, so it needs no categorical slot. */
@@ -203,12 +212,16 @@ const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
 
           <div class="chart-block">
             <h2 class="chart-title">Strength progression</h2>
-            <p class="chart-sub">Estimated 1-rep max by month, kg. Machine lifts show stack load, not a true 1RM.</p>
+            <p class="chart-sub">
+              Estimated 1-rep max by month, kg, for the main lifts of the current training plan. Grey dashed lines are
+              earlier lifts no longer being logged; vertical markers show when each plan version began. Machine lifts
+              show stack load, not a true 1RM.
+            </p>
             <div class="chart-box">
               <canvas
                 id="chart-strength"
                 role="img"
-                aria-label="Estimated 1-rep max in kilograms per month for the top lifts, showing a long climb and a recent decline."
+                aria-label="Estimated 1-rep max in kilograms per month for the main lifts of the current training plan, with earlier lifts in grey and plan changes marked."
               ></canvas>
             </div>
           </div>
@@ -460,7 +473,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
 
     this.buildVolume(data.days, data.totals.lastDate, status);
     this.buildRecovery(data.days, data.totals.lastDate, status);
-    this.buildStrength(data.strengthSeries);
+    this.buildStrength(data.strengthSeries, data.planChanges ?? []);
     this.buildBodyweight(this.bodyweightMonths());
     this.buildWeekly(data.weeks);
     this.buildRadar(data.muscles);
@@ -776,25 +789,74 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  private buildStrength(series: StrengthSeries[]): void {
-    const shown = series.filter((s) => s.points.length).slice(0, LIFTS_CHARTED);
+  private buildStrength(series: StrengthSeries[], planChanges: PlanChange[]): void {
+    const withPoints = series.filter((s) => s.points.length);
+    const tracked = withPoints.filter((s) => s.tracked !== false).slice(0, LIFTS_CHARTED);
+    const earlier = withPoints.filter((s) => s.tracked === false);
+    const shown = [...tracked, ...earlier];
     const months = [
       ...new Set(shown.flatMap((s) => s.points.map((p) => p.month))),
     ].sort();
     const datasets = shown.map((s, i) => {
       const byMonth = new Map(s.points.map((p) => [p.month, p.e1rmKg]));
+      const isEarlier = s.tracked === false;
+      const color = isEarlier ? EARLIER_LIFT_COLOR : LINE_COLORS[i % LINE_COLORS.length];
       return {
-        label: s.name,
+        label: isEarlier ? `${s.name} (earlier)` : s.name,
         data: months.map((m) => byMonth.get(m) ?? null),
-        borderColor: LINE_COLORS[i % LINE_COLORS.length],
-        backgroundColor: LINE_COLORS[i % LINE_COLORS.length],
-        borderWidth: 2,
-        pointRadius: 0,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: isEarlier ? 1.5 : 2,
+        borderDash: isEarlier ? [4, 3] : undefined,
+        // A lift the current block only just added has a month or two of
+        // history; with no points drawn it would not show at all.
+        pointRadius: s.points.length <= 3 ? 3 : 0,
         pointHoverRadius: 4,
         tension: 0.25,
         spanGaps: true,
+        order: isEarlier ? 1 : 0,
       };
     });
+
+    // One dashed vertical per plan version, at the first charted month on or
+    // after it took effect; versions landing on the same month share a line.
+    const markers = new Map<number, number>();
+    for (const change of planChanges) {
+      const index = months.findIndex((m) => m >= change.effectiveFrom.slice(0, 7));
+      if (index >= 0) {
+        markers.set(index, Math.max(markers.get(index) ?? 0, change.version));
+      }
+    }
+    const planMarkers: Plugin<"line"> = {
+      id: "strength-plan-markers",
+      beforeDatasetsDraw: (chart) => {
+        const { ctx, chartArea, scales } = chart;
+        ctx.save();
+        ctx.strokeStyle = PLAN_MARKER;
+        ctx.fillStyle = AXIS;
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1;
+        ctx.font = "11px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "top";
+        // Newest first, so when blocks sit a few pixels apart on a years-long
+        // axis it is the current version's label that survives.
+        let labelledAt = Infinity;
+        for (const [index, version] of [...markers].sort((a, b) => b[0] - a[0])) {
+          const x = scales["x"].getPixelForValue(index);
+          ctx.beginPath();
+          ctx.moveTo(x, chartArea.top);
+          ctx.lineTo(x, chartArea.bottom);
+          ctx.stroke();
+          if (labelledAt - x >= 24) {
+            ctx.fillText(`v${version}`, x - 3, chartArea.top + 2);
+            labelledAt = x;
+          }
+        }
+        ctx.restore();
+      },
+    };
+
     this.make("chart-strength", {
       type: "line",
       data: { labels: months, datasets },
@@ -811,7 +873,8 @@ export class WorkoutComponent implements OnInit, OnDestroy {
           x: { grid: { display: false }, ticks: { maxTicksLimit: 10, maxRotation: 45 } },
         },
       },
-    });
+      plugins: [planMarkers],
+    } as ChartConfiguration);
   }
 
   /**
