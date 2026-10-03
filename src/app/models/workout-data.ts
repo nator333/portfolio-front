@@ -25,6 +25,12 @@ export interface WorkoutLift {
   bestE1rm: number;
   bestE1rmKg: number;
   bestE1rmDate: string;
+  /**
+   * True for a strength-range lift of the plan in force; false for a
+   * long-history lift no longer being logged. Absent from responses cached
+   * before the API sent it, which read as tracked.
+   */
+  tracked?: boolean;
 }
 
 export interface StrengthPoint {
@@ -35,7 +41,16 @@ export interface StrengthPoint {
 export interface StrengthSeries {
   name: string;
   muscle: string;
+  /** See WorkoutLift.tracked. */
+  tracked?: boolean;
   points: StrengthPoint[];
+}
+
+/** When a version of the training plan took effect. */
+export interface PlanChange {
+  version: number;
+  /** YYYY-MM-DD. */
+  effectiveFrom: string;
 }
 
 export interface MuscleSummary {
@@ -75,6 +90,8 @@ export interface WorkoutSummary {
   weeks: WorkoutWeek[];
   lifts: WorkoutLift[];
   strengthSeries: StrengthSeries[];
+  /** Absent from responses cached before the API sent it. */
+  planChanges?: PlanChange[];
   muscles: MuscleSummary[];
   topExercises: {
     name: string;

@@ -5,7 +5,8 @@ import { environment } from "../../environments/environment";
 import { BodyweightSnapshot, MuscleVolumeStatus, WorkoutSummary } from "../models/workout-data";
 import { withApiKey } from "../interceptors/api.interceptors";
 
-const CACHE_KEY = "workout-cache-v1";
+// v2: strength lifts follow the training plan (`tracked`, `planChanges`).
+const CACHE_KEY = "workout-cache-v2";
 // The summary is rebuilt only when a new CSV is imported (rarely), so a longer
 // TTL is safe and keeps repeat visits off the workout key's daily quota.
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
