@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
+import { Chart } from "chart.js/auto";
 
-import { WorkoutComponent } from "./workout.component";
+import { WorkoutComponent, filterLegendClick } from "./workout.component";
 import { WorkoutService } from "../../services/workout.service";
 import {
   BodyweightSnapshot,
@@ -239,5 +240,39 @@ describe("WorkoutComponent", () => {
       await render({ bodyweight: { months: [BODYWEIGHT.months[0]], updatedAt: null } });
       expect(fixture.nativeElement.querySelector("#chart-bodyweight")).toBeNull();
     });
+  });
+});
+
+describe("filterLegendClick", () => {
+  // Just enough of a Chart to track which datasets are visible.
+  function fakeChart(visible: boolean[]): { chart: Chart; visible: boolean[] } {
+    const state = [...visible];
+    const chart = {
+      data: { datasets: state.map(() => ({})) },
+      isDatasetVisible: (i: number) => state[i],
+      setDatasetVisibility: (i: number, v: boolean) => (state[i] = v),
+      update: () => undefined,
+    } as unknown as Chart;
+    return { chart, visible: state };
+  }
+
+  it("should isolate the tapped series from the all-on state", () => {
+    const { chart, visible } = fakeChart([true, true, true]);
+    filterLegendClick(chart, 1);
+    expect(visible).toEqual([false, true, false]);
+  });
+
+  it("should toggle a single series once the state is already narrowed", () => {
+    const { chart, visible } = fakeChart([false, true, false]);
+    filterLegendClick(chart, 0);
+    expect(visible).toEqual([true, true, false]);
+    filterLegendClick(chart, 1);
+    expect(visible).toEqual([true, false, false]);
+  });
+
+  it("should turn every series back on when the last visible one is tapped", () => {
+    const { chart, visible } = fakeChart([false, true, false]);
+    filterLegendClick(chart, 1);
+    expect(visible).toEqual([true, true, true]);
   });
 });

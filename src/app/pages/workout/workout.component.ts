@@ -10,7 +10,7 @@ import {
   computed,
 } from "@angular/core";
 import { DecimalPipe } from "@angular/common";
-import { Chart, ChartConfiguration, Plugin } from "chart.js/auto";
+import { Chart, ChartConfiguration, LegendItem, Plugin } from "chart.js/auto";
 import { forkJoin } from "rxjs";
 
 import { HeroComponent } from "../../components/hero/hero.component";
@@ -79,6 +79,32 @@ const monthLabel = (month: string): string =>
 const WEEKS_CHARTED = 26;
 const AXIS = "#8a8a84";
 const GRID = "rgba(255,255,255,0.08)";
+
+/**
+ * Legend tap handler matching the home page's activity badges. From the all-on
+ * state a tap isolates that series; otherwise it flips the series on or off —
+ * except tapping the last visible series, which turns every series back on
+ * rather than leaving an empty chart.
+ */
+export function filterLegendClick(chart: Chart, index: number): void {
+  const count = chart.data.datasets.length;
+  const visible = Array.from({ length: count }, (_, i) => chart.isDatasetVisible(i));
+  const visibleCount = visible.filter(Boolean).length;
+  if (visibleCount === count && count > 1) {
+    visible.forEach((_, i) => chart.setDatasetVisibility(i, i === index));
+  } else if (visible[index] && visibleCount <= 1) {
+    visible.forEach((_, i) => chart.setDatasetVisibility(i, true));
+  } else {
+    chart.setDatasetVisibility(index, !visible[index]);
+  }
+  chart.update();
+}
+
+const onFilterLegendClick = (_e: unknown, item: LegendItem, legend: { chart: Chart }): void => {
+  if (item.datasetIndex !== undefined) {
+    filterLegendClick(legend.chart, item.datasetIndex);
+  }
+};
 
 /**
  * Window used only when the status endpoint gave us nothing to go on. Normally
@@ -865,7 +891,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         maintainAspectRatio: false,
         interaction: { mode: "index", intersect: false },
         plugins: {
-          legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true } },
+          legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true }, onClick: onFilterLegendClick },
           tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y} kg` } },
         },
         scales: {
@@ -974,7 +1000,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12 } },
+          legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12 }, onClick: onFilterLegendClick },
           tooltip: { mode: "index", intersect: false },
         },
         scales: {
