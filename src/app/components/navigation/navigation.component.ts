@@ -98,6 +98,13 @@ import {
           </a>
           <a
             class="navbar-item nav-link"
+            routerLink="/places"
+            routerLinkActive="is-active"
+          >
+            Places
+          </a>
+          <a
+            class="navbar-item nav-link"
             routerLink="/profile"
             routerLinkActive="is-active"
           >
@@ -131,6 +138,13 @@ import {
               routerLinkActive="is-active"
             >
               Blog Edit
+            </a>
+            <a
+              class="navbar-item nav-link"
+              routerLink="/places-edit"
+              routerLinkActive="is-active"
+            >
+              Places Edit
             </a>
             <a
               class="navbar-item nav-link"

@@ -55,6 +55,7 @@ npm run prettify-ts
 ```
 
 These scripts use Prettier to format files according to consistent styling rules:
+
 - `prettify-readme`: Formats the README.md file
 - `prettify-ts`: Formats all TypeScript files in the src directory
 
@@ -75,7 +76,20 @@ Deployment to GitHub Pages is handled by a GitHub Action defined in `.github/wor
 This directory contains eye-catch images for blog posts. Each image should have the same name as its corresponding markdown file (without the .md extension).
 
 For example:
+
 - For a blog post with filename `getting-started-with-angular.md`, the eye-catch image should be `getting-started-with-angular.jpg`.
+
+## Places page
+
+`/places` draws five pixel-art maps of the towns I have lived in (Minamiuonuma,
+Hachioji, Ichikawa, Vancouver, Montréal) with memories pinned on them. The maps
+are generated in the browser from hand-written shapes in
+`src/app/pages/places/cities.ts` and painted by `pixel-map.ts`; the season
+(from today's date, or picked by the visitor) changes the palette and which
+memories show. Memories and per-town facts come from the portfolio-api
+`/places` document and are edited at `/places-edit` (sign-in required), where a
+pasted Google Maps link places the pin from its coordinates through each town's
+geo control points.
 
 ## Demo Images
 

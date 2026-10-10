@@ -1,0 +1,395 @@
+<app-hero
+  title="Places Editor"
+  subtitle="Pin memories on the hometown maps"
+></app-hero>
+
+<section class="section">
+  <div class="container">
+    <div class="level">
+      <div class="level-left">
+        <div class="tabs town-tabs">
+          <ul>
+            @for (c of cities; track c.id) {
+              <li [class.is-active]="c.id === cityId()">
+                <a role="button" (click)="selectCity(c.id)">{{ c.name }}</a>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+      <div class="level-right">
+        <button class="button is-light" type="button" (click)="logout()">
+          Sign out
+        </button>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="has-text-danger">{{ errorMessage() }}</p>
+    }
+    @if (successMessage()) {
+      <p class="has-text-success">{{ successMessage() }}</p>
+    }
+
+    @if (loading()) {
+      <p>Loading places…</p>
+    } @else {
+      <div class="columns">
+        <div class="column is-7">
+          <app-places-map
+            [city]="city()"
+            [(season)]="season"
+            [memories]="mapMemories()"
+            [selectedId]="editingId()"
+            [draft]="draft()"
+            [editing]="true"
+            (mapTap)="onMapTap($event)"
+            (pinTap)="onPinTap($event)"
+          ></app-places-map>
+
+          <div class="box memory-list">
+            <h2 class="title is-5">Memories in {{ city().name }}</h2>
+            @if (!townMemories().length) {
+              <p class="help">None yet. Tap the map to place the first one.</p>
+            }
+            <ul>
+              @for (m of townMemories(); track m.id) {
+                <li>
+                  <button
+                    class="memory-row"
+                    type="button"
+                    [class.is-editing]="m.id === editingId()"
+                    (click)="openExisting(m)"
+                  >
+                    <i
+                      [style.background-image]="'url(' + sprite(m.kind) + ')'"
+                    ></i>
+                    <span class="memory-name">{{ m.name }}</span>
+                    <span class="memory-meta">
+                      {{ kindLabels[m.kind] }}
+                      @if (m.period) {
+                        · {{ m.period }}
+                      }
+                      @if (m.seasons.length) {
+                        · {{ m.seasons.length }} season{{
+                          m.seasons.length > 1 ? "s" : ""
+                        }}
+                      }
+                      @if (m.photos.length) {
+                        · 📷 {{ m.photos.length }}
+                      }
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <div class="column is-5">
+          @if (draft(); as d) {
+            <form
+              class="box"
+              [formGroup]="memoryForm"
+              (ngSubmit)="saveMemory()"
+            >
+              <h2 class="title is-5">
+                {{ d.id ? "Edit memory" : "New memory" }}
+              </h2>
+              <p class="help">Tap the map to move the pin.</p>
+
+              <div class="field">
+                <label class="label" for="memoryName">Place</label>
+                <input
+                  id="memoryName"
+                  class="input"
+                  type="text"
+                  formControlName="name"
+                  [maxlength]="maxNameLength"
+                  placeholder="e.g. The ramen shop by Muikamachi Station"
+                />
+                @if (
+                  memoryForm.controls.name.touched &&
+                  memoryForm.controls.name.invalid
+                ) {
+                  <p class="help is-danger">A place needs a name.</p>
+                }
+              </div>
+
+              <div class="field">
+                <label class="label" for="memoryKind">Type</label>
+                <div class="select is-fullwidth">
+                  <select id="memoryKind" formControlName="kind">
+                    @for (kind of kinds; track kind) {
+                      <option [value]="kind">{{ kindLabels[kind] }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label" for="memoryMaps"
+                  >Google Maps link (optional)</label
+                >
+                <input
+                  id="memoryMaps"
+                  class="input"
+                  type="text"
+                  inputmode="url"
+                  formControlName="mapsUrl"
+                  placeholder="Paste a Google Maps link, or “lat, lng”"
+                />
+                @if (mapsNote(); as note) {
+                  <p class="help" [class.is-danger]="note.error">
+                    {{ note.text }}
+                  </p>
+                } @else {
+                  <p class="help">
+                    With a link, the pin is placed from its coordinates and the
+                    name is filled in.
+                  </p>
+                }
+              </div>
+
+              <div class="field">
+                <label class="label" for="memoryPeriod">When (optional)</label>
+                <input
+                  id="memoryPeriod"
+                  class="input"
+                  type="text"
+                  formControlName="period"
+                  [maxlength]="maxPeriodLength"
+                  placeholder="e.g. High school years / 2015–2017"
+                />
+              </div>
+
+              <div class="field" formGroupName="seasons">
+                <label class="label">Show in</label>
+                <div class="season-chips">
+                  @for (s of seasons; track s) {
+                    <label class="checkbox season-chip">
+                      <input type="checkbox" [formControlName]="s" />
+                      {{ seasonLabels[s].icon }} {{ seasonLabels[s].label }}
+                    </label>
+                  }
+                </div>
+                <p class="help">
+                  Leave all unchecked to show it in every season.
+                </p>
+              </div>
+
+              <div class="field">
+                <label class="label" for="memoryText">Memory</label>
+                <textarea
+                  id="memoryText"
+                  class="textarea"
+                  formControlName="text"
+                  rows="6"
+                  [maxlength]="maxTextLength"
+                  placeholder="What you did here, what you still remember"
+                ></textarea>
+              </div>
+
+              <div class="field photos">
+                <label class="label"
+                  >Photos (optional, up to {{ maxPhotos }})</label
+                >
+                @for (control of photoControls; track $index) {
+                  <app-image-upload
+                    [control]="control"
+                    [label]="'Photo ' + ($index + 1)"
+                    [assets]="mediaAssets()"
+                    category="general"
+                  ></app-image-upload>
+                }
+              </div>
+
+              <div class="buttons">
+                <button
+                  class="button is-primary"
+                  type="submit"
+                  [disabled]="saving()"
+                >
+                  {{ saving() ? "Saving…" : "Save memory" }}
+                </button>
+                <button
+                  class="button is-light"
+                  type="button"
+                  (click)="cancelMemory()"
+                >
+                  Cancel
+                </button>
+                @if (d.id) {
+                  <button
+                    class="button is-danger"
+                    [class.is-light]="!confirmingDelete()"
+                    type="button"
+                    [disabled]="saving()"
+                    (click)="deleteMemory()"
+                  >
+                    {{
+                      confirmingDelete() ? "Press again to delete" : "Delete"
+                    }}
+                  </button>
+                }
+              </div>
+            </form>
+          } @else {
+            <div class="box">
+              <h2 class="title is-5">Add a memory</h2>
+              <p class="help">
+                Tap anywhere on the map to place a pin, or tap an existing pin
+                to edit it.
+              </p>
+            </div>
+          }
+
+          <form class="box" [formGroup]="cityForm" (ngSubmit)="saveCity()">
+            <h2 class="title is-5">About {{ city().name }}</h2>
+
+            <div class="field">
+              <label class="label" for="cityPeriod">Years lived here</label>
+              <input
+                id="cityPeriod"
+                class="input"
+                type="text"
+                formControlName="period"
+                placeholder="e.g. 1998–2010"
+                [maxlength]="maxFactLength"
+              />
+            </div>
+            <div class="field">
+              <label class="label" for="cityNote">In a sentence</label>
+              <input
+                id="cityNote"
+                class="input"
+                type="text"
+                formControlName="note"
+                placeholder="This town, in one line"
+              />
+            </div>
+            <div class="field">
+              <label class="label" for="citySummary"
+                >Summary (shown under the town tabs)</label
+              >
+              <textarea
+                id="citySummary"
+                class="textarea"
+                formControlName="summary"
+                rows="4"
+                [maxlength]="maxSummaryLength"
+              ></textarea>
+            </div>
+            <div class="columns is-multiline is-variable is-2">
+              <div class="column is-4">
+                <div class="field">
+                  <label class="label" for="cityPopulation">Population</label>
+                  <input
+                    id="cityPopulation"
+                    class="input"
+                    type="text"
+                    formControlName="population"
+                    placeholder="54,851 (2020 census)"
+                    [maxlength]="maxFactLength"
+                  />
+                </div>
+              </div>
+              <div class="column is-4">
+                <div class="field">
+                  <label class="label" for="cityMetro">Metro area</label>
+                  <input
+                    id="cityMetro"
+                    class="input"
+                    type="text"
+                    formControlName="metro"
+                    [maxlength]="maxFactLength"
+                  />
+                </div>
+              </div>
+              <div class="column is-4">
+                <div class="field">
+                  <label class="label" for="cityArea">Area</label>
+                  <input
+                    id="cityArea"
+                    class="input"
+                    type="text"
+                    formControlName="area"
+                    placeholder="584.6 km²"
+                    [maxlength]="maxFactLength"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label" for="cityKnownFor"
+                >Known for (comma-separated, up to {{ maxChips }})</label
+              >
+              <input
+                id="cityKnownFor"
+                class="input"
+                type="text"
+                formControlName="knownFor"
+              />
+            </div>
+            <div class="field">
+              <label class="label" for="cityFood"
+                >Local food (comma-separated, up to {{ maxChips }})</label
+              >
+              <input
+                id="cityFood"
+                class="input"
+                type="text"
+                formControlName="food"
+              />
+            </div>
+            <div class="columns is-variable is-2">
+              <div class="column is-8">
+                <div class="field">
+                  <label class="label" for="citySource"
+                    >Source (https URL)</label
+                  >
+                  <input
+                    id="citySource"
+                    class="input"
+                    type="url"
+                    formControlName="source"
+                    placeholder="https://en.wikipedia.org/wiki/…"
+                  />
+                </div>
+              </div>
+              <div class="column is-4">
+                <div class="field">
+                  <label class="label" for="cityFetched"
+                    >Retrieved (YYYY-MM-DD)</label
+                  >
+                  <input
+                    id="cityFetched"
+                    class="input"
+                    type="text"
+                    formControlName="fetchedAt"
+                    placeholder="2026-10-10"
+                  />
+                  @if (
+                    cityForm.controls.fetchedAt.touched &&
+                    cityForm.controls.fetchedAt.invalid
+                  ) {
+                    <p class="help is-danger">Use YYYY-MM-DD.</p>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="buttons">
+              <button
+                class="button is-primary"
+                type="submit"
+                [disabled]="saving()"
+              >
+                {{ saving() ? "Saving…" : "Save town" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+  </div>
+</section>

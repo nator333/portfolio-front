@@ -14,11 +14,17 @@ describe("routes (configuration)", () => {
     expect(redirect?.redirectTo).toBe("/home");
   });
 
-  it("should define home, projects and profile routes", () => {
+  it("should define home, projects, places and profile routes", () => {
     const paths = routes.map((r) => r.path);
     expect(paths).toContain("home");
     expect(paths).toContain("projects");
+    expect(paths).toContain("places");
     expect(paths).toContain("profile");
+  });
+
+  it("should guard the places editor", () => {
+    const edit = routes.find((r) => r.path === "places-edit");
+    expect(edit?.canActivate?.length).toBe(1);
   });
 
   it("should redirect unknown paths to /home", () => {
