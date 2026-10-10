@@ -120,6 +120,12 @@ export class HomeComponent implements OnInit {
       if (allOn && available.length > 1) {
         return new Set([type]);
       }
+      // Tapping the last remaining active badge would leave an empty
+      // calendar, so turn every type back on instead.
+      const activeCount = available.filter((t) => current.has(t)).length;
+      if (current.has(type) && activeCount <= 1) {
+        return new Set(ACTIVITY_TYPES);
+      }
       const next = new Set(current);
       if (next.has(type)) {
         next.delete(type);
