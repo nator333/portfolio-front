@@ -31,6 +31,9 @@ import {
   chatContextForUrl,
 } from "../../models/chat-data";
 
+/** How long each suggested question shows before the next replaces it. */
+export const SUGGESTION_CYCLE_MS = 4000;
+
 @Component({
   selector: "app-chat-widget",
   standalone: true,
@@ -79,6 +82,8 @@ import {
             type="text"
             name="chat-question"
             [(ngModel)]="draft"
+            (ngModelChange)="suggesting.set(false)"
+            [class.is-suggestion]="suggesting()"
             [maxlength]="maxMessageChars"
             [disabled]="isLoading()"
             placeholder="Type a question…"
@@ -88,7 +93,7 @@ import {
             class="chat-send"
             type="submit"
             aria-label="Send message"
-            [disabled]="isLoading() || !draft.trim()"
+            [disabled]="isLoading() || !draft().trim()"
           >
             <fa-icon [icon]="sendIcon"></fa-icon>
           </button>
@@ -137,7 +142,12 @@ export class ChatWidgetComponent {
   isLoading = signal(false);
   errorMessage = signal("");
   messages = signal<ChatMessage[]>([]);
-  draft = "";
+  draft = signal("");
+  // While true the input holds one of the page's suggested questions, which
+  // alternate until the visitor types or sends; after the first send the
+  // input stays empty for the rest of the conversation.
+  suggesting = signal(true);
+  private suggestionIndex = 0;
   // Bumped whenever the page context changes, so a late reply from the
   // previous page's conversation is discarded.
   private conversation = 0;
@@ -145,15 +155,32 @@ export class ChatWidgetComponent {
   constructor(private chatService: ChatService) {
     // A conversation belongs to the page it started on: moving to another
     // page starts a fresh one grounded in that page's data. A reply still in
-    // flight is dropped by the generation check in send().
+    // flight is dropped (see `conversation`), and the page's own suggested
+    // questions come back.
     effect(() => {
-      this.context();
+      const suggestions = this.copy().suggestions;
       untracked(() => {
         this.conversation++;
         this.messages.set([]);
         this.errorMessage.set("");
         this.isLoading.set(false);
+        this.suggestionIndex = 0;
+        this.suggesting.set(true);
+        this.draft.set(suggestions[0]);
       });
+    });
+
+    // Alternate the suggestions while the panel is open and still showing one.
+    effect((onCleanup) => {
+      if (!this.isOpen() || !this.suggesting()) {
+        return;
+      }
+      const timer = setInterval(() => {
+        const suggestions = this.copy().suggestions;
+        this.suggestionIndex = (this.suggestionIndex + 1) % suggestions.length;
+        this.draft.set(suggestions[this.suggestionIndex]);
+      }, SUGGESTION_CYCLE_MS);
+      onCleanup(() => clearInterval(timer));
     });
   }
 
@@ -162,11 +189,12 @@ export class ChatWidgetComponent {
   }
 
   send(): void {
-    const question = this.draft.trim();
+    const question = this.draft().trim();
     if (!question || this.isLoading()) {
       return;
     }
-    this.draft = "";
+    this.suggesting.set(false);
+    this.draft.set("");
     this.errorMessage.set("");
     this.messages.update((all) => [
       ...all,

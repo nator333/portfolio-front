@@ -31,32 +31,61 @@ export interface ChatContext {
 export interface ChatPageCopy {
   title: string;
   hint: string;
+  /**
+   * Ready-made questions prefilled in the input, so a visitor can just tap
+   * send. The widget alternates between them until the first question is sent.
+   */
+  suggestions: readonly [string, string];
 }
 
 export const CHAT_PAGE_COPY: Record<ChatPage, ChatPageCopy> = {
   home: {
     title: "Ask about recent activity",
     hint: "Hi! Ask me what Hiro has been up to lately — GitHub work, blog posts, or gym sessions.",
+    suggestions: [
+      "What has Hiro been working on lately?",
+      "How often has Hiro been training recently?",
+    ],
   },
   profile: {
     title: "Ask about Hiro's profile",
     hint: "Hi! Ask me about Hiro's experience, skills, education, or qualifications.",
+    suggestions: [
+      "What are Hiro's strongest technical skills?",
+      "Can you summarise Hiro's work experience?",
+    ],
   },
   projects: {
     title: "Ask about the projects",
     hint: "Hi! Ask me about any of Hiro's projects — what they do and how they were built.",
+    suggestions: [
+      "Which project best shows Hiro's skills?",
+      "What technologies do these projects use?",
+    ],
   },
   blog: {
     title: "Ask about the blog",
     hint: "Looking for something to read? Ask me which posts cover a topic, or for a quick summary.",
+    suggestions: [
+      "What topics does Hiro write about?",
+      "Which post should I read first?",
+    ],
   },
   "blog-post": {
     title: "Ask about this post",
     hint: "Questions about this post? Ask me to explain or summarise any part of it.",
+    suggestions: [
+      "Can you summarise this post?",
+      "What is the key takeaway of this post?",
+    ],
   },
   workout: {
     title: "Ask about the training",
     hint: "Ask me about Hiro's current training program — sessions, exercises, or weekly set targets.",
+    suggestions: [
+      "What does Hiro's training week look like?",
+      "Which muscles get the most weekly sets?",
+    ],
   },
 };
 
