@@ -160,3 +160,9 @@
     transform: translateY(-0.25rem);
   }
 }
+
+// A prefilled suggestion reads as a prompt, not as the visitor's own text.
+.chat-input.is-suggestion {
+  color: #b5b5b5;
+  font-style: italic;
+}

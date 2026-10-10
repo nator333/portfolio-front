@@ -1,7 +1,11 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { of, throwError } from "rxjs";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ChatWidgetComponent } from "./chat-widget.component";
+import {
+  ChatWidgetComponent,
+  SUGGESTION_CYCLE_MS,
+} from "./chat-widget.component";
+import { CHAT_PAGE_COPY } from "../../models/chat-data";
 import { ChatService } from "../../services/chat.service";
 import { provideRouter, Router } from "@angular/router";
 import { Component } from "@angular/core";
@@ -49,7 +53,7 @@ describe("ChatWidgetComponent", () => {
     chatService.sendMessage.and.returnValue(of({ reply: "He knows AWS." }));
 
     component.isOpen.set(true);
-    component.draft = "Does Hiro know AWS?";
+    component.draft.set("Does Hiro know AWS?");
     component.send();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -66,7 +70,7 @@ describe("ChatWidgetComponent", () => {
     );
 
     component.isOpen.set(true);
-    component.draft = "Hello?";
+    component.draft.set("Hello?");
     component.send();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -76,7 +80,7 @@ describe("ChatWidgetComponent", () => {
   });
 
   it("should not send blank input", () => {
-    component.draft = "   ";
+    component.draft.set("   ");
     component.send();
     expect(chatService.sendMessage).not.toHaveBeenCalled();
   });
@@ -86,7 +90,7 @@ describe("ChatWidgetComponent", () => {
     await TestBed.inject(Router).navigateByUrl("/blog/my-post");
     fixture.detectChanges();
 
-    component.draft = "What is this about?";
+    component.draft.set("What is this about?");
     component.send();
 
     expect(chatService.sendMessage).toHaveBeenCalledWith(
@@ -98,7 +102,7 @@ describe("ChatWidgetComponent", () => {
   it("should adapt its title and start a fresh conversation per page", async () => {
     chatService.sendMessage.and.returnValue(of({ reply: "Hello." }));
     component.isOpen.set(true);
-    component.draft = "Hi";
+    component.draft.set("Hi");
     component.send();
     await fixture.whenStable();
     expect(component.messages().length).toBe(2);
@@ -111,5 +115,68 @@ describe("ChatWidgetComponent", () => {
     expect(
       fixture.nativeElement.querySelector(".chat-title")?.textContent,
     ).toContain("training");
+  });
+
+  it("should prefill a suggested question that can be sent as is", () => {
+    chatService.sendMessage.and.returnValue(of({ reply: "Lots." }));
+    const [first] = CHAT_PAGE_COPY.profile.suggestions;
+    expect(component.draft()).toBe(first);
+
+    component.send();
+
+    expect(chatService.sendMessage).toHaveBeenCalledWith(
+      [{ role: "user", content: first }],
+      { page: "profile" },
+    );
+    expect(component.draft()).toBe("");
+    expect(component.suggesting()).toBeFalse();
+  });
+
+  it("should alternate the suggestions while the panel is open", () => {
+    jasmine.clock().install();
+    try {
+      const [first, second] = CHAT_PAGE_COPY.profile.suggestions;
+      component.isOpen.set(true);
+      fixture.detectChanges();
+
+      jasmine.clock().tick(SUGGESTION_CYCLE_MS);
+      expect(component.draft()).toBe(second);
+      jasmine.clock().tick(SUGGESTION_CYCLE_MS);
+      expect(component.draft()).toBe(first);
+    } finally {
+      component.isOpen.set(false);
+      fixture.detectChanges();
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it("should stop suggesting once the visitor types", () => {
+    jasmine.clock().install();
+    try {
+      component.isOpen.set(true);
+      fixture.detectChanges();
+      const input: HTMLInputElement =
+        fixture.nativeElement.querySelector(".chat-input");
+      input.value = "My own question";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+
+      jasmine.clock().tick(SUGGESTION_CYCLE_MS * 2);
+      expect(component.suggesting()).toBeFalse();
+      expect(component.draft()).toBe("My own question");
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it("should not refill the input after the first question", async () => {
+    chatService.sendMessage.and.returnValue(of({ reply: "Sure." }));
+    component.isOpen.set(true);
+    component.send();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.draft()).toBe("");
+    expect(component.suggesting()).toBeFalse();
   });
 });
