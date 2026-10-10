@@ -150,11 +150,13 @@ describe("ChatWidgetComponent", () => {
     }
   });
 
-  it("should stop suggesting once the visitor types", () => {
+  it("should stop suggesting once the visitor types", async () => {
     jasmine.clock().install();
     try {
       component.isOpen.set(true);
       fixture.detectChanges();
+      // NgForm registers the ngModel control in a microtask after first render.
+      await fixture.whenStable();
       const input: HTMLInputElement =
         fixture.nativeElement.querySelector(".chat-input");
       input.value = "My own question";
