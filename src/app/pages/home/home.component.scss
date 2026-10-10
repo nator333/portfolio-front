@@ -5,14 +5,24 @@
   padding-top: 3.25rem; // Account for fixed navbar
   position: relative;
   overflow: hidden;
+  /* Clips the viewport-fixed photo to the hero's box. Unlike overflow, a
+     clip-path also clips fixed-position descendants, and it doesn't make the
+     hero their containing block, so the photo stays pinned to the viewport. */
+  clip-path: inset(0);
 }
 
-/* Background photo: covers the hero behind everything, fading in on load. */
+/* Background photo: covers the hero behind everything, fading in on load.
+   Fixed to the viewport so it stays still while the hero's content and the
+   activity section scroll up over it. */
 .hero-photo {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  /* The large viewport height keeps the photo from resizing as mobile browser
+     toolbars collapse and expand during scroll. */
+  height: 100lvh;
   object-fit: cover;
   object-position: center;
   opacity: 0;
