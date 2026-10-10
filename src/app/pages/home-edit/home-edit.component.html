@@ -136,6 +136,34 @@
                     />
                   </div>
                 </div>
+                <div class="field background-dim">
+                  <label class="label is-small" [for]="'background-dim-' + i">
+                    Darkness: {{ group.controls.dim.value }}%
+                  </label>
+                  <input
+                    class="slider"
+                    type="range"
+                    [id]="'background-dim-' + i"
+                    formControlName="dim"
+                    min="0"
+                    [max]="maxDim"
+                    step="5"
+                  />
+                  @if (group.controls.url.value) {
+                    <!-- How the photo will look behind the site at this darkness. -->
+                    <div class="dim-preview">
+                      <img [src]="group.controls.url.value" alt="" />
+                      <div
+                        class="dim-preview-overlay"
+                        [style.background-color]="'rgba(0, 0, 0, ' + group.controls.dim.value / 100 + ')'"
+                      ></div>
+                      <span class="dim-preview-text">Sample text</span>
+                    </div>
+                  }
+                  <p class="help">
+                    0% shows the photo as is; raise it for bright photos so text stays readable.
+                  </p>
+                </div>
                 <div class="buttons are-small">
                   <button class="button" type="button" [disabled]="i === 0" (click)="moveBackground(i, -1)">
                     ↑ Up

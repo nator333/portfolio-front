@@ -23,10 +23,12 @@ import { PageBackgroundService } from "../../services/page-background.service";
 import { MediaAsset, MediaService } from "../../services/media.service";
 import {
   BackgroundPhoto,
+  DEFAULT_BACKGROUND_DIM,
   HomeData,
   MAX_BACKGROUND_ALT_LENGTH,
   MAX_BACKGROUND_CAPTION_LENGTH,
   MAX_BACKGROUND_COUNT,
+  MAX_BACKGROUND_DIM,
   MAX_MOTTO_COUNT,
   MAX_MOTTO_LENGTH,
 } from "../../models/home-data";
@@ -35,6 +37,7 @@ type BackgroundGroup = FormGroup<{
   url: FormControl<string>;
   caption: FormControl<string>;
   alt: FormControl<string>;
+  dim: FormControl<number>;
 }>;
 
 @Component({
@@ -58,6 +61,7 @@ export class HomeEditComponent implements OnInit {
   readonly maxBackgroundCount = MAX_BACKGROUND_COUNT;
   readonly maxCaptionLength = MAX_BACKGROUND_CAPTION_LENGTH;
   readonly maxAltLength = MAX_BACKGROUND_ALT_LENGTH;
+  readonly maxDim = MAX_BACKGROUND_DIM;
 
   // Saved images offered in each background's "pick a saved image" dropdown.
   readonly mediaAssets = signal<MediaAsset[]>([]);
@@ -149,11 +153,12 @@ export class HomeEditComponent implements OnInit {
       mottoes: this.mottoControls.map((control) => control.value.trim()),
       mottoesHidden: this.homeForm.get("mottoesHidden")?.value ?? false,
       backgrounds: this.backgroundGroups.map((group) => {
-        const { url, caption, alt } = group.getRawValue();
+        const { url, caption, alt, dim } = group.getRawValue();
         const photo: BackgroundPhoto = { url: url.trim(), caption: caption.trim() };
         if (alt.trim()) {
           photo.alt = alt.trim();
         }
+        photo.dim = dim;
         return photo;
       }),
       backgroundsHidden: this.homeForm.get("backgroundsHidden")?.value ?? false,
@@ -186,6 +191,10 @@ export class HomeEditComponent implements OnInit {
       url: [photo?.url ?? "", [Validators.required, Validators.pattern(/^https:\/\/\S+$/)]],
       caption: [photo?.caption ?? "", Validators.maxLength(MAX_BACKGROUND_CAPTION_LENGTH)],
       alt: [photo?.alt ?? "", Validators.maxLength(MAX_BACKGROUND_ALT_LENGTH)],
+      dim: [
+        photo?.dim ?? DEFAULT_BACKGROUND_DIM,
+        [Validators.min(0), Validators.max(MAX_BACKGROUND_DIM)],
+      ],
     });
   }
 

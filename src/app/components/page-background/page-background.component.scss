@@ -31,7 +31,9 @@
   }
 }
 
-/* Darkens the photo evenly so text on every page stays legible over it. */
+/* Darkens the photo evenly so text on every page stays legible over it. The
+   strength is set per photo (its dim percentage) by the component; this is
+   only the fallback. */
 .page-overlay {
-  background: rgba(0, 0, 0, 0.55);
+  background-color: rgba(0, 0, 0, 0.55);
 }
