@@ -28,6 +28,14 @@ body::before {
   z-index: 35;
 }
 
+/* The home page's background photo is fixed behind the whole page; while it
+   is shown, the footer becomes translucent (and positioned, to paint above the
+   photo) so the photo carries on down to the bottom. */
+body.has-page-photo .footer {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
 /* Portfolio Specific Styles */
 .hero {
   background-color: #000000 !important;

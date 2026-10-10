@@ -4,10 +4,12 @@ import {
   inject,
   signal,
   computed,
+  effect,
+  DestroyRef,
   ChangeDetectionStrategy,
 } from "@angular/core";
 
-import { NgOptimizedImage } from "@angular/common";
+import { DOCUMENT, NgOptimizedImage } from "@angular/common";
 
 import { HomeService } from "../../services/home.service";
 import { ActivityService } from "../../services/activity.service";
@@ -42,6 +44,7 @@ import {
 export class HomeComponent implements OnInit {
   private homeService = inject(HomeService);
   private activityService = inject(ActivityService);
+  private document = inject(DOCUMENT);
 
   // Populated from the API response (edited via /home-edit); a never-saved
   // item (mottoes: null) or a failed read renders no motto lines.
@@ -57,6 +60,18 @@ export class HomeComponent implements OnInit {
 
   // Set when the photo has decoded, to fade it (and its caption) in.
   readonly photoLoaded = signal<boolean>(false);
+
+  constructor() {
+    // The photo stays fixed behind the whole page, down to the footer. The
+    // footer lives outside this component, so a body class lets the global
+    // styles turn its black background translucent while a photo is shown.
+    effect(() => {
+      this.document.body.classList.toggle(PAGE_PHOTO_CLASS, !!this.background());
+    });
+    inject(DestroyRef).onDestroy(() =>
+      this.document.body.classList.remove(PAGE_PHOTO_CLASS),
+    );
+  }
 
   readonly profile: string[] = ["Hi, I'm Hiro Nakamata", "Software Engineer"];
   readonly kappiInfo: string[] = [
@@ -158,6 +173,9 @@ export class HomeComponent implements OnInit {
     });
   }
 }
+
+// Set on <body> while the home page shows a background photo; see styles.scss.
+const PAGE_PHOTO_CLASS = "has-page-photo";
 
 function pickRandom<T>(items: T[]): T | null {
   return items.length ? items[Math.floor(Math.random() * items.length)] : null;

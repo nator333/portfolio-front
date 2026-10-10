@@ -211,4 +211,17 @@ describe("HomeComponent", () => {
     fixture.detectChanges();
     expect(img.classList).toContain("is-loaded");
   });
+
+  it("should mark the body while a photo is shown, so the footer lets it through", () => {
+    expect(document.body.classList).not.toContain("has-page-photo");
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
+      mottoes: [],
+      backgrounds: [{ url: "https://cdn.example.com/a/w2560.webp", caption: "" }],
+    });
+    fixture.detectChanges();
+    expect(document.body.classList).toContain("has-page-photo");
+    // Leaving the home page must not leave other pages' footers translucent.
+    fixture.destroy();
+    expect(document.body.classList).not.toContain("has-page-photo");
+  });
 });
