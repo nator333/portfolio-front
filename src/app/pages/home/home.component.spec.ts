@@ -7,6 +7,7 @@ import {
 import { provideRouter } from "@angular/router";
 import { HomeComponent } from "./home.component";
 import { environment } from "../../../environments/environment";
+import { PageBackgroundService } from "../../services/page-background.service";
 
 describe("HomeComponent", () => {
   let fixture: ComponentFixture<HomeComponent>;
@@ -175,53 +176,41 @@ describe("HomeComponent", () => {
     expect(component.activeTypeList()).toEqual(["blog", "gym", "github"]);
   });
 
-  it("should keep the plain black hero when no backgrounds are saved", () => {
+  afterEach(() => {
+    document.body.classList.remove("has-page-photo");
+  });
+
+  it("should show no caption when no backgrounds are saved", () => {
     flushHome(["First Line"]);
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector(".hero-photo")).toBeNull();
     expect(el.querySelector(".hero-caption")).toBeNull();
   });
 
-  it("should render one of the saved background photos with its caption", () => {
-    const backgrounds = [
-      { url: "https://cdn.example.com/a/w2560.webp", caption: "Mt. Hakkai, Minamiuonuma", alt: "Mt. Hakkai" },
-      { url: "https://cdn.example.com/b/w2560.webp", caption: "Mt. Hakkai, Minamiuonuma", alt: "Mt. Hakkai" },
-    ];
-    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({ mottoes: [], backgrounds });
+  it("should caption the site-wide photo and fade it in once the photo loads", () => {
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
+      mottoes: [],
+      backgrounds: [
+        { url: "https://cdn.example.com/a/w2560.webp", caption: "Mt. Hakkai, Minamiuonuma" },
+      ],
+    });
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
-    const img = el.querySelector<HTMLImageElement>(".hero-photo");
-    expect(backgrounds.map((b) => b.url)).toContain(img?.getAttribute("src") ?? "");
-    expect(img?.getAttribute("alt")).toBe("Mt. Hakkai");
-    expect(el.querySelector(".hero-caption")?.textContent).toContain("Mt. Hakkai, Minamiuonuma");
+    // The photo itself is rendered by the app shell, not the home page.
+    expect(el.querySelector("img.page-photo")).toBeNull();
+    const caption = el.querySelector(".hero-caption")!;
+    expect(caption.textContent).toContain("Mt. Hakkai, Minamiuonuma");
+    expect(caption.classList).not.toContain("is-loaded");
+    TestBed.inject(PageBackgroundService).loaded.set(true);
+    fixture.detectChanges();
+    expect(caption.classList).toContain("is-loaded");
   });
 
-  it("should fade the photo in only once it has loaded", () => {
+  it("should show no caption element for an empty caption", () => {
     httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
       mottoes: [],
       backgrounds: [{ url: "https://cdn.example.com/a/w2560.webp", caption: "" }],
     });
     fixture.detectChanges();
-    const el: HTMLElement = fixture.nativeElement;
-    const img = el.querySelector<HTMLImageElement>(".hero-photo")!;
-    expect(img.classList).not.toContain("is-loaded");
-    // An empty caption renders no caption element.
-    expect(el.querySelector(".hero-caption")).toBeNull();
-    img.dispatchEvent(new Event("load"));
-    fixture.detectChanges();
-    expect(img.classList).toContain("is-loaded");
-  });
-
-  it("should mark the body while a photo is shown, so the footer lets it through", () => {
-    expect(document.body.classList).not.toContain("has-page-photo");
-    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
-      mottoes: [],
-      backgrounds: [{ url: "https://cdn.example.com/a/w2560.webp", caption: "" }],
-    });
-    fixture.detectChanges();
-    expect(document.body.classList).toContain("has-page-photo");
-    // Leaving the home page must not leave other pages' footers translucent.
-    fixture.destroy();
-    expect(document.body.classList).not.toContain("has-page-photo");
+    expect((fixture.nativeElement as HTMLElement).querySelector(".hero-caption")).toBeNull();
   });
 });
