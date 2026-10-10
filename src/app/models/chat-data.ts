@@ -81,10 +81,10 @@ export const CHAT_PAGE_COPY: Record<ChatPage, ChatPageCopy> = {
   },
   workout: {
     title: "Ask about the training",
-    hint: "Ask me about Hiro's current training program — sessions, exercises, or weekly set targets.",
+    hint: "Ask me about Hiro's training program, or how his recent sessions have gone.",
     suggestions: [
       "What does Hiro's training week look like?",
-      "Which muscles get the most weekly sets?",
+      "How have Hiro's recent sessions gone?",
     ],
   },
 };
