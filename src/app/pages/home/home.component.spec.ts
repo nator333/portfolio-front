@@ -162,6 +162,19 @@ describe("HomeComponent", () => {
     component.onTypeToggled("gym"); // plain toggle off
     expect(component.activeTypeList()).toEqual(["blog"]);
   });
+
+  it("should turn every type back on when the last active one is tapped", () => {
+    flushHome(null);
+    component.entries.set([
+      { date: "2026-07-20", type: "blog", title: "a" },
+      { date: "2026-07-20", type: "gym", title: "b" },
+      { date: "2026-07-20", type: "github", title: "c" },
+    ]);
+    component.onTypeToggled("gym"); // isolate: only gym
+    component.onTypeToggled("gym"); // last one: everything back on
+    expect(component.activeTypeList()).toEqual(["blog", "gym", "github"]);
+  });
+
   it("should keep the plain black hero when no backgrounds are saved", () => {
     flushHome(["First Line"]);
     const el: HTMLElement = fixture.nativeElement;
