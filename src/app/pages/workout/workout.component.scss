@@ -1,5 +1,10 @@
 $gold: #ffd700;
 
+/* Cards and charts sit on solid black, so they stay legible over the
+   site-wide background photo. */
+$card-bg: #000000;
+$card-radius: 8px;
+
 .workout {
   max-width: 900px;
 }
@@ -129,8 +134,9 @@ $gold: #ffd700;
 }
 
 .plan-session {
+  background-color: $card-bg;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  border-radius: $card-radius;
   padding: 1rem 1.1rem;
 }
 
@@ -186,6 +192,9 @@ $gold: #ffd700;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  background-color: $card-bg;
+  border-radius: $card-radius;
+  padding: 1rem 0.75rem;
 }
 
 .metric-value {
@@ -203,6 +212,9 @@ $gold: #ffd700;
 
 .chart-block {
   margin-bottom: 2.75rem;
+  background-color: $card-bg;
+  border-radius: $card-radius;
+  padding: 1.25rem 1.25rem 1rem;
 }
 
 .chart-title {

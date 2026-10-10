@@ -5,6 +5,11 @@ $gold: #ffd700;
 
 .activity-feed {
   color: #cccccc;
+  /* Solid black card to match the calendar beside it, legible over the
+     site-wide background photo. */
+  background-color: #000000;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
 }
 
 .feed-heading {
