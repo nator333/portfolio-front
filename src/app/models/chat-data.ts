@@ -35,8 +35,8 @@ export interface ChatPageCopy {
 
 export const CHAT_PAGE_COPY: Record<ChatPage, ChatPageCopy> = {
   home: {
-    title: "Ask about Hiro",
-    hint: "Hi! Ask me anything about Hiro or what you can find on this site.",
+    title: "Ask about recent activity",
+    hint: "Hi! Ask me what Hiro has been up to lately — GitHub work, blog posts, or gym sessions.",
   },
   profile: {
     title: "Ask about Hiro's profile",
