@@ -53,7 +53,7 @@ export class HomeComponent implements OnInit {
   readonly mottoesHidden = signal<boolean>(false);
 
   // The site-wide background photo (rendered by the app shell, behind every
-  // page). The hero only adds its caption and blends the signature over it.
+  // page). The hero only adds its caption.
   readonly background = this.pageBackground.photo;
 
   // Set when the photo has decoded, to fade the caption in with it.

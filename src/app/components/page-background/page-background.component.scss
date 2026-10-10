@@ -2,7 +2,7 @@
    context: behind all page content, so anything opaque still covers them and
    anything transparent shows the photo. Nothing between them and <html> may
    create a stacking context, or the photo would drop behind that ancestor's
-   background (and the home signature would stop blending with it). The large
+   background. The large
    viewport height keeps them from resizing as mobile browser toolbars
    collapse and expand during scroll. */
 .page-photo,
