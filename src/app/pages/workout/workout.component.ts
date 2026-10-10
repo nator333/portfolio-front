@@ -169,6 +169,15 @@ export function tabFromHash(hash: string): WorkoutTab {
 /** "8–9", or "6" when the range is a single number. */
 const rangeText = (r: SetRange): string => (r.min === r.max ? `${r.min}` : `${r.min}–${r.max}`);
 
+/** Versions before the current one the Plan tab offers; the API serves no further back. */
+export const PLAN_VERSIONS_BACK = 5;
+
+/** The current version first, then up to {@link PLAN_VERSIONS_BACK} before it, stopping at v1. */
+export function planVersionsFrom(latest: number): number[] {
+  const oldest = Math.max(latest - PLAN_VERSIONS_BACK, 1);
+  return Array.from({ length: latest - oldest + 1 }, (_, i) => latest - i);
+}
+
 @Component({
   selector: "app-workout",
   standalone: true,
@@ -270,11 +279,36 @@ const rangeText = (r: SetRange): string => (r.min === r.max ? `${r.min}` : `${r.
           </div>
 
           <div role="tabpanel" id="panel-plan" aria-labelledby="tab-plan" [hidden]="tab() !== 'plan'">
-            @if (plan(); as p) {
+            @if (planVersions().length > 1) {
+              <div class="plan-version-picker">
+                <label for="plan-version">Version</label>
+                <select id="plan-version" [value]="selectedPlanVersion()" (change)="onPlanVersionChange($event)">
+                  @for (v of planVersions(); track v) {
+                    <option [value]="v" [selected]="v === selectedPlanVersion()">v{{ v }}{{ v === latestPlanVersion() ? " (current)" : "" }}</option>
+                  }
+                </select>
+                @if (planState() === "loading") {
+                  <span class="plan-version-status">Loading…</span>
+                }
+              </div>
+            }
+            @if (planState() === "failed") {
+              <p class="empty">
+                @if (latestPlanVersion() === null) {
+                  The training plan is unavailable right now.
+                } @else {
+                  Version {{ selectedPlanVersion() }} of the plan is unavailable right now.
+                }
+              </p>
+            } @else if (plan(); as p) {
               <div class="plan-head">
                 <h2 class="chart-title">{{ p.name }} <span class="plan-version">v{{ p.version }}</span></h2>
                 <p class="chart-sub">
-                  {{ p.sessionsPerWeek }} sessions a week@if (p.effectiveFrom) {, in force since {{ longDate(p.effectiveFrom) }}}.
+                  @if (p.version === latestPlanVersion()) {
+                    {{ p.sessionsPerWeek }} sessions a week@if (p.effectiveFrom) {, in force since {{ longDate(p.effectiveFrom) }}}.
+                  } @else {
+                    An earlier version: {{ p.sessionsPerWeek }} sessions a week@if (p.effectiveFrom) {, in force from {{ longDate(p.effectiveFrom) }}@if (p.effectiveTo) { to {{ longDate(p.effectiveTo) }}}}.
+                  }
                   Rotation: {{ rotationLabel(p) }}@if (p.bonusSessions.length) {, plus {{ sessionNames(p, p.bonusSessions) }} on weeks with an extra visit}.
                 </p>
                 <div class="plan-controls">
@@ -285,7 +319,7 @@ const rangeText = (r: SetRange): string => (r.min === r.max ? `${r.min}` : `${r.
                         <p class="plan-notes">{{ p.notes }}</p>
                       }
                       @if (p.changeNote) {
-                        <p class="plan-change"><span>Latest change:</span> {{ p.changeNote }}</p>
+                        <p class="plan-change"><span>Changed in v{{ p.version }}:</span> {{ p.changeNote }}</p>
                       }
                     </details>
                   }
@@ -325,7 +359,9 @@ const rangeText = (r: SetRange): string => (r.min === r.max ? `${r.min}` : `${r.
                 }
               </div>
 
-              @if (p.weeklySetTargets.length) {
+              <!-- The API composes today's targets onto every version it serves, so
+                   they describe the current plan only and are left off past ones. -->
+              @if (p.version === latestPlanVersion() && p.weeklySetTargets.length) {
                 <details class="chart-table">
                   <summary>Weekly set targets</summary>
                   <table>
@@ -360,8 +396,6 @@ const rangeText = (r: SetRange): string => (r.min === r.max ? `${r.min}` : `${r.
               }
             } @else if (planState() === "loading") {
               <p class="empty">Loading the plan…</p>
-            } @else if (planState() === "failed") {
-              <p class="empty">The training plan is unavailable right now.</p>
             }
           </div>
 
@@ -521,9 +555,20 @@ export class WorkoutComponent implements OnInit, OnDestroy {
   /** Read from the URL hash, so a link can open straight onto the plan. */
   readonly tab = signal<WorkoutTab>(tabFromHash(globalThis.location?.hash ?? ""));
 
+  /** The version on display. */
   readonly plan = signal<WorkoutPlan | null>(null);
   /** "idle" until the Plan tab is first opened; the plan is fetched only then. */
   readonly planState = signal<"idle" | "loading" | "loaded" | "failed">("idle");
+  /** Learnt from the first, version-less read; null until then. */
+  readonly latestPlanVersion = signal<number | null>(null);
+  readonly selectedPlanVersion = signal<number | null>(null);
+  /** The versions the picker offers, newest first, worked out from the current one. */
+  readonly planVersions = computed(() => {
+    const latest = this.latestPlanVersion();
+    return latest === null ? [] : planVersionsFrom(latest);
+  });
+  /** Versions already fetched; a past version never changes, so each is read once. */
+  private readonly planCache = new Map<number, WorkoutPlan>();
   /** Per-exercise cues are off by default: the menu reads at a glance without them. */
   readonly showExerciseNotes = signal(false);
 
@@ -650,6 +695,41 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     }
     this.planState.set("loading");
     this.workoutService.getPlan().subscribe((plan) => {
+      if (plan) {
+        this.planCache.set(plan.version, plan);
+        this.latestPlanVersion.set(plan.version);
+        this.selectedPlanVersion.set(plan.version);
+      }
+      this.plan.set(plan);
+      this.planState.set(plan ? "loaded" : "failed");
+    });
+  }
+
+  onPlanVersionChange(event: Event): void {
+    this.showPlanVersion(Number((event.target as HTMLSelectElement).value));
+  }
+
+  /** Puts a version on display, reading it from the API the first time it is asked for. */
+  showPlanVersion(version: number): void {
+    this.selectedPlanVersion.set(version);
+    const cached = this.planCache.get(version);
+    if (cached) {
+      this.plan.set(cached);
+      this.planState.set("loaded");
+      return;
+    }
+    this.planState.set("loading");
+    this.workoutService.getPlan(version).subscribe((plan) => {
+      // A slower answer for a version since switched away from must not win.
+      if (this.selectedPlanVersion() !== version) {
+        if (plan) {
+          this.planCache.set(version, plan);
+        }
+        return;
+      }
+      if (plan) {
+        this.planCache.set(version, plan);
+      }
       this.plan.set(plan);
       this.planState.set(plan ? "loaded" : "failed");
     });

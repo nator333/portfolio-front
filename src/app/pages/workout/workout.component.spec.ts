@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
 import { Chart } from "chart.js/auto";
 
-import { WorkoutComponent, filterLegendClick, tabFromHash } from "./workout.component";
+import { WorkoutComponent, filterLegendClick, planVersionsFrom, tabFromHash } from "./workout.component";
 import { WorkoutService } from "../../services/workout.service";
 import {
   BodyweightSnapshot,
@@ -143,10 +143,20 @@ class StubWorkoutService {
   status: MuscleVolumeStatus | null = STATUS;
   bodyweight: BodyweightSnapshot | null = BODYWEIGHT;
   plan: WorkoutPlan | null = PLAN;
+  /** Answers for past versions; by default each is PLAN renumbered. */
+  pastPlan: (version: number) => WorkoutPlan | null = (version) => ({
+    ...PLAN,
+    version,
+    effectiveFrom: "2026-01-05",
+    effectiveTo: "2026-05-31",
+    changeNote: `Change for v${version}.`,
+  });
   planCalls = 0;
-  getPlan() {
+  planVersionsAsked: (number | undefined)[] = [];
+  getPlan(version?: number) {
     this.planCalls++;
-    return of(this.plan);
+    this.planVersionsAsked.push(version);
+    return of(version === undefined ? this.plan : this.pastPlan(version));
   }
   getBodyweight() {
     return of(this.bodyweight);
@@ -306,6 +316,74 @@ describe("WorkoutComponent", () => {
       fixture.detectChanges();
       expect(panel("plan").textContent).toContain("unavailable");
       expect(panel("week").textContent).toContain("Volume vs target");
+    });
+
+    describe("past versions", () => {
+      const select = () => panel("plan").querySelector("select") as HTMLSelectElement | null;
+      const openPlan = async (over: Partial<StubWorkoutService> = {}) => {
+        await render(over);
+        fixture.componentInstance.selectTab("plan");
+        fixture.detectChanges();
+      };
+      const choose = (version: number) => {
+        const el = select()!;
+        el.value = String(version);
+        el.dispatchEvent(new Event("change"));
+        fixture.detectChanges();
+      };
+
+      it("offers the current version and the ones before it, newest first", async () => {
+        await openPlan();
+        const options = Array.from(select()!.options).map((o) => o.textContent?.trim());
+        expect(options).toEqual(["v3 (current)", "v2", "v1"]);
+        expect(select()!.value).toBe("3");
+      });
+
+      it("opens a past version on demand, and labels it as such", async () => {
+        await openPlan();
+        choose(1);
+
+        expect(service.planVersionsAsked).toEqual([undefined, 1]);
+        expect(panel("plan").textContent).toContain("v1");
+        expect(panel("plan").textContent).toContain("An earlier version");
+        expect(panel("plan").textContent).toContain("to May 31, 2026");
+        expect(panel("plan").textContent).toContain("Changed in v1: Change for v1.");
+        // The API composes today's targets onto any version, so they are left off.
+        expect(panel("plan").textContent).not.toContain("Weekly set targets");
+      });
+
+      it("reads each version once, however often it is reselected", async () => {
+        await openPlan();
+        choose(2);
+        choose(3);
+        // Back on the current version, its targets return.
+        expect(panel("plan").textContent).toContain("Weekly set targets");
+        choose(2);
+
+        expect(service.planVersionsAsked).toEqual([undefined, 2]);
+        expect(fixture.componentInstance.plan()?.version).toBe(2);
+      });
+
+      it("says which version could not be read, and keeps the picker to go back", async () => {
+        await openPlan({ pastPlan: () => null });
+        choose(2);
+
+        expect(panel("plan").textContent).toContain("Version 2 of the plan is unavailable");
+        expect(select()).not.toBeNull();
+        choose(3);
+        expect(panel("plan").textContent).toContain("Bench Press");
+      });
+
+      it("shows no picker while there is only one version", async () => {
+        await openPlan({ plan: { ...PLAN, version: 1 } });
+        expect(select()).toBeNull();
+      });
+
+      it("works out at most five prior versions, stopping at v1", () => {
+        expect(planVersionsFrom(9)).toEqual([9, 8, 7, 6, 5, 4]);
+        expect(planVersionsFrom(3)).toEqual([3, 2, 1]);
+        expect(planVersionsFrom(1)).toEqual([1]);
+      });
     });
 
     it("moves between tabs with the arrow keys, wrapping at the ends", async () => {
