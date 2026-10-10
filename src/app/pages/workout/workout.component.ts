@@ -26,6 +26,8 @@ import {
   VolumeStatus,
   BodyweightMonth,
   BodyweightSnapshot,
+  SetRange,
+  WorkoutPlan,
 } from "../../models/workout-data";
 
 /** Muscle-group colours, shared by the weekly-volume and balance charts so a
@@ -146,6 +148,27 @@ const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
   over: ZONE_OVER,
 };
 
+/**
+ * The page's three views. Everything used to sit on one long scroll; split, the
+ * landing view answers "how is this week going", the plan says what the weeks
+ * are meant to be, and the long-run history is one tap away instead of below.
+ */
+const TABS = [
+  { id: "week", label: "This week" },
+  { id: "plan", label: "Plan" },
+  { id: "progress", label: "Progress" },
+] as const;
+export type WorkoutTab = (typeof TABS)[number]["id"];
+
+/** "#plan" → "plan"; anything unrecognised lands on the first tab. */
+export function tabFromHash(hash: string): WorkoutTab {
+  const id = hash.replace(/^#/, "");
+  return TABS.find((t) => t.id === id)?.id ?? TABS[0].id;
+}
+
+/** "8–9", or "6" when the range is a single number. */
+const rangeText = (r: SetRange): string => (r.min === r.max ? `${r.min}` : `${r.min}–${r.max}`);
+
 @Component({
   selector: "app-workout",
   standalone: true,
@@ -163,10 +186,6 @@ const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
               <span class="metric-label">sessions / week</span>
             </div>
             <div class="metric">
-              <span class="metric-value">{{ sessionsPerYear() }}</span>
-              <span class="metric-label">sessions / year</span>
-            </div>
-            <div class="metric">
               <span class="metric-value">{{ data.totals.frequency.currentStreakWeeks }}</span>
               <span class="metric-label">week streak</span>
             </div>
@@ -175,145 +194,272 @@ const ZONE_BY_STATUS: Record<VolumeStatus, string> = {
               <span class="metric-label">days since last workout</span>
             </div>
             <div class="metric">
-              <span class="metric-value">{{ data.totals.workoutDays | number }}</span>
-              <span class="metric-label">workout days</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">{{ data.totals.exerciseCount }}</span>
-              <span class="metric-label">exercises</span>
-            </div>
-            <div class="metric">
               <span class="metric-value">{{ data.totals.firstDate.slice(0, 4) }}</span>
               <span class="metric-label">since</span>
             </div>
           </div>
 
-          <div class="chart-block">
-            <h2 class="chart-title">Volume vs target — last {{ windowDays() }} days</h2>
-            @if (status(); as s) {
-              <p class="chart-sub">
-                Hard sets per muscle over the trailing {{ s.window.days }} days ({{ windowLabel() }}), against the target ranges in
-                <em>{{ s.plan.name }}</em> v{{ s.plan.version }}. Each shaded band is that muscle's own hypertrophy range@if (hasMaintenance()) {, with its maintenance zone shaded blue below it}.
-                @if (s.bonusWindow) {
-                  This window holds an extra session, so the bonus-week targets apply.
-                }
-                Rolled up {{ asOfLabel() }} — a trailing window moves, so these counts are as of then.
-              </p>
-              <div class="zone-legend">
-                <span><i class="zone-swatch" style="background:{{ zoneUnder }}"></i>under</span>
-                @if (hasMaintenance()) {
-                  <span><i class="zone-swatch" style="background:{{ zoneMaintenance }}"></i>maintenance</span>
-                }
-                <span><i class="zone-swatch" style="background:{{ zoneOptimal }}"></i>in range</span>
-                <span><i class="zone-swatch" style="background:{{ zoneOver }}"></i>over</span>
-              </div>
-            } @else {
-              <p class="chart-sub">
-                Hard sets per muscle over the trailing {{ windowDays() }} days ({{ windowLabel() }}). Target ranges are unavailable right now, so no
-                muscle is marked under or over.
-              </p>
+          <div class="view-tabs" role="tablist" aria-label="Training views" (keydown)="onTabKey($event)">
+            @for (t of tabs; track t.id) {
+              <button
+                type="button"
+                role="tab"
+                class="view-tab"
+                [id]="'tab-' + t.id"
+                [attr.aria-selected]="tab() === t.id"
+                [attr.aria-controls]="'panel-' + t.id"
+                [attr.tabindex]="tab() === t.id ? 0 : -1"
+                (click)="selectTab(t.id)"
+              >
+                {{ t.label }}
+              </button>
             }
-            <div class="chart-box chart-box--lanes">
-              <canvas
-                id="chart-7day"
-                role="img"
-                aria-label="Horizontal bars of hard sets per muscle group over the trailing window, each against that muscle's own target band."
-              ></canvas>
-            </div>
           </div>
 
-          <div class="chart-block">
-            <h2 class="chart-title">Recovery — days since last trained</h2>
-            <p class="chart-sub">
-              Days since each muscle was last worked, as of {{ data.totals.lastDate }}. Green is freshly trained, amber is due, red is overdue.
-            </p>
-            <div class="chart-box chart-box--lanes">
-              <canvas
-                id="chart-recovery"
-                role="img"
-                aria-label="Horizontal bars of days since each muscle group was last trained."
-              ></canvas>
-            </div>
-          </div>
-
-          <div class="chart-block">
-            <h2 class="chart-title">Strength progression</h2>
-            <p class="chart-sub">
-              Estimated 1-rep max by month, kg, for the main lifts of the current training plan. Grey dashed lines are
-              earlier lifts no longer being logged; vertical markers show when each plan version began. Machine lifts
-              show stack load, not a true 1RM.
-            </p>
-            <div class="chart-box">
-              <canvas
-                id="chart-strength"
-                role="img"
-                aria-label="Estimated 1-rep max in kilograms per month for the main lifts of the current training plan, with earlier lifts in grey and plan changes marked."
-              ></canvas>
-            </div>
-          </div>
-
-          @if (bodyweightMonths().length >= 2) {
+          <!-- Panels stay in the DOM and are only hidden, so every chart is built
+               once on load; Chart.js resizes each one when its panel is shown. -->
+          <div role="tabpanel" id="panel-week" aria-labelledby="tab-week" [hidden]="tab() !== 'week'">
             <div class="chart-block">
-              <h2 class="chart-title">Bodyweight</h2>
+              <h2 class="chart-title">Volume vs target — last {{ windowDays() }} days</h2>
+              @if (status(); as s) {
+                <p class="chart-sub">
+                  Hard sets per muscle over the trailing {{ s.window.days }} days ({{ windowLabel() }}), against the target ranges in
+                  <em>{{ s.plan.name }}</em> v{{ s.plan.version }}. Each shaded band is that muscle's own hypertrophy range@if (hasMaintenance()) {, with its maintenance zone shaded blue below it}.
+                  @if (s.bonusWindow) {
+                    This window holds an extra session, so the bonus-week targets apply.
+                  }
+                  Rolled up {{ asOfLabel() }} — a trailing window moves, so these counts are as of then.
+                </p>
+                <div class="zone-legend">
+                  <span><i class="zone-swatch" style="background:{{ zoneUnder }}"></i>under</span>
+                  @if (hasMaintenance()) {
+                    <span><i class="zone-swatch" style="background:{{ zoneMaintenance }}"></i>maintenance</span>
+                  }
+                  <span><i class="zone-swatch" style="background:{{ zoneOptimal }}"></i>in range</span>
+                  <span><i class="zone-swatch" style="background:{{ zoneOver }}"></i>over</span>
+                </div>
+              } @else {
+                <p class="chart-sub">
+                  Hard sets per muscle over the trailing {{ windowDays() }} days ({{ windowLabel() }}). Target ranges are unavailable right now, so no
+                  muscle is marked under or over.
+                </p>
+              }
+              <div class="chart-box chart-box--lanes">
+                <canvas
+                  id="chart-7day"
+                  role="img"
+                  aria-label="Horizontal bars of hard sets per muscle group over the trailing window, each against that muscle's own target band."
+                ></canvas>
+              </div>
+            </div>
+
+            <div class="chart-block">
+              <h2 class="chart-title">Recovery — days since last trained</h2>
               <p class="chart-sub">
-                Monthly average of morning weigh-ins from a smart scale, kg. {{ bodyweightSummary() }}
+                Days since each muscle was last worked, as of {{ data.totals.lastDate }}. Green is freshly trained, amber is due, red is overdue.
+              </p>
+              <div class="chart-box chart-box--lanes">
+                <canvas
+                  id="chart-recovery"
+                  role="img"
+                  aria-label="Horizontal bars of days since each muscle group was last trained."
+                ></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <div role="tabpanel" id="panel-plan" aria-labelledby="tab-plan" [hidden]="tab() !== 'plan'">
+            @if (plan(); as p) {
+              <div class="plan-head">
+                <h2 class="chart-title">{{ p.name }} <span class="plan-version">v{{ p.version }}</span></h2>
+                <p class="chart-sub">
+                  {{ p.sessionsPerWeek }} sessions a week@if (p.effectiveFrom) {, in force since {{ longDate(p.effectiveFrom) }}}.
+                  Rotation: {{ rotationLabel(p) }}@if (p.bonusSessions.length) {, plus {{ sessionNames(p, p.bonusSessions) }} on weeks with an extra visit}.
+                </p>
+                <div class="plan-controls">
+                  @if (p.notes || p.changeNote) {
+                    <details class="chart-table plan-about">
+                      <summary>About this block</summary>
+                      @if (p.notes) {
+                        <p class="plan-notes">{{ p.notes }}</p>
+                      }
+                      @if (p.changeNote) {
+                        <p class="plan-change"><span>Latest change:</span> {{ p.changeNote }}</p>
+                      }
+                    </details>
+                  }
+                  @if (hasExerciseNotes(p)) {
+                    <label class="plan-notes-toggle">
+                      <input type="checkbox" [checked]="showExerciseNotes()" (change)="showExerciseNotes.set(!showExerciseNotes())" />
+                      Show exercise notes
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <div class="plan-sessions">
+                @for (session of p.sessions; track session.id) {
+                  <article class="plan-session">
+                    <h3 class="plan-session-name">{{ session.name }}</h3>
+                    @if (session.notes) {
+                      <p class="plan-session-notes">{{ session.notes }}</p>
+                    }
+                    <ol class="plan-exercises">
+                      @for (ex of session.exercises; track ex.order) {
+                        <li>
+                          <div class="plan-exercise-line">
+                            <span class="plan-exercise-name">{{ ex.options[0] }}</span>
+                            <span class="plan-dose">{{ rangeLabel(ex.sets) }} × {{ rangeLabel(ex.reps) }}</span>
+                          </div>
+                          <div class="plan-exercise-meta">
+                            {{ ex.muscle }}@if (ex.rpe) { · RPE {{ rangeLabel(ex.rpe) }}}@if (ex.options.length > 1) { · or {{ ex.options.slice(1).join(", ") }}}
+                          </div>
+                          @if (ex.notes && showExerciseNotes()) {
+                            <div class="plan-exercise-meta plan-exercise-note">{{ ex.notes }}</div>
+                          }
+                        </li>
+                      }
+                    </ol>
+                  </article>
+                }
+              </div>
+
+              @if (p.weeklySetTargets.length) {
+                <details class="chart-table">
+                  <summary>Weekly set targets</summary>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Muscle</th>
+                        <th scope="col">Sets / week</th>
+                        @if (hasBonusTargets(p)) {
+                          <th scope="col">Bonus week</th>
+                        }
+                        @if (hasMaintenanceTargets(p)) {
+                          <th scope="col">Maintenance</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (t of p.weeklySetTargets; track t.muscles.join("+")) {
+                        <tr>
+                          <td>{{ t.muscles.join(" + ") }}</td>
+                          <td>{{ rangeLabel(t.sets) }}</td>
+                          @if (hasBonusTargets(p)) {
+                            <td>{{ t.bonusWeekSets ? rangeLabel(t.bonusWeekSets) : "–" }}</td>
+                          }
+                          @if (hasMaintenanceTargets(p)) {
+                            <td>{{ t.maintenanceSets ?? "–" }}</td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </details>
+              }
+            } @else if (planState() === "loading") {
+              <p class="empty">Loading the plan…</p>
+            } @else if (planState() === "failed") {
+              <p class="empty">The training plan is unavailable right now.</p>
+            }
+          </div>
+
+          <div role="tabpanel" id="panel-progress" aria-labelledby="tab-progress" [hidden]="tab() !== 'progress'">
+            <div class="metric-row metric-row--small">
+              <div class="metric">
+                <span class="metric-value">{{ sessionsPerYear() }}</span>
+                <span class="metric-label">sessions / year</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value">{{ data.totals.workoutDays | number }}</span>
+                <span class="metric-label">workout days</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value">{{ data.totals.exerciseCount }}</span>
+                <span class="metric-label">exercises</span>
+              </div>
+            </div>
+
+            <div class="chart-block">
+              <h2 class="chart-title">Strength progression</h2>
+              <p class="chart-sub">
+                Estimated 1-rep max by month, kg, for the main lifts of the current training plan. Grey dashed lines are
+                earlier lifts no longer being logged; vertical markers show when each plan version began. Machine lifts
+                show stack load, not a true 1RM.
               </p>
               <div class="chart-box">
-                <canvas id="chart-bodyweight" role="img" [attr.aria-label]="bodyweightAria()"></canvas>
-              </div>
-              <details class="chart-table">
-                <summary>Show as a table</summary>
-                <table>
-                  <thead>
-                    <tr><th scope="col">Month</th><th scope="col">kg</th><th scope="col">lb</th></tr>
-                  </thead>
-                  <tbody>
-                    @for (m of bodyweightNewestFirst(); track m.month) {
-                      <tr>
-                        <td>{{ monthName(m.month) }}{{ m.complete ? "" : " (so far)" }}</td>
-                        <td>{{ m.kg | number: "1.1-1" }}</td>
-                        <td>{{ m.lb | number: "1.1-1" }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </details>
-            </div>
-          }
-
-          <div class="chart-block">
-            <h2 class="chart-title">Weekly volume by muscle</h2>
-            <p class="chart-sub">Hard sets per muscle group per week, last {{ weeksShown() }} weeks. Guide: ~10–20 per group.</p>
-            <div class="chart-box">
-              <canvas
-                id="chart-weekly"
-                role="img"
-                aria-label="Stacked bars of sets per muscle group for each of the last several weeks."
-              ></canvas>
-            </div>
-          </div>
-
-          <div class="chart-columns">
-            <div class="chart-block">
-              <h2 class="chart-title">Muscle balance</h2>
-              <p class="chart-sub">All-time sets by muscle group.</p>
-              <div class="chart-box chart-box--radar">
                 <canvas
-                  id="chart-radar"
+                  id="chart-strength"
                   role="img"
-                  aria-label="Radar chart of all-time set counts across muscle groups."
+                  aria-label="Estimated 1-rep max in kilograms per month for the main lifts of the current training plan, with earlier lifts in grey and plan changes marked."
                 ></canvas>
               </div>
             </div>
+
+            @if (bodyweightMonths().length >= 2) {
+              <div class="chart-block">
+                <h2 class="chart-title">Bodyweight</h2>
+                <p class="chart-sub">
+                  Monthly average of morning weigh-ins from a smart scale, kg. {{ bodyweightSummary() }}
+                </p>
+                <div class="chart-box">
+                  <canvas id="chart-bodyweight" role="img" [attr.aria-label]="bodyweightAria()"></canvas>
+                </div>
+                <details class="chart-table">
+                  <summary>Show as a table</summary>
+                  <table>
+                    <thead>
+                      <tr><th scope="col">Month</th><th scope="col">kg</th><th scope="col">lb</th></tr>
+                    </thead>
+                    <tbody>
+                      @for (m of bodyweightNewestFirst(); track m.month) {
+                        <tr>
+                          <td>{{ monthName(m.month) }}{{ m.complete ? "" : " (so far)" }}</td>
+                          <td>{{ m.kg | number: "1.1-1" }}</td>
+                          <td>{{ m.lb | number: "1.1-1" }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </details>
+              </div>
+            }
+
             <div class="chart-block">
-              <h2 class="chart-title">Consistency</h2>
-              <p class="chart-sub">Sessions per week, last {{ weeksShown() }} weeks.</p>
-              <div class="chart-box chart-box--radar">
+              <h2 class="chart-title">Weekly volume by muscle</h2>
+              <p class="chart-sub">Hard sets per muscle group per week, last {{ weeksShown() }} weeks. Guide: ~10–20 per group.</p>
+              <div class="chart-box">
                 <canvas
-                  id="chart-consistency"
+                  id="chart-weekly"
                   role="img"
-                  aria-label="Bar chart of training sessions per week over recent weeks."
+                  aria-label="Stacked bars of sets per muscle group for each of the last several weeks."
                 ></canvas>
+              </div>
+            </div>
+
+            <div class="chart-columns">
+              <div class="chart-block">
+                <h2 class="chart-title">Muscle balance</h2>
+                <p class="chart-sub">All-time sets by muscle group.</p>
+                <div class="chart-box chart-box--radar">
+                  <canvas
+                    id="chart-radar"
+                    role="img"
+                    aria-label="Radar chart of all-time set counts across muscle groups."
+                  ></canvas>
+                </div>
+              </div>
+              <div class="chart-block">
+                <h2 class="chart-title">Consistency</h2>
+                <p class="chart-sub">Sessions per week, last {{ weeksShown() }} weeks.</p>
+                <div class="chart-box chart-box--radar">
+                  <canvas
+                    id="chart-consistency"
+                    role="img"
+                    aria-label="Bar chart of training sessions per week over recent weeks."
+                  ></canvas>
+                </div>
               </div>
             </div>
           </div>
@@ -370,6 +516,16 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     return monthLabel(month);
   }
   readonly weeksShown = signal(0);
+
+  readonly tabs = TABS;
+  /** Read from the URL hash, so a link can open straight onto the plan. */
+  readonly tab = signal<WorkoutTab>(tabFromHash(globalThis.location?.hash ?? ""));
+
+  readonly plan = signal<WorkoutPlan | null>(null);
+  /** "idle" until the Plan tab is first opened; the plan is fetched only then. */
+  readonly planState = signal<"idle" | "loading" | "loaded" | "failed">("idle");
+  /** Per-exercise cues are off by default: the menu reads at a glance without them. */
+  readonly showExerciseNotes = signal(false);
 
   // Exposed for the volume chart's zone legend.
   readonly zoneUnder = ZONE_UNDER;
@@ -455,6 +611,85 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     return Math.round(totals.workoutDays / years);
   });
 
+  selectTab(id: WorkoutTab): void {
+    this.tab.set(id);
+    try {
+      // replaceState rather than a hash assignment: switching tabs should not
+      // stack browser history, and the router should not see a navigation. The
+      // path is spelled out because a bare "#plan" resolves against <base href="/">.
+      const path = location.pathname + location.search;
+      history.replaceState(history.state, "", id === TABS[0].id ? path : `${path}#${id}`);
+    } catch {
+      // Best-effort; the tab still switches.
+    }
+    if (id === "plan") {
+      this.loadPlan();
+    }
+  }
+
+  /** Arrow, Home and End keys move between tabs, as the ARIA tabs pattern expects. */
+  onTabKey(event: KeyboardEvent): void {
+    const index = TABS.findIndex((t) => t.id === this.tab());
+    const next =
+      event.key === "ArrowRight" ? (index + 1) % TABS.length
+      : event.key === "ArrowLeft" ? (index - 1 + TABS.length) % TABS.length
+      : event.key === "Home" ? 0
+      : event.key === "End" ? TABS.length - 1
+      : -1;
+    if (next < 0) {
+      return;
+    }
+    event.preventDefault();
+    this.selectTab(TABS[next].id);
+    document.getElementById(`tab-${TABS[next].id}`)?.focus();
+  }
+
+  private loadPlan(): void {
+    if (this.planState() !== "idle") {
+      return;
+    }
+    this.planState.set("loading");
+    this.workoutService.getPlan().subscribe((plan) => {
+      this.plan.set(plan);
+      this.planState.set(plan ? "loaded" : "failed");
+    });
+  }
+
+  rangeLabel(range: SetRange): string {
+    return rangeText(range);
+  }
+
+  /** "Sep 11, 2026". */
+  longDate(iso: string): string {
+    return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  }
+
+  /** Session ids as their names, falling back to the id for one the plan doesn't list. */
+  sessionNames(plan: WorkoutPlan, ids: string[]): string {
+    return ids.map((id) => plan.sessions.find((s) => s.id === id)?.name ?? id).join(", ");
+  }
+
+  rotationLabel(plan: WorkoutPlan): string {
+    return plan.rotation.map((id) => this.sessionNames(plan, [id])).join(" → ");
+  }
+
+  hasExerciseNotes(plan: WorkoutPlan): boolean {
+    return plan.sessions.some((s) => s.exercises.some((e) => e.notes));
+  }
+
+  hasBonusTargets(plan: WorkoutPlan): boolean {
+    return plan.weeklySetTargets.some((t) => t.bonusWeekSets != null);
+  }
+
+  hasMaintenanceTargets(plan: WorkoutPlan): boolean {
+    return plan.weeklySetTargets.some((t) => t.maintenanceSets != null);
+  }
+
   private charts: Chart[] = [];
   private injector = inject(Injector);
 
@@ -481,6 +716,9 @@ export class WorkoutComponent implements OnInit, OnDestroy {
           afterNextRender(() => this.buildCharts(summary, status), {
             injector: this.injector,
           });
+        }
+        if (this.tab() === "plan") {
+          this.loadPlan();
         }
       },
       error: () => this.loaded.set(true),

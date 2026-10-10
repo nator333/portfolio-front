@@ -2,11 +2,12 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
 import { Chart } from "chart.js/auto";
 
-import { WorkoutComponent, filterLegendClick } from "./workout.component";
+import { WorkoutComponent, filterLegendClick, tabFromHash } from "./workout.component";
 import { WorkoutService } from "../../services/workout.service";
 import {
   BodyweightSnapshot,
   MuscleVolumeStatus,
+  WorkoutPlan,
   WorkoutSummary,
 } from "../../models/workout-data";
 
@@ -100,10 +101,53 @@ const BODYWEIGHT: BodyweightSnapshot = {
   updatedAt: "2026-09-28T16:00:00.000Z",
 };
 
+const PLAN: WorkoutPlan = {
+  planId: "upper-lower",
+  version: 3,
+  name: "Upper/Lower summer block",
+  sessionsPerWeek: 3,
+  rotation: ["upper-a", "lower-a", "upper-b"],
+  bonusSessions: ["lower-b"],
+  sessions: [
+    {
+      id: "upper-a",
+      name: "Upper A",
+      notes: "",
+      exercises: [
+        {
+          order: 1,
+          options: ["Bench Press", "Incline Dumbbell Press"],
+          muscle: "Chest",
+          sets: { min: 3, max: 3 },
+          reps: { min: 6, max: 8 },
+          rpe: { min: 8, max: 9 },
+          notes: "",
+        },
+      ],
+    },
+    { id: "lower-a", name: "Lower A", notes: "", exercises: [] },
+    { id: "upper-b", name: "Upper B", notes: "", exercises: [] },
+    { id: "lower-b", name: "Lower B", notes: "", exercises: [] },
+  ],
+  weeklySetTargets: [
+    { muscles: ["Chest"], sets: { min: 8, max: 9 }, bonusWeekSets: null, maintenanceSets: null },
+  ],
+  effectiveFrom: "2026-06-01",
+  effectiveTo: null,
+  notes: "",
+  changeNote: "Swapped the row variation.",
+};
+
 class StubWorkoutService {
   summary: WorkoutSummary | null = SUMMARY;
   status: MuscleVolumeStatus | null = STATUS;
   bodyweight: BodyweightSnapshot | null = BODYWEIGHT;
+  plan: WorkoutPlan | null = PLAN;
+  planCalls = 0;
+  getPlan() {
+    this.planCalls++;
+    return of(this.plan);
+  }
   getBodyweight() {
     return of(this.bodyweight);
   }
@@ -136,6 +180,8 @@ describe("WorkoutComponent", () => {
 
   afterEach(() => {
     TestBed.resetTestingModule();
+    // selectTab writes the tab into the URL; don't let it leak into the next case.
+    history.replaceState(history.state, "", location.pathname + location.search);
   });
 
   const text = () => (fixture.nativeElement as HTMLElement).textContent ?? "";
@@ -204,6 +250,82 @@ describe("WorkoutComponent", () => {
     await render({ status: null });
     expect(text()).toContain("sessions / week");
     expect(text()).toContain("workout days");
+  });
+
+  describe("tabs", () => {
+    const panel = (id: string) =>
+      (fixture.nativeElement as HTMLElement).querySelector(`#panel-${id}`) as HTMLElement;
+
+    it("opens on this week's view with the other panels hidden", async () => {
+      await render();
+      expect(panel("week").hidden).toBe(false);
+      expect(panel("plan").hidden).toBe(true);
+      expect(panel("progress").hidden).toBe(true);
+    });
+
+    it("builds every chart up front, so switching tabs needs no rebuild", async () => {
+      await render();
+      expect(fixture.nativeElement.querySelector("#panel-progress #chart-strength")).not.toBeNull();
+    });
+
+    it("fetches the plan only when its tab is first opened", async () => {
+      await render();
+      expect(service.planCalls).toBe(0);
+
+      fixture.componentInstance.selectTab("plan");
+      fixture.componentInstance.selectTab("week");
+      fixture.componentInstance.selectTab("plan");
+      fixture.detectChanges();
+
+      expect(service.planCalls).toBe(1);
+      expect(panel("plan").hidden).toBe(false);
+      expect(panel("plan").textContent).toContain("Upper A → Lower A → Upper B");
+      expect(panel("plan").textContent).toContain("plus Lower B");
+      expect(panel("plan").textContent).toContain("Bench Press");
+      expect(panel("plan").textContent).toContain("3 × 6–8");
+      expect(panel("plan").textContent).toContain("or Incline Dumbbell Press");
+      expect(panel("plan").textContent).toContain("Swapped the row variation.");
+    });
+
+    it("keeps per-exercise notes out of the way until asked for", async () => {
+      const [upperA, ...rest] = PLAN.sessions;
+      const exercises = [{ ...upperA.exercises[0], notes: "Pause on the chest." }];
+      await render({ plan: { ...PLAN, sessions: [{ ...upperA, exercises }, ...rest] } });
+      fixture.componentInstance.selectTab("plan");
+      fixture.detectChanges();
+      expect(panel("plan").textContent).not.toContain("Pause on the chest.");
+
+      fixture.componentInstance.showExerciseNotes.set(true);
+      fixture.detectChanges();
+      expect(panel("plan").textContent).toContain("Pause on the chest.");
+    });
+
+    it("says so when the plan can't be read, without touching the other tabs", async () => {
+      await render({ plan: null });
+      fixture.componentInstance.selectTab("plan");
+      fixture.detectChanges();
+      expect(panel("plan").textContent).toContain("unavailable");
+      expect(panel("week").textContent).toContain("Volume vs target");
+    });
+
+    it("moves between tabs with the arrow keys, wrapping at the ends", async () => {
+      await render();
+      const key = (k: string) =>
+        fixture.componentInstance.onTabKey(new KeyboardEvent("keydown", { key: k }));
+      key("ArrowLeft");
+      expect(fixture.componentInstance.tab()).toBe("progress");
+      key("ArrowRight");
+      expect(fixture.componentInstance.tab()).toBe("week");
+      key("End");
+      expect(fixture.componentInstance.tab()).toBe("progress");
+    });
+
+    it("reads the starting tab from the URL hash", () => {
+      expect(tabFromHash("#plan")).toBe("plan");
+      expect(tabFromHash("#progress")).toBe("progress");
+      expect(tabFromHash("")).toBe("week");
+      expect(tabFromHash("#nonsense")).toBe("week");
+    });
   });
 
   describe("bodyweight", () => {
