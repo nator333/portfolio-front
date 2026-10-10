@@ -8,6 +8,7 @@ import {
 import { DOCUMENT } from "@angular/common";
 
 import { PageBackgroundService } from "../../services/page-background.service";
+import { backgroundOverlayColor } from "../../models/home-data";
 
 // Set on <body> while a photo is shown; styles.scss uses it to make the
 // page-level black backgrounds transparent so the photo shows through.
@@ -36,7 +37,11 @@ const PAGE_PHOTO_CLASS = "has-page-photo";
         decoding="async"
         (load)="background.loaded.set(true)"
       />
-      <div class="page-overlay" aria-hidden="true"></div>
+      <div
+        class="page-overlay"
+        aria-hidden="true"
+        [style.background-color]="overlayColor(photo)"
+      ></div>
     }
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -45,6 +50,7 @@ const PAGE_PHOTO_CLASS = "has-page-photo";
 export class PageBackgroundComponent implements OnInit {
   readonly background = inject(PageBackgroundService);
   private document = inject(DOCUMENT);
+  readonly overlayColor = backgroundOverlayColor;
 
   constructor() {
     effect(() => {

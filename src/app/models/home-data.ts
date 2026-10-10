@@ -35,6 +35,11 @@ export interface BackgroundPhoto {
   /** Shown in a corner of the hero, e.g. where it was taken. May be empty. */
   caption: string;
   alt?: string;
+  /**
+   * Overlay darkness as a whole percentage: 0 shows the photo as is, 100 is
+   * solid black. Absent means DEFAULT_BACKGROUND_DIM.
+   */
+  dim?: number;
 }
 
 // The hero renders one heading per motto (h1..h4 by position), so the count
@@ -47,3 +52,12 @@ export const MAX_MOTTO_LENGTH = 40;
 export const MAX_BACKGROUND_COUNT = 12;
 export const MAX_BACKGROUND_CAPTION_LENGTH = 80;
 export const MAX_BACKGROUND_ALT_LENGTH = 200;
+export const MAX_BACKGROUND_DIM = 100;
+
+/** Overlay darkness (%) for a photo saved without its own `dim`. */
+export const DEFAULT_BACKGROUND_DIM = 55;
+
+/** The overlay colour that darkens `photo` by its `dim` percentage. */
+export function backgroundOverlayColor(photo: BackgroundPhoto): string {
+  return `rgba(0, 0, 0, ${(photo.dim ?? DEFAULT_BACKGROUND_DIM) / 100})`;
+}

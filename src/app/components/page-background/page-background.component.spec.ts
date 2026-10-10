@@ -50,6 +50,26 @@ describe("PageBackgroundComponent", () => {
     expect(document.body.classList).toContain("has-page-photo");
   });
 
+  it("should darken the photo by its own dim percentage", () => {
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
+      mottoes: [],
+      backgrounds: [{ url: "https://cdn.example.com/a/w2560.webp", caption: "", dim: 30 }],
+    });
+    fixture.detectChanges();
+    const overlay = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(".page-overlay")!;
+    expect(overlay.style.backgroundColor).toBe("rgba(0, 0, 0, 0.3)");
+  });
+
+  it("should use the default darkness for a photo saved without dim", () => {
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
+      mottoes: [],
+      backgrounds: [{ url: "https://cdn.example.com/a/w2560.webp", caption: "" }],
+    });
+    fixture.detectChanges();
+    const overlay = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(".page-overlay")!;
+    expect(overlay.style.backgroundColor).toBe("rgba(0, 0, 0, 0.55)");
+  });
+
   it("should fade the photo in only once it has loaded", () => {
     httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
       mottoes: [],
