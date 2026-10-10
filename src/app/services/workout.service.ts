@@ -97,12 +97,14 @@ export class WorkoutService {
    * Asked for only when that tab is first opened, so the charts' visitors don't
    * spend the workout key's quota on it. Uncached for the same reason as the
    * volume status: a revision published this morning should read as such.
-   * Fails soft to null, and the tab says the plan is unavailable.
+   * `version` opens a past one; the API serves the current version and the
+   * five before it. Fails soft to null, and the tab says the plan is unavailable.
    */
-  getPlan(): Observable<WorkoutPlan | null> {
+  getPlan(version?: number): Observable<WorkoutPlan | null> {
     return this.http
       .get<WorkoutPlan>(`${environment.apiBaseUrl}/workout-plan`, {
         context: withApiKey("workout"),
+        params: version === undefined ? {} : { version },
       })
       .pipe(
         catchError((error) => {

@@ -54,6 +54,24 @@ $gold: #ffd700;
   }
 }
 
+.plan-version-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  color: #999999;
+  font-size: 0.85rem;
+
+  select {
+    background: #111111;
+    color: #e8e8e3;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 0.3rem 0.5rem;
+    font: inherit;
+  }
+}
+
 .plan-head {
   margin-bottom: 1.5rem;
 }
