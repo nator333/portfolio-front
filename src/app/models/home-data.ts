@@ -19,6 +19,13 @@ export interface HomeData {
    * empty keeps the plain black hero.
    */
   backgrounds?: BackgroundPhoto[];
+  /**
+   * When true the site shows its plain black background even though
+   * `backgrounds` is kept, so the photos can be switched off and back on
+   * without re-adding them. Absent is treated as false. Keep in sync with the
+   * API-side zod schema.
+   */
+  backgroundsHidden?: boolean;
 }
 
 /** One hero background photo. Mirrors backgroundPhotoSchema in the API. */

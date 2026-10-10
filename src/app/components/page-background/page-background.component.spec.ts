@@ -6,6 +6,7 @@ import {
 } from "@angular/common/http/testing";
 import { PageBackgroundComponent } from "./page-background.component";
 import { environment } from "../../../environments/environment";
+import { PageBackgroundService } from "../../services/page-background.service";
 
 describe("PageBackgroundComponent", () => {
   let fixture: ComponentFixture<PageBackgroundComponent>;
@@ -75,5 +76,44 @@ describe("PageBackgroundComponent", () => {
     expect(
       (again.nativeElement as HTMLElement).querySelector(".page-photo")?.getAttribute("src"),
     ).toBe("https://cdn.example.com/a/w2560.webp");
+  });
+
+  it("should keep the plain black page when the photos are hidden", () => {
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({
+      mottoes: [],
+      backgrounds: [{ url: "https://cdn.example.com/a/w2560.webp", caption: "" }],
+      backgroundsHidden: true,
+    });
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector(".page-photo")).toBeNull();
+    expect(document.body.classList).not.toContain("has-page-photo");
+  });
+
+  it("should apply an editor save straight away", () => {
+    const a = { url: "https://cdn.example.com/a/w2560.webp", caption: "" };
+    const b = { url: "https://cdn.example.com/b/w2560.webp", caption: "" };
+    httpMock.expectOne(`${environment.apiBaseUrl}/home`).flush({ mottoes: [], backgrounds: [a] });
+    fixture.detectChanges();
+    const service = TestBed.inject(PageBackgroundService);
+    service.loaded.set(true);
+
+    // Hiding drops back to the plain black page.
+    service.apply({ mottoes: [], backgrounds: [a, b], backgroundsHidden: true });
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector(".page-photo")).toBeNull();
+    expect(document.body.classList).not.toContain("has-page-photo");
+
+    // Showing again picks a photo, which fades in afresh.
+    service.apply({ mottoes: [], backgrounds: [a] });
+    fixture.detectChanges();
+    expect(service.photo()?.url).toBe(a.url);
+    expect(service.loaded()).toBe(false);
+    expect(document.body.classList).toContain("has-page-photo");
+
+    // A save that still includes the current photo keeps it on screen.
+    service.loaded.set(true);
+    service.apply({ mottoes: [], backgrounds: [b, a] });
+    expect(service.photo()?.url).toBe(a.url);
+    expect(service.loaded()).toBe(true);
   });
 });
