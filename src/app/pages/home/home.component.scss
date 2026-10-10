@@ -44,9 +44,7 @@
 }
 
 .hero-body {
-  /* Positioned so it paints above the caption's corner, but deliberately
-     without a z-index: that would isolate it in its own stacking context and
-     stop the signature blending with the page background photo. */
+  /* Positioned so it paints above the caption's corner. */
   position: relative;
   display: flex;
   align-items: center;
@@ -98,12 +96,6 @@
     height: auto;
     max-height: 300px;
   }
-}
-
-/* The signature art sits on solid black; over a photo, screen-blend it so the
-   black drops out and only the gold strokes remain. */
-.has-photo .signature-image {
-  mix-blend-mode: screen;
 }
 
 .profile-info {
