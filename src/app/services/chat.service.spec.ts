@@ -66,4 +66,18 @@ describe("ChatService", () => {
     );
     req.flush({ reply: "ok" });
   });
+
+  it("should include the page context when given", () => {
+    const history: ChatMessage[] = [{ role: "user", content: "Hello" }];
+
+    service.sendMessage(history, { page: "blog-post", slug: "my-post" }).subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/chat`);
+    expect(req.request.body).toEqual({
+      messages: history,
+      page: "blog-post",
+      slug: "my-post",
+    });
+    req.flush({ reply: "ok" });
+  });
 });
