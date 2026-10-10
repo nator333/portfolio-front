@@ -185,3 +185,51 @@ export interface BodyweightSnapshot {
   /** When the averages were last refreshed; null before the first refresh. */
   updatedAt: string | null;
 }
+
+/** One prescribed slot in a session; `options` are interchangeable, the first the default. */
+export interface PlanExercise {
+  order: number;
+  options: string[];
+  muscle: string;
+  sets: SetRange;
+  reps: SetRange;
+  /** Prescribed effort, RPE 1–10; null where the plan leaves it open. */
+  rpe: SetRange | null;
+  notes: string;
+}
+
+export interface PlanSession {
+  id: string;
+  name: string;
+  notes: string;
+  exercises: PlanExercise[];
+}
+
+/** A weekly set target as GET /workout-plan states it. */
+export interface PlanWeeklyTarget {
+  /** Several when the plan states them together, e.g. glutes and hamstrings. */
+  muscles: string[];
+  sets: SetRange;
+  bonusWeekSets: SetRange | null;
+  maintenanceSets?: number | null;
+}
+
+/** Shape of GET /workout-plan in portfolio-api: the program currently in force. */
+export interface WorkoutPlan {
+  planId: string;
+  version: number;
+  name: string;
+  sessionsPerWeek: number;
+  /** Session ids in the order they are performed, cycling. */
+  rotation: string[];
+  /** Session ids added only on weeks with an extra visit. */
+  bonusSessions: string[];
+  sessions: PlanSession[];
+  weeklySetTargets: PlanWeeklyTarget[];
+  /** YYYY-MM-DD; null when the block's start was never recorded. */
+  effectiveFrom: string | null;
+  effectiveTo: string | null;
+  notes: string;
+  /** Why this version differs from the one before it; empty for the first. */
+  changeNote: string;
+}

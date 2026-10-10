@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, of, catchError, tap } from "rxjs";
 import { environment } from "../../environments/environment";
-import { BodyweightSnapshot, MuscleVolumeStatus, WorkoutSummary } from "../models/workout-data";
+import { BodyweightSnapshot, MuscleVolumeStatus, WorkoutPlan, WorkoutSummary } from "../models/workout-data";
 import { withApiKey } from "../interceptors/api.interceptors";
 
 // v2: strength lifts follow the training plan (`tracked`, `planChanges`).
@@ -86,6 +86,27 @@ export class WorkoutService {
       .pipe(
         catchError((error) => {
           console.error("Error loading bodyweight from API:", error);
+          return of(null);
+        }),
+      );
+  }
+
+  /**
+   * The training program currently in force, for the Training page's Plan tab.
+   *
+   * Asked for only when that tab is first opened, so the charts' visitors don't
+   * spend the workout key's quota on it. Uncached for the same reason as the
+   * volume status: a revision published this morning should read as such.
+   * Fails soft to null, and the tab says the plan is unavailable.
+   */
+  getPlan(): Observable<WorkoutPlan | null> {
+    return this.http
+      .get<WorkoutPlan>(`${environment.apiBaseUrl}/workout-plan`, {
+        context: withApiKey("workout"),
+      })
+      .pipe(
+        catchError((error) => {
+          console.error("Error loading workout plan from API:", error);
           return of(null);
         }),
       );
