@@ -1,7 +1,8 @@
 $gold: #ffd700;
 
 /* Cards and charts sit on solid black, so they stay legible over the
-   site-wide background photo. */
+   site-wide background photo. The small metric figures deliberately stay on
+   the photo. */
 $card-bg: #000000;
 $card-radius: 8px;
 
@@ -192,9 +193,6 @@ $card-radius: 8px;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background-color: $card-bg;
-  border-radius: $card-radius;
-  padding: 1rem 0.75rem;
 }
 
 .metric-value {
