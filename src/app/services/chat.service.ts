@@ -3,6 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../environments/environment";
 import {
+  ChatContext,
   ChatMessage,
   ChatResponse,
   CHAT_MAX_MESSAGES,
@@ -19,7 +20,14 @@ import { withApiKey } from "../interceptors/api.interceptors";
 export class ChatService {
   constructor(private http: HttpClient) {}
 
-  sendMessage(history: ChatMessage[]): Observable<ChatResponse> {
+  /**
+   * @param context the page the visitor is on; the assistant answers from that
+   *   page's data. Omitted, the API falls back to the general profile scope.
+   */
+  sendMessage(
+    history: ChatMessage[],
+    context?: ChatContext,
+  ): Observable<ChatResponse> {
     // Clamp client-side to the API's limits so long conversations keep working
     // (the server only needs recent turns for context) and never 400.
     const messages = history.slice(-CHAT_MAX_MESSAGES).map((message) => ({
@@ -28,7 +36,7 @@ export class ChatService {
     }));
     return this.http.post<ChatResponse>(
       `${environment.apiBaseUrl}/chat`,
-      { messages },
+      { messages, ...context },
       { context: withApiKey("chat") },
     );
   }

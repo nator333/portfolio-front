@@ -3,6 +3,11 @@ import { of, throwError } from "rxjs";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChatWidgetComponent } from "./chat-widget.component";
 import { ChatService } from "../../services/chat.service";
+import { provideRouter, Router } from "@angular/router";
+import { Component } from "@angular/core";
+
+@Component({ template: "" })
+class BlankPage {}
 
 describe("ChatWidgetComponent", () => {
   let fixture: ComponentFixture<ChatWidgetComponent>;
@@ -15,7 +20,13 @@ describe("ChatWidgetComponent", () => {
     ]);
     await TestBed.configureTestingModule({
       imports: [ChatWidgetComponent],
-      providers: [{ provide: ChatService, useValue: chatService }],
+      providers: [
+        { provide: ChatService, useValue: chatService },
+        provideRouter([
+          { path: "workout", component: BlankPage },
+          { path: "blog/:url", component: BlankPage },
+        ]),
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(ChatWidgetComponent);
     component = fixture.componentInstance;
@@ -68,5 +79,37 @@ describe("ChatWidgetComponent", () => {
     component.draft = "   ";
     component.send();
     expect(chatService.sendMessage).not.toHaveBeenCalled();
+  });
+
+  it("should send the current page as context", async () => {
+    chatService.sendMessage.and.returnValue(of({ reply: "Squats." }));
+    await TestBed.inject(Router).navigateByUrl("/blog/my-post");
+    fixture.detectChanges();
+
+    component.draft = "What is this about?";
+    component.send();
+
+    expect(chatService.sendMessage).toHaveBeenCalledWith(
+      [{ role: "user", content: "What is this about?" }],
+      { page: "blog-post", slug: "my-post" },
+    );
+  });
+
+  it("should adapt its title and start a fresh conversation per page", async () => {
+    chatService.sendMessage.and.returnValue(of({ reply: "Hello." }));
+    component.isOpen.set(true);
+    component.draft = "Hi";
+    component.send();
+    await fixture.whenStable();
+    expect(component.messages().length).toBe(2);
+
+    await TestBed.inject(Router).navigateByUrl("/workout");
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.messages()).toEqual([]);
+    expect(
+      fixture.nativeElement.querySelector(".chat-title")?.textContent,
+    ).toContain("training");
   });
 });
