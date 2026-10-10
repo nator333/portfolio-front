@@ -1,0 +1,225 @@
+<app-hero
+  title="Places"
+  subtitle="Five towns I have called home, and what I remember of them"
+></app-hero>
+
+<section class="section places-section">
+  <div class="container places">
+    <div class="bar">
+      <nav class="cities" aria-label="Choose a town">
+        @for (c of cities; track c.id) {
+          <button
+            type="button"
+            [attr.aria-pressed]="c.id === cityId()"
+            (click)="selectCity(c.id)"
+          >
+            {{ c.name }}<small>{{ c.region }}</small>
+          </button>
+        }
+      </nav>
+      @if (isAuthenticated()) {
+        <a class="editbtn" routerLink="/places-edit">✎ Edit places</a>
+      }
+    </div>
+
+    @if (info().summary) {
+      <p class="intro">{{ info().summary }}</p>
+    }
+
+    <div class="main">
+      <app-places-map
+        [city]="city()"
+        [(season)]="season"
+        [memories]="visibleMemories()"
+        [selectedId]="selectedId()"
+        [autoCycle]="true"
+        (pinTap)="onPinTap($event)"
+      ></app-places-map>
+
+      <section #panel class="panel" aria-live="polite">
+        @if (selected(); as memory) {
+          <button type="button" class="back" (click)="back()">
+            ◀ Back to {{ city().name }}
+          </button>
+          <span class="kindtag">
+            <i [style.background-image]="'url(' + sprite(memory.kind) + ')'"></i
+            >{{ kindLabels[memory.kind] }}
+          </span>
+          <h2>{{ memory.name }}</h2>
+          @if (memory.period || memory.seasons.length) {
+            <div class="meta">
+              {{ memory.period }}
+              @if (memory.period && memory.seasons.length) {
+                ·
+              }
+              {{ selectedSeasons() }}
+            </div>
+          }
+          <div class="story">{{ memory.text || "(Nothing written yet.)" }}</div>
+          @if (memory.photos.length) {
+            <button type="button" class="textlink" (click)="scrollToGallery()">
+              📷 {{ memory.photos.length }} photo{{
+                memory.photos.length > 1 ? "s" : ""
+              }}
+              below
+            </button>
+          }
+          @if (selectedMapsUrl()) {
+            <a
+              class="textlink"
+              [href]="selectedMapsUrl()"
+              target="_blank"
+              rel="noopener"
+              >Open in Google Maps ↗</a
+            >
+          }
+        } @else {
+          <div class="meta">{{ city().region }}</div>
+          <h2>{{ city().name }}</h2>
+          @if (info().period) {
+            <div class="meta">Lived here {{ info().period }}</div>
+          }
+          @if (info().note) {
+            <div class="story">{{ info().note }}</div>
+          }
+          @if (loading()) {
+            <p class="empty">Loading memories…</p>
+          } @else if (failed()) {
+            <p class="empty">
+              Memories could not be loaded. Please try again later.
+            </p>
+          } @else if (!visibleMemories().length) {
+            <p class="empty">
+              {{
+                hiddenCount()
+                  ? "No memories in " +
+                    seasonLabels[season()].label.toLowerCase() +
+                    "."
+                  : "No memories here yet."
+              }}
+            </p>
+          } @else {
+            <ul class="list">
+              @for (m of visibleMemories(); track m.id) {
+                <li>
+                  <button type="button" (click)="open(m.id)">
+                    <i
+                      [style.background-image]="'url(' + sprite(m.kind) + ')'"
+                    ></i
+                    ><span>{{ m.name }}</span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+          @if (hiddenCount()) {
+            <p class="hidden-note">
+              {{ hiddenCount() }}
+              {{
+                hiddenCount() === 1 ? "memory belongs" : "memories belong"
+              }}
+              to other seasons.
+            </p>
+          }
+        }
+      </section>
+    </div>
+
+    @if (selected(); as memory) {
+      @if (memory.photos.length) {
+        <section #gallery class="gallery" aria-label="Photos">
+          <div class="gal-head">
+            <h2>{{ memory.name }}</h2>
+            <span class="gal-count"
+              >{{ photoIndex() + 1 }} / {{ memory.photos.length }}</span
+            >
+          </div>
+          <div class="gal-stage">
+            <div #galleryTrack class="gal-track" (scroll)="onGalleryScroll()">
+              @for (photo of memory.photos; track photo; let i = $index) {
+                <figure class="gal-slide">
+                  <img
+                    [src]="photo"
+                    [alt]="
+                      memory.name +
+                      ' photo ' +
+                      (i + 1) +
+                      ' of ' +
+                      memory.photos.length
+                    "
+                    [attr.loading]="i ? 'lazy' : 'eager'"
+                    decoding="async"
+                  />
+                </figure>
+              }
+            </div>
+            @if (memory.photos.length > 1) {
+              <button
+                type="button"
+                class="gal-btn prev"
+                aria-label="Previous photo"
+                (click)="stepPhoto(-1)"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                class="gal-btn next"
+                aria-label="Next photo"
+                (click)="stepPhoto(1)"
+              >
+                ›
+              </button>
+            }
+          </div>
+          @if (memory.photos.length > 1) {
+            <div class="gal-dots">
+              @for (photo of memory.photos; track photo; let i = $index) {
+                <button
+                  type="button"
+                  [attr.aria-label]="'Photo ' + (i + 1)"
+                  [attr.aria-current]="i === photoIndex()"
+                  (click)="goToPhoto(i)"
+                ></button>
+              }
+            </div>
+          }
+        </section>
+      }
+    }
+
+    @if (facts().length) {
+      <section class="facts-card">
+        <h2>{{ city().name }} at a glance</h2>
+        <dl class="facts">
+          @for (row of facts(); track row.label) {
+            <dt>{{ row.label }}</dt>
+            <dd>
+              @if (row.chips) {
+                <div class="chips">
+                  @for (chip of row.chips; track chip) {
+                    <span class="chip">{{ chip }}</span>
+                  }
+                </div>
+              } @else {
+                <span class="num">{{ row.value }}</span>
+              }
+            </dd>
+          }
+        </dl>
+        @if (info().source) {
+          <p class="source">
+            Facts from
+            <a [href]="info().source" target="_blank" rel="noopener"
+              >Wikipedia</a
+            >
+            @if (info().fetchedAt) {
+              , retrieved {{ info().fetchedAt }}
+            }
+            .
+          </p>
+        }
+      </section>
+    }
+  </div>
+</section>
