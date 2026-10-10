@@ -273,7 +273,16 @@
   .activity-layout {
     align-items: flex-start;
 
-    @media (max-width: 768px) {
+    /* Stack the feed below the calendar up to iPad widths (portrait iPads,
+       up to the 12.9" iPad Pro at 1024px); a third of a tablet-width row is
+       too narrow for the feed. */
+    @media (max-width: 1024px) {
+      flex-direction: column;
+
+      .column {
+        width: 100%;
+      }
+
       /* Add breathing room when the feed stacks below the calendar. */
       .column + .column {
         margin-top: 1.5rem;
