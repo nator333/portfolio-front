@@ -5,15 +5,14 @@
   padding-top: 3.25rem; // Account for fixed navbar
   position: relative;
   overflow: hidden;
-  /* Clips the viewport-fixed photo to the hero's box. Unlike overflow, a
-     clip-path also clips fixed-position descendants, and it doesn't make the
-     hero their containing block, so the photo stays pinned to the viewport. */
-  clip-path: inset(0);
 }
 
-/* Background photo: covers the hero behind everything, fading in on load.
-   Fixed to the viewport so it stays still while the hero's content and the
-   activity section scroll up over it. */
+/* Background photo: fixed to the viewport behind the whole page, so it stays
+   still while everything down to the footer scrolls over it; fades in on load.
+   It sits in the root stacking context (nothing above it may set a z-index or
+   clip-path), so the content painted over it must be positioned: the hero
+   body, the activity section, and the footer via `has-page-photo` in
+   styles.scss. */
 .hero-photo {
   position: fixed;
   top: 0;
@@ -34,10 +33,15 @@
 }
 
 /* Darkens the photo so the gold mottoes and signature stay legible: heavier
-   on the left behind the mottoes and at the bottom behind the caption. */
+   on the left behind the mottoes and at the bottom behind the caption. Fixed
+   with the photo, so the shading stays put as the page scrolls. */
 .hero-overlay {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
   background:
     linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.35) 60%, rgba(0, 0, 0, 0.45) 100%),
     linear-gradient(to bottom, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.6) 100%);
@@ -187,8 +191,16 @@
 
 /* Blog activity calendar */
 .activity-section {
+  /* Positioned so it paints above the fixed photo. */
+  position: relative;
   background-color: #000000;
   padding: 3rem 1.5rem 4rem;
+
+  /* Let the photo show through, with a tint deepening over the first few rem
+     so the calendar and feed stay legible on bright photos. */
+  &.has-photo {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.6) 8rem);
+  }
 
   .container {
     max-width: 1200px;
