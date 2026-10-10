@@ -19,6 +19,7 @@ import { HeroComponent } from "../../components/hero/hero.component";
 import { ImageUploadComponent } from "../../components/image-upload/image-upload.component";
 import { AuthService } from "../../services/auth.service";
 import { HomeService } from "../../services/home.service";
+import { PageBackgroundService } from "../../services/page-background.service";
 import { MediaAsset, MediaService } from "../../services/media.service";
 import {
   BackgroundPhoto,
@@ -49,6 +50,7 @@ export class HomeEditComponent implements OnInit {
   private authService = inject(AuthService);
   private homeService = inject(HomeService);
   private mediaService = inject(MediaService);
+  private pageBackground = inject(PageBackgroundService);
   private router = inject(Router);
 
   readonly maxMottoCount = MAX_MOTTO_COUNT;
@@ -69,6 +71,8 @@ export class HomeEditComponent implements OnInit {
     mottoes: this.fb.array([]),
     // Hide the mottoes on the live hero without clearing them.
     mottoesHidden: this.fb.nonNullable.control(false),
+    // Show the plain black background site-wide without deleting the photos.
+    backgroundsHidden: this.fb.nonNullable.control(false),
     backgrounds: this.fb.array<BackgroundGroup>([]),
   });
 
@@ -152,9 +156,12 @@ export class HomeEditComponent implements OnInit {
         }
         return photo;
       }),
+      backgroundsHidden: this.homeForm.get("backgroundsHidden")?.value ?? false,
     };
     this.homeService.updateHome(data).subscribe({
-      next: () => {
+      next: (saved) => {
+        // Reflect the change behind this page straight away, not on next visit.
+        this.pageBackground.apply(saved);
         this.saving.set(false);
         this.successMessage.set("Home hero saved.");
       },
@@ -212,6 +219,9 @@ export class HomeEditComponent implements OnInit {
         this.homeForm
           .get("mottoesHidden")
           ?.setValue(data.mottoesHidden ?? false);
+        this.homeForm
+          .get("backgroundsHidden")
+          ?.setValue(data.backgroundsHidden ?? false);
         this.setBackgrounds(data.backgrounds ?? []);
         this.loading.set(false);
       },

@@ -88,13 +88,20 @@
             </div>
           </div>
           <p class="help">
-            Up to {{ maxBackgroundCount }} photos; each visit shows one at random
-            behind the hero, darkened so the mottoes stay readable. The caption
-            (up to {{ maxCaptionLength }} characters, e.g. where it was taken) is
-            shown in the bottom-right corner. Landscape photos with the subject
-            near the centre crop best on phones. With no photos the hero stays
-            black.
+            Up to {{ maxBackgroundCount }} photos; each visit shows one at random,
+            fixed behind every page and darkened so text stays readable. The
+            caption (up to {{ maxCaptionLength }} characters, e.g. where it was
+            taken) is shown in the bottom-left corner of the home hero. Landscape
+            photos with the subject near the centre crop best on phones. With no
+            photos the site stays black.
           </p>
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" formControlName="backgroundsHidden" />
+              Hide the background photos and show the plain black background
+              (keeps them saved)
+            </label>
+          </div>
           <div formArrayName="backgrounds">
             @for (group of backgroundGroups; track group; let i = $index; let last = $last) {
               <div class="background-field" [formGroupName]="i">

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from "@angular/core";
 
 import { HomeService } from "./home.service";
-import { BackgroundPhoto } from "../models/home-data";
+import { BackgroundPhoto, HomeData } from "../models/home-data";
 
 /**
  * The site-wide background photo. One of the home document's saved photos is
@@ -28,11 +28,28 @@ export class PageBackgroundService {
     }
     this.requested = true;
     this.homeService.getHome().subscribe({
-      next: (data) => this.photo.set(pickRandom(data.backgrounds ?? [])),
+      next: (data) => this.apply(data),
       error: () => {
         // Keep the plain black page.
       },
     });
+  }
+
+  /**
+   * Applies a (re)loaded home document, e.g. right after the editor saves.
+   * Hidden or no photos give the plain black page; the current photo is kept
+   * while it is still among the saved ones, so a save doesn't swap it.
+   */
+  apply(data: HomeData): void {
+    const photos = data.backgroundsHidden ? [] : (data.backgrounds ?? []);
+    const currentUrl = this.photo()?.url;
+    const next =
+      photos.find((photo) => photo.url === currentUrl) ?? pickRandom(photos);
+    if (next?.url !== currentUrl) {
+      // A different image has to decode (and fade in) afresh.
+      this.loaded.set(false);
+    }
+    this.photo.set(next);
   }
 }
 
