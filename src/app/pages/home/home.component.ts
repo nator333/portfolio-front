@@ -4,19 +4,17 @@ import {
   inject,
   signal,
   computed,
-  effect,
-  DestroyRef,
   ChangeDetectionStrategy,
 } from "@angular/core";
 
-import { DOCUMENT, NgOptimizedImage } from "@angular/common";
+import { NgOptimizedImage } from "@angular/common";
 
 import { HomeService } from "../../services/home.service";
 import { ActivityService } from "../../services/activity.service";
 import { ContributionCalendarComponent } from "../../components/contribution-calendar/contribution-calendar.component";
 import { ActivityFeedComponent } from "../../components/activity-feed/activity-feed.component";
 import { ActivityFiltersComponent } from "../../components/activity-filters/activity-filters.component";
-import { BackgroundPhoto } from "../../models/home-data";
+import { PageBackgroundService } from "../../services/page-background.service";
 import {
   ActivityEntry,
   ActivityType,
@@ -44,7 +42,7 @@ import {
 export class HomeComponent implements OnInit {
   private homeService = inject(HomeService);
   private activityService = inject(ActivityService);
-  private document = inject(DOCUMENT);
+  private pageBackground = inject(PageBackgroundService);
 
   // Populated from the API response (edited via /home-edit); a never-saved
   // item (mottoes: null) or a failed read renders no motto lines.
@@ -54,24 +52,12 @@ export class HomeComponent implements OnInit {
   // though `mottoes` is kept, so they can be hidden without being retyped.
   readonly mottoesHidden = signal<boolean>(false);
 
-  // Hero background, picked at random from the saved photos once per page
-  // load; null keeps the plain black hero.
-  readonly background = signal<BackgroundPhoto | null>(null);
+  // The site-wide background photo (rendered by the app shell, behind every
+  // page). The hero only adds its caption and blends the signature over it.
+  readonly background = this.pageBackground.photo;
 
-  // Set when the photo has decoded, to fade it (and its caption) in.
-  readonly photoLoaded = signal<boolean>(false);
-
-  constructor() {
-    // The photo stays fixed behind the whole page, down to the footer. The
-    // footer lives outside this component, so a body class lets the global
-    // styles turn its black background translucent while a photo is shown.
-    effect(() => {
-      this.document.body.classList.toggle(PAGE_PHOTO_CLASS, !!this.background());
-    });
-    inject(DestroyRef).onDestroy(() =>
-      this.document.body.classList.remove(PAGE_PHOTO_CLASS),
-    );
-  }
+  // Set when the photo has decoded, to fade the caption in with it.
+  readonly photoLoaded = this.pageBackground.loaded;
 
   readonly profile: string[] = ["Hi, I'm Hiro Nakamata", "Software Engineer"];
   readonly kappiInfo: string[] = [
@@ -152,11 +138,14 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // The shell already asks for it; a no-op then, and it keeps the caption
+    // working wherever the page is rendered on its own.
+    this.pageBackground.load();
+
     this.homeService.getHome().subscribe({
       next: (data) => {
         this.mottoes.set(data.mottoes ?? []);
         this.mottoesHidden.set(data.mottoesHidden ?? false);
-        this.background.set(pickRandom(data.backgrounds ?? []));
       },
       error: () => {
         // Leave the hero without motto lines.
@@ -172,11 +161,4 @@ export class HomeComponent implements OnInit {
       },
     });
   }
-}
-
-// Set on <body> while the home page shows a background photo; see styles.scss.
-const PAGE_PHOTO_CLASS = "has-page-photo";
-
-function pickRandom<T>(items: T[]): T | null {
-  return items.length ? items[Math.floor(Math.random() * items.length)] : null;
 }

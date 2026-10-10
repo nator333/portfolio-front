@@ -5,6 +5,7 @@ import { FooterComponent } from "./components/footer/footer.component";
 import { ChatWidgetComponent } from "./components/chat-widget/chat-widget.component";
 import { LoadingBarComponent } from "./components/loading-bar/loading-bar.component";
 import { SwipeNavigationDirective } from "./directives/swipe-navigation.directive";
+import { PageBackgroundComponent } from "./components/page-background/page-background.component";
 
 @Component({
   selector: "app-root",
@@ -16,9 +17,12 @@ import { SwipeNavigationDirective } from "./directives/swipe-navigation.directiv
     ChatWidgetComponent,
     LoadingBarComponent,
     SwipeNavigationDirective,
+    PageBackgroundComponent,
   ],
   template: `
     <app-loading-bar></app-loading-bar>
+    <!-- Outside the router outlet, so the photo survives navigation. -->
+    <app-page-background></app-page-background>
     <div class="app-container">
       <app-navigation></app-navigation>
       <!--

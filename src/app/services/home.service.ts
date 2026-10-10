@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, tap } from 'rxjs';
+import { Observable, finalize, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { HomeData } from '../models/home-data';
 import { withAuth } from '../interceptors/api.interceptors';
@@ -22,6 +22,10 @@ interface CachedHome {
   providedIn: 'root',
 })
 export class HomeService {
+  // The app shell (background photo) and the home page (mottoes) both read
+  // the document on a cold landing; they share one in-flight request.
+  private inFlight: Observable<HomeData> | null = null;
+
   constructor(private http: HttpClient) {}
 
   getHome(): Observable<HomeData> {
@@ -29,9 +33,14 @@ export class HomeService {
     if (cached) {
       return of(cached);
     }
-    return this.http
+    this.inFlight ??= this.http
       .get<HomeData>(`${environment.apiBaseUrl}/home`)
-      .pipe(tap((data) => this.writeCache(data)));
+      .pipe(
+        tap((data) => this.writeCache(data)),
+        finalize(() => (this.inFlight = null)),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+    return this.inFlight;
   }
 
   updateHome(data: HomeData): Observable<HomeData> {
