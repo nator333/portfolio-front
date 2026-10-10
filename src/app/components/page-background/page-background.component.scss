@@ -1,0 +1,37 @@
+/* Both layers are fixed to the viewport at z-index -1 in the root stacking
+   context: behind all page content, so anything opaque still covers them and
+   anything transparent shows the photo. Nothing between them and <html> may
+   create a stacking context, or the photo would drop behind that ancestor's
+   background (and the home signature would stop blending with it). The large
+   viewport height keeps them from resizing as mobile browser toolbars
+   collapse and expand during scroll. */
+.page-photo,
+.page-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  z-index: -1;
+}
+
+.page-photo {
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transition: opacity 1.2s ease-out;
+
+  &.is-loaded {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/* Darkens the photo evenly so text on every page stays legible over it. */
+.page-overlay {
+  background: rgba(0, 0, 0, 0.55);
+}

@@ -7,51 +7,6 @@
   overflow: hidden;
 }
 
-/* Background photo: fixed to the viewport behind the whole page, so it stays
-   still while everything down to the footer scrolls over it; fades in on load.
-   It sits in the root stacking context (nothing above it may set a z-index or
-   clip-path), so the content painted over it must be positioned: the hero
-   body, the activity section, and the footer via `has-page-photo` in
-   styles.scss. */
-.hero-photo {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  /* The large viewport height keeps the photo from resizing as mobile browser
-     toolbars collapse and expand during scroll. */
-  height: 100lvh;
-  object-fit: cover;
-  object-position: center;
-  opacity: 0;
-  transition: opacity 1.2s ease-out;
-
-  &.is-loaded {
-    opacity: 1;
-  }
-}
-
-/* Darkens the photo so the gold mottoes and signature stay legible: heavier
-   on the left behind the mottoes and at the bottom behind the caption. Fixed
-   with the photo, so the shading stays put as the page scrolls. */
-.hero-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  height: 100lvh;
-  background:
-    linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.35) 60%, rgba(0, 0, 0, 0.45) 100%),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.6) 100%);
-
-  @media (max-width: 768px) {
-    /* Columns stack on mobile, so text spans the full width. */
-    background: rgba(0, 0, 0, 0.55);
-  }
-}
-
 /* Bottom-left: the chat widget's button owns the bottom-right corner. */
 .hero-caption {
   position: absolute;
@@ -83,16 +38,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-photo,
   .hero-caption {
     transition: none;
   }
 }
 
 .hero-body {
-  /* Positioned so it paints above the photo and overlay (earlier siblings),
-     but deliberately without a z-index: that would isolate it in its own
-     stacking context and stop the signature blending with the photo. */
+  /* Positioned so it paints above the caption's corner, but deliberately
+     without a z-index: that would isolate it in its own stacking context and
+     stop the signature blending with the page background photo. */
   position: relative;
   display: flex;
   align-items: center;
@@ -191,16 +145,8 @@
 
 /* Blog activity calendar */
 .activity-section {
-  /* Positioned so it paints above the fixed photo. */
-  position: relative;
   background-color: #000000;
   padding: 3rem 1.5rem 4rem;
-
-  /* Let the photo show through, with a tint deepening over the first few rem
-     so the calendar and feed stay legible on bright photos. */
-  &.has-photo {
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.6) 8rem);
-  }
 
   .container {
     max-width: 1200px;
