@@ -15,6 +15,7 @@ import { ContributionCalendarComponent } from "../../components/contribution-cal
 import { ActivityFeedComponent } from "../../components/activity-feed/activity-feed.component";
 import { ActivityFiltersComponent } from "../../components/activity-filters/activity-filters.component";
 import { PageBackgroundService } from "../../services/page-background.service";
+import { nextNameArtEffect } from "../../utils/name-art-effect.util";
 import {
   ActivityEntry,
   ActivityType,
@@ -68,6 +69,17 @@ export class HomeComponent implements OnInit {
     "assets/my_name_gold.png",
     "Hiro Nakamata Signature",
   ];
+
+  // This load's entrance effect for the name art; rotates each page load.
+  readonly artEffect = nextNameArtEffect(safeLocalStorage());
+
+  // The effect starts once the art has decoded, so a slow load doesn't play
+  // it to an empty box. Also set on error, so the art is never left hidden.
+  readonly artLoaded = signal<boolean>(false);
+
+  // The shine layer is masked by the art itself, so the glint only lights up
+  // the gold strokes. Resolved against <base href>, like the img src.
+  readonly artMask = `url(${this.sighInfo[0]})`;
 
   // Activity entries feeding both the calendar and the feed. The API merges
   // GitHub, gym and blog server-side and returns one flat list, so a new source
@@ -160,5 +172,14 @@ export class HomeComponent implements OnInit {
         // Leave the calendar and feed empty.
       },
     });
+  }
+}
+
+// localStorage access itself throws when site data is blocked.
+function safeLocalStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
   }
 }

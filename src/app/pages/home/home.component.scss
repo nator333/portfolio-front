@@ -91,10 +91,122 @@
   margin-bottom: 3rem;
   
   .signature-image {
+    display: block;
     max-width: 100%;
     width: auto;
     height: auto;
     max-height: 300px;
+  }
+}
+
+/* Name art entrance effects; one plays per page load (name-art-effect.util).
+   The wrapper shrinks to the image so the shine layer can cover it exactly. */
+.signature-art {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+}
+
+/* Wipe: a soft-edged mask sweeps the art in, left to right, like a brush. The
+   mask is an art-width opaque run, a soft edge a quarter of the art wide, and
+   an art-width transparent run (2.25x the art); sliding it from its
+   transparent end to its opaque end carries the edge across the whole art for
+   the whole animation. */
+.art-wipe .signature-image {
+  -webkit-mask-image: linear-gradient(100deg, #000 44.4%, transparent 55.6%);
+  mask-image: linear-gradient(100deg, #000 44.4%, transparent 55.6%);
+  -webkit-mask-size: 225% 100%;
+  mask-size: 225% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: 100% 0;
+  mask-position: 100% 0;
+}
+
+.art-wipe.is-loaded .signature-image {
+  animation: art-wipe 1.8s cubic-bezier(0.45, 0, 0.2, 1) 0.2s forwards;
+}
+
+@keyframes art-wipe {
+  to {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+}
+
+/* Shine: the art shows at once; a band of light, masked to the gold strokes,
+   glints across it shortly after load and then every few seconds. */
+.signature-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-mask-image: var(--art-mask);
+  mask-image: var(--art-mask);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  /* Clear art-width runs either side of a band 0.3x the art wide (2.3x in
+     all), so the band enters at the left edge and leaves at the right. */
+  background: linear-gradient(
+    105deg,
+    transparent 43.5%,
+    rgba(255, 255, 245, 0.95) 50%,
+    transparent 56.5%
+  );
+  background-size: 230% 100%;
+  background-repeat: no-repeat;
+  background-position: 100% 0;
+}
+
+.art-shine.is-loaded .signature-shine {
+  animation: art-shine 7s ease-in-out 0.6s infinite;
+}
+
+@keyframes art-shine {
+  0% {
+    background-position: 100% 0;
+  }
+  /* The sweep takes the first ~1.6s; the rest of the cycle is a pause. */
+  23%,
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* Ink: the art settles from a soft, slightly larger blur into focus. */
+.art-ink .signature-image {
+  opacity: 0;
+}
+
+.art-ink.is-loaded .signature-image {
+  animation: art-ink 1.6s cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+}
+
+@keyframes art-ink {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+
+/* Reduced motion: the art is simply shown, with no entrance or shine. */
+@media (prefers-reduced-motion: reduce) {
+  .signature-art .signature-image,
+  .signature-art.is-loaded .signature-image {
+    animation: none;
+    opacity: 1;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .signature-shine {
+    display: none;
   }
 }
 
