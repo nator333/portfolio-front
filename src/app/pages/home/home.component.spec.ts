@@ -213,4 +213,17 @@ describe("HomeComponent", () => {
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector(".hero-caption")).toBeNull();
   });
+
+  it("should play one name art effect, starting once the art has loaded", () => {
+    flushHome([]);
+    const el: HTMLElement = fixture.nativeElement;
+    const art = el.querySelector(".signature-art")!;
+    expect(art.classList).toContain(`art-${component.artEffect}`);
+    expect(art.classList).not.toContain("is-loaded");
+    el.querySelector(".signature-image")!.dispatchEvent(new Event("load"));
+    fixture.detectChanges();
+    expect(art.classList).toContain("is-loaded");
+    // Only the shine effect needs its glint layer.
+    expect(!!el.querySelector(".signature-shine")).toBe(component.artEffect === "shine");
+  });
 });

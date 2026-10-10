@@ -37,14 +37,27 @@
         <div class="column is-half">
           <div class="profile-section has-text-centered">
             <div class="signature-container">
-              <img
-                [ngSrc]="sighInfo[0]"
-                [alt]="sighInfo[1]"
-                width="1228"
-                height="898"
-                priority
-                class="signature-image"
-              />
+              <!-- One entrance effect per page load; see name-art-effect.util. -->
+              <div
+                class="signature-art"
+                [class]="'art-' + artEffect"
+                [class.is-loaded]="artLoaded()"
+                [style.--art-mask]="artMask"
+              >
+                <img
+                  [ngSrc]="sighInfo[0]"
+                  [alt]="sighInfo[1]"
+                  width="1228"
+                  height="898"
+                  priority
+                  class="signature-image"
+                  (load)="artLoaded.set(true)"
+                  (error)="artLoaded.set(true)"
+                />
+                @if (artEffect === "shine") {
+                  <span class="signature-shine" aria-hidden="true"></span>
+                }
+              </div>
             </div>
 
             <div class="profile-info">
