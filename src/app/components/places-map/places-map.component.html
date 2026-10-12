@@ -1,0 +1,85 @@
+<div class="mapwin">
+  <div
+    #mapBox
+    class="map"
+    [class.editing]="editing()"
+    (click)="onMapClick($event)"
+  >
+    <canvas
+      #canvas
+      [width]="mapWidth"
+      [height]="mapHeight"
+      aria-hidden="true"
+    ></canvas>
+    <div class="labels" aria-hidden="true">
+      @for (label of labels(); track label.text + label.left) {
+        <span
+          class="lbl"
+          [class]="'lbl ' + label.cls"
+          [style.left]="label.left"
+          [style.top]="label.top"
+          >{{ label.text }}</span
+        >
+      }
+    </div>
+    <div class="compass" aria-hidden="true">▲<br />N</div>
+    <div class="pins">
+      @for (pin of pins(); track pin.id || "draft") {
+        <button
+          type="button"
+          class="pin"
+          [class.sel]="pin.selected"
+          [class.draft]="pin.draft"
+          [attr.data-pin]="pin.id"
+          [style.left]="pin.left"
+          [style.top]="pin.top"
+          [style.background-image]="'url(' + pin.sprite + ')'"
+          [attr.aria-label]="pin.label"
+        ></button>
+      }
+    </div>
+  </div>
+
+  <div
+    class="seasons"
+    [class.auto]="isCycling()"
+    role="group"
+    aria-label="Season"
+  >
+    @for (s of seasons; track s) {
+      <button
+        type="button"
+        [attr.data-season]="s"
+        [attr.aria-pressed]="s === season()"
+        [class.today]="s === today"
+        [title]="seasonLabels[s].label + (s === today ? ' (now)' : '')"
+        (click)="pickSeason(s)"
+      >
+        <i aria-hidden="true">{{ seasonLabels[s].icon }}</i
+        >{{ seasonLabels[s].label }}
+      </button>
+    }
+  </div>
+
+  @if (editing()) {
+    <div class="hint">
+      ▶
+      {{
+        draft()
+          ? "Tap the map to move this memory"
+          : "Tap the map to place a memory · tap a pin to edit it"
+      }}
+    </div>
+  }
+
+  @if (showLegend()) {
+    <div class="mapfoot">
+      @for (kind of kinds; track kind) {
+        <span>
+          <i [style.background-image]="'url(' + sprite(kind) + ')'"></i>
+          {{ kindLabels[kind] }} {{ legendCounts()[kind] }}
+        </span>
+      }
+    </div>
+  }
+</div>

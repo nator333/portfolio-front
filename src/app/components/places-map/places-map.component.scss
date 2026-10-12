@@ -1,0 +1,275 @@
+// The map card: a #1a1a1a card like the site's other panels, with the pixel
+// map inside. Labels inside the map use DotGothic16 (loaded in index.html)
+// to keep the RPG feel; everything around it is the site's system font.
+
+$gold: #ffd700;
+$card: #1a1a1a;
+$line: #333333;
+$dim: #999999;
+$pix: "DotGothic16", system-ui, sans-serif;
+
+:host {
+  display: block;
+}
+
+.mapwin {
+  background: $card;
+  border: 1px solid $line;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+}
+
+.map {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #2f6fc2;
+  touch-action: manipulation;
+  font-family: $pix;
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  &.editing {
+    cursor: crosshair;
+  }
+}
+
+.lbl {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: clamp(9px, 1.45vw, 12.5px);
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-shadow:
+    1px 0 #1b1630,
+    -1px 0 #1b1630,
+    0 1px #1b1630,
+    0 -1px #1b1630,
+    1px 1px #1b1630,
+    -1px -1px #1b1630,
+    1px -1px #1b1630,
+    -1px 1px #1b1630;
+
+  &.water {
+    color: #d4ecff;
+    font-style: italic;
+  }
+
+  &.mtn {
+    color: #fff1cf;
+  }
+
+  &.minor {
+    font-size: clamp(8px, 1.2vw, 11px);
+    opacity: 0.92;
+  }
+
+  // Landmark names: a faint gold to set them apart from place names.
+  &.lm {
+    font-size: clamp(8px, 1.2vw, 11px);
+    color: #ffe9a3;
+  }
+}
+
+@media (max-width: 520px) {
+  .lbl.minor {
+    display: none;
+  }
+}
+
+.compass {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  font-size: 12px;
+  color: #fff;
+  text-align: center;
+  line-height: 1;
+  pointer-events: none;
+  text-shadow:
+    1px 0 #1b1630,
+    -1px 0 #1b1630,
+    0 1px #1b1630,
+    0 -1px #1b1630;
+}
+
+.pin {
+  position: absolute;
+  width: clamp(24px, 5.4%, 38px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -88%);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: transparent center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  z-index: 2;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 22%;
+    right: 22%;
+    bottom: -6%;
+    height: 14%;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 50%;
+    z-index: -1;
+  }
+
+  &:hover,
+  &.sel {
+    z-index: 3;
+  }
+
+  &.sel {
+    animation: hop 0.6s steps(3) infinite;
+  }
+
+  &.draft {
+    animation: blink 0.8s steps(2) infinite;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+@keyframes hop {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -18%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.seasons {
+  display: flex;
+  gap: 0.25rem;
+  padding: 6px 4px 0;
+  overflow-x: auto;
+
+  button {
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    padding: 0.5rem 0.6rem;
+    color: $dim;
+    font: inherit;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    position: relative;
+    cursor: pointer;
+
+    &:hover {
+      color: #fff;
+    }
+
+    &[aria-pressed="true"] {
+      color: #fff;
+      border-bottom-color: $gold;
+    }
+
+    // Today's season.
+    &.today::after {
+      content: "";
+      position: absolute;
+      top: 0.35rem;
+      right: 0.15rem;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: $gold;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $gold;
+      outline-offset: -2px;
+    }
+
+    i {
+      font-style: normal;
+      margin-right: 0.25rem;
+    }
+  }
+
+  // While the seasons auto-cycle, the active underline fills over the 4 s.
+  &.auto button[aria-pressed="true"] {
+    border-bottom-color: rgba(255, 215, 0, 0.25);
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      height: 2px;
+      width: 0;
+      background: $gold;
+      animation: fill 4s linear forwards;
+    }
+  }
+}
+
+@keyframes fill {
+  to {
+    width: 100%;
+  }
+}
+
+.hint {
+  font-size: 13px;
+  color: $gold;
+  padding: 8px 4px 0;
+}
+
+.mapfoot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 10px 4px 2px;
+  font-size: 12px;
+  color: $dim;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  i {
+    width: 18px;
+    height: 18px;
+    background: center / 100% no-repeat;
+    image-rendering: pixelated;
+    display: inline-block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin.sel,
+  .pin.draft,
+  .seasons.auto button[aria-pressed="true"]::before {
+    animation: none;
+  }
+}

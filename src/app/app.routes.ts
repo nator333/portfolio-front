@@ -11,10 +11,18 @@ export const routes: Routes = [
   { path: "projects", title: "Projects", component: ProjectsComponent },
   { path: "blog", title: "Blog", component: BlogComponent },
   {
+    path: "places",
+    title: "Places",
+    loadComponent: () =>
+      import("./pages/places/places.component").then((m) => m.PlacesComponent),
+  },
+  {
     path: "workout",
     title: "Workout",
     loadComponent: () =>
-      import("./pages/workout/workout.component").then((m) => m.WorkoutComponent),
+      import("./pages/workout/workout.component").then(
+        (m) => m.WorkoutComponent,
+      ),
   },
   {
     // No route title: the component sets the post's own title once it loads.
@@ -81,6 +89,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./pages/blog-post-edit/blog-post-edit.component").then(
         (m) => m.BlogPostEditComponent,
+      ),
+  },
+  {
+    path: "places-edit",
+    title: "Edit Places",
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import("./pages/places-edit/places-edit.component").then(
+        (m) => m.PlacesEditComponent,
       ),
   },
   {
