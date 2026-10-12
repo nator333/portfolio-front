@@ -8,7 +8,9 @@ import {
 import { CHAT_PAGE_COPY } from "../../models/chat-data";
 import { ChatService } from "../../services/chat.service";
 import { provideRouter, Router } from "@angular/router";
-import { Component } from "@angular/core";
+import { Component, signal } from "@angular/core";
+import { PlacesService } from "../../services/places.service";
+import { PlaceCityId } from "../../models/places-data";
 
 @Component({ template: "" })
 class BlankPage {}
@@ -17,8 +19,10 @@ describe("ChatWidgetComponent", () => {
   let fixture: ComponentFixture<ChatWidgetComponent>;
   let component: ChatWidgetComponent;
   let chatService: jasmine.SpyObj<ChatService>;
+  let openCity: ReturnType<typeof signal<PlaceCityId | null>>;
 
   beforeEach(async () => {
+    openCity = signal<PlaceCityId | null>(null);
     chatService = jasmine.createSpyObj<ChatService>("ChatService", [
       "sendMessage",
     ]);
@@ -26,8 +30,10 @@ describe("ChatWidgetComponent", () => {
       imports: [ChatWidgetComponent],
       providers: [
         { provide: ChatService, useValue: chatService },
+        { provide: PlacesService, useValue: { openCity } },
         provideRouter([
           { path: "workout", component: BlankPage },
+          { path: "places", component: BlankPage },
           { path: "blog/:url", component: BlankPage },
         ]),
       ],
@@ -180,5 +186,30 @@ describe("ChatWidgetComponent", () => {
 
     expect(component.draft()).toBe("");
     expect(component.suggesting()).toBeFalse();
+  });
+
+  it("should send the open Places town with each question", async () => {
+    chatService.sendMessage.and.returnValue(of({ reply: "Lots of snow." }));
+    await TestBed.inject(Router).navigateByUrl("/places");
+    fixture.detectChanges();
+    openCity.set("minamiuonuma");
+
+    component.draft.set("What was winter like?");
+    component.send();
+
+    expect(chatService.sendMessage).toHaveBeenCalledWith(
+      [{ role: "user", content: "What was winter like?" }],
+      { page: "places", city: "minamiuonuma" },
+    );
+  });
+
+  it("should not send a town on other pages", () => {
+    chatService.sendMessage.and.returnValue(of({ reply: "ok" }));
+    openCity.set("vancouver");
+    component.draft.set("Hi");
+    component.send();
+    expect(chatService.sendMessage.calls.mostRecent().args[1]).toEqual({
+      page: "profile",
+    });
   });
 });
