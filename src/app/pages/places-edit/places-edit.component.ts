@@ -126,6 +126,7 @@ export class PlacesEditComponent implements OnInit {
     ],
     kind: ["play" as MemoryKind],
     mapsUrl: [""],
+    mapsPublic: [false],
     period: ["", Validators.maxLength(MAX_MEMORY_PERIOD_LENGTH)],
     text: ["", Validators.maxLength(MAX_MEMORY_TEXT_LENGTH)],
     seasons: this.fb.nonNullable.group(
@@ -162,7 +163,7 @@ export class PlacesEditComponent implements OnInit {
   sprite = pinSprite;
 
   ngOnInit(): void {
-    this.placesService.getPlaces().subscribe({
+    this.placesService.getPlacesForEdit().subscribe({
       next: (data) => {
         this.memories.set(data.memories ?? []);
         this.cityInfos.set(data.cities ?? {});
@@ -246,6 +247,7 @@ export class PlacesEditComponent implements OnInit {
       name: memory.name,
       kind: memory.kind,
       mapsUrl: memory.mapsUrl,
+      mapsPublic: memory.mapsPublic ?? false,
       period: memory.period,
       text: memory.text,
       seasons: Object.fromEntries(
@@ -282,6 +284,7 @@ export class PlacesEditComponent implements OnInit {
       name: "",
       kind: "play",
       mapsUrl: "",
+      mapsPublic: false,
       period: "",
       text: "",
       seasons: Object.fromEntries(SEASONS.map((s) => [s, false])) as Record<
@@ -375,6 +378,7 @@ export class PlacesEditComponent implements OnInit {
       mapsUrl: value.mapsUrl.trim(),
       lat: draft.lat,
       lng: draft.lng,
+      ...(value.mapsPublic ? { mapsPublic: true } : {}),
       createdAt: existing?.createdAt ?? Date.now(),
     };
     const next = existing

@@ -35,12 +35,33 @@ export class PlacesService {
       .pipe(tap((data) => this.writeCache(data)));
   }
 
+  /**
+   * Every memory as stored, private Google Maps links and coordinates
+   * included, for the editor. Never cached: the shared cache holds only what
+   * the public endpoint serves.
+   */
+  getPlacesForEdit(): Observable<PlacesData> {
+    return this.http.get<PlacesData>(`${environment.apiBaseUrl}/places/all`, {
+      context: withAuth("none"),
+    });
+  }
+
   updatePlaces(data: PlacesData): Observable<PlacesData> {
+    // The saved document carries the private links, so rather than caching it
+    // the next public read refetches the sanitised version.
     return this.http
       .put<PlacesData>(`${environment.apiBaseUrl}/places`, data, {
         context: withAuth(),
       })
-      .pipe(tap((saved) => this.writeCache(saved)));
+      .pipe(tap(() => this.clearCache()));
+  }
+
+  private clearCache(): void {
+    try {
+      sessionStorage.removeItem(CACHE_KEY);
+    } catch {
+      // Cache is best-effort.
+    }
   }
 
   private readCache(): PlacesData | null {

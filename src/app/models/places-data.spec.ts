@@ -45,19 +45,29 @@ describe("inSeason", () => {
 });
 
 describe("mapsUrlFor", () => {
+  const shown = { ...memory, mapsPublic: true };
+
   it("prefers the pasted link", () => {
     const url = "https://www.google.com/maps/place/x/@49.3,-123.14,15z";
-    expect(mapsUrlFor({ ...memory, mapsUrl: url })).toBe(url);
+    expect(mapsUrlFor({ ...shown, mapsUrl: url })).toBe(url);
   });
 
   it("falls back to a search for the coordinates", () => {
-    expect(mapsUrlFor(memory)).toBe(
+    expect(mapsUrlFor(shown)).toBe(
       "https://www.google.com/maps/search/?api=1&query=49.3,-123.14",
     );
   });
 
   it("is empty for a hand-placed pin", () => {
-    expect(mapsUrlFor({ mapsUrl: "", lat: null, lng: null })).toBe("");
+    expect(
+      mapsUrlFor({ mapsUrl: "", lat: null, lng: null, mapsPublic: true }),
+    ).toBe("");
+  });
+
+  it("is empty unless the owner made the link public", () => {
+    const url = "https://www.google.com/maps/place/x/@49.3,-123.14,15z";
+    expect(mapsUrlFor({ ...memory, mapsUrl: url })).toBe("");
+    expect(mapsUrlFor({ ...memory, mapsUrl: url, mapsPublic: false })).toBe("");
   });
 });
 
