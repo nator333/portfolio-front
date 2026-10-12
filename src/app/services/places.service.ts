@@ -1,8 +1,8 @@
-import { Injectable } from "@angular/core";
+import { Injectable, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, of, tap } from "rxjs";
 import { environment } from "../../environments/environment";
-import { PlacesData } from "../models/places-data";
+import { PlaceCityId, PlacesData } from "../models/places-data";
 import { withAuth } from "../interceptors/api.interceptors";
 
 const CACHE_KEY = "places-cache-v1";
@@ -23,6 +23,12 @@ interface CachedPlaces {
   providedIn: "root",
 })
 export class PlacesService {
+  /**
+   * The town tab open on the Places page, or null when the page is not shown.
+   * The chat widget sends it so the assistant talks about that town first.
+   */
+  readonly openCity = signal<PlaceCityId | null>(null);
+
   constructor(private http: HttpClient) {}
 
   getPlaces(): Observable<PlacesData> {

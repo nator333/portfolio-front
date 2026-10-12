@@ -24,7 +24,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChatService } from "../../services/chat.service";
+import { PlacesService } from "../../services/places.service";
 import {
+  ChatContext,
   ChatMessage,
   CHAT_MAX_MESSAGE_CHARS,
   CHAT_PAGE_COPY,
@@ -118,6 +120,7 @@ export class ChatWidgetComponent {
 
   private injector = inject(Injector);
   private router = inject(Router);
+  private placesService = inject(PlacesService);
 
   // The page the visitor is on decides what the assistant knows and talks
   // about, so it follows navigation while the widget stays mounted.
@@ -184,6 +187,17 @@ export class ChatWidgetComponent {
     });
   }
 
+  /**
+   * The page context plus what the page has open right now that the URL does
+   * not carry — the Places page's town tab, which can change mid-conversation
+   * without starting a new one.
+   */
+  private requestContext(): ChatContext {
+    const context = this.context();
+    const city = context.page === "places" ? this.placesService.openCity() : null;
+    return city ? { ...context, city } : context;
+  }
+
   toggle(): void {
     this.isOpen.update((open) => !open);
   }
@@ -204,7 +218,7 @@ export class ChatWidgetComponent {
     this.scrollToBottom();
 
     const conversation = this.conversation;
-    this.chatService.sendMessage(this.messages(), this.context()).subscribe({
+    this.chatService.sendMessage(this.messages(), this.requestContext()).subscribe({
       next: (response) => {
         if (conversation !== this.conversation) {
           return;

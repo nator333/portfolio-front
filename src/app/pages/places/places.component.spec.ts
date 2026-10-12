@@ -1,3 +1,4 @@
+import { PlacesService } from "../../services/places.service";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideHttpClient, withXhr } from "@angular/common/http";
 import {
@@ -254,5 +255,19 @@ describe("PlacesComponent", () => {
     expect(
       fixture.nativeElement.querySelector(".empty")?.textContent,
     ).toContain("could not be loaded");
+  });
+
+  it("shares the open town with the chat widget and clears it on leaving", async () => {
+    await flush(SAMPLE);
+    const places = TestBed.inject(PlacesService);
+    expect(places.openCity()).toBe("minamiuonuma");
+
+    fixture.componentInstance.selectCity("vancouver");
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(places.openCity()).toBe("vancouver");
+
+    fixture.destroy();
+    expect(places.openCity()).toBeNull();
   });
 });

@@ -1,3 +1,5 @@
+import { PlaceCityId } from "./places-data";
+
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
@@ -20,12 +22,15 @@ export type ChatPage =
   | "projects"
   | "blog"
   | "blog-post"
-  | "workout";
+  | "workout"
+  | "places";
 
 export interface ChatContext {
   page: ChatPage;
   /** The `:url` segment of a /blog/:url route; only set for "blog-post". */
   slug?: string;
+  /** The town tab open on the Places page; only set for "places". */
+  city?: PlaceCityId;
 }
 
 export interface ChatPageCopy {
@@ -87,6 +92,14 @@ export const CHAT_PAGE_COPY: Record<ChatPage, ChatPageCopy> = {
       "Is Hiro on track with this week's sets?",
     ],
   },
+  places: {
+    title: "Ask about the places",
+    hint: "Ask me about the towns Hiro has lived in and the memories pinned on these maps.",
+    suggestions: [
+      "What memories does Hiro have of this town?",
+      "How long did Hiro live in each of these towns?",
+    ],
+  },
 };
 
 const PAGE_BY_SEGMENT: Record<string, ChatPage> = {
@@ -95,6 +108,7 @@ const PAGE_BY_SEGMENT: Record<string, ChatPage> = {
   projects: "projects",
   blog: "blog",
   workout: "workout",
+  places: "places",
 };
 
 /**

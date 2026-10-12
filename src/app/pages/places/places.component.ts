@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   computed,
   effect,
@@ -156,6 +157,10 @@ export class PlacesComponent {
   private readonly panel = viewChild<ElementRef<HTMLElement>>("panel");
 
   constructor() {
+    // Share the open town with the chat widget, and forget it on leaving.
+    effect(() => this.placesService.openCity.set(this.cityId()));
+    inject(DestroyRef).onDestroy(() => this.placesService.openCity.set(null));
+
     // A memory that leaves the season leaves the panel too.
     effect(() => {
       const id = this.selectedId();

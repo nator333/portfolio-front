@@ -7,6 +7,7 @@ describe("chatContextForUrl", () => {
     expect(chatContextForUrl("/projects")).toEqual({ page: "projects" });
     expect(chatContextForUrl("/blog")).toEqual({ page: "blog" });
     expect(chatContextForUrl("/workout?version=3")).toEqual({ page: "workout" });
+    expect(chatContextForUrl("/places")).toEqual({ page: "places" });
   });
 
   it("maps a blog post to its decoded slug", () => {
@@ -23,6 +24,7 @@ describe("chatContextForUrl", () => {
   it("falls back to the profile scope elsewhere", () => {
     expect(chatContextForUrl("/cv-editor")).toEqual({ page: "profile" });
     expect(chatContextForUrl("/blog-edit/new")).toEqual({ page: "profile" });
+    expect(chatContextForUrl("/places-edit")).toEqual({ page: "profile" });
     expect(chatContextForUrl("/")).toEqual({ page: "profile" });
   });
 });
