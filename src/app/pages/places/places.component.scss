@@ -17,6 +17,11 @@ $dim: #999999;
   gap: 24px;
 }
 
+// The season row sits right above the town tabs it applies to.
+app-season-picker + .bar {
+  margin-top: -16px;
+}
+
 .bar {
   display: flex;
   align-items: flex-end;

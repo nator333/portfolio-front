@@ -13,6 +13,7 @@ import { RouterLink } from "@angular/router";
 
 import { HeroComponent } from "../../components/hero/hero.component";
 import { PlacesMapComponent } from "../../components/places-map/places-map.component";
+import { SeasonPickerComponent } from "../../components/season-picker/season-picker.component";
 import { AuthService } from "../../services/auth.service";
 import { PlacesService } from "../../services/places.service";
 import {
@@ -47,7 +48,12 @@ interface FactRow {
 @Component({
   selector: "app-places",
   standalone: true,
-  imports: [HeroComponent, PlacesMapComponent, RouterLink],
+  imports: [
+    HeroComponent,
+    PlacesMapComponent,
+    SeasonPickerComponent,
+    RouterLink,
+  ],
   templateUrl: "./places.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: "./places.component.scss",

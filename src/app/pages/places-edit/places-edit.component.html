@@ -5,6 +5,11 @@
 
 <section class="section">
   <div class="container">
+    <app-season-picker
+      [season]="season()"
+      (picked)="season.set($event)"
+    ></app-season-picker>
+
     <div class="level">
       <div class="level-left">
         <div class="tabs town-tabs">

@@ -1,0 +1,26 @@
+<div class="seasons" [class.auto]="playing()" role="group" aria-label="Season">
+  @if (canPlay()) {
+    <button
+      type="button"
+      class="play"
+      [attr.aria-label]="playing() ? 'Pause the seasons' : 'Play the seasons'"
+      [title]="playing() ? 'Pause' : 'Play the seasons'"
+      (click)="toggled.emit()"
+    >
+      <span aria-hidden="true">{{ playing() ? "❚❚" : "▶" }}</span>
+    </button>
+  }
+  @for (s of seasons; track s) {
+    <button
+      type="button"
+      [attr.data-season]="s"
+      [attr.aria-pressed]="s === season()"
+      [class.today]="s === today"
+      [title]="labels[s].label + (s === today ? ' (now)' : '')"
+      (click)="picked.emit(s)"
+    >
+      <i aria-hidden="true">{{ labels[s].icon }}</i
+      >{{ labels[s].label }}
+    </button>
+  }
+</div>

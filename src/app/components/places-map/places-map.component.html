@@ -40,27 +40,6 @@
     </div>
   </div>
 
-  <div
-    class="seasons"
-    [class.auto]="isCycling()"
-    role="group"
-    aria-label="Season"
-  >
-    @for (s of seasons; track s) {
-      <button
-        type="button"
-        [attr.data-season]="s"
-        [attr.aria-pressed]="s === season()"
-        [class.today]="s === today"
-        [title]="seasonLabels[s].label + (s === today ? ' (now)' : '')"
-        (click)="pickSeason(s)"
-      >
-        <i aria-hidden="true">{{ seasonLabels[s].icon }}</i
-        >{{ seasonLabels[s].label }}
-      </button>
-    }
-  </div>
-
   @if (editing()) {
     <div class="hint">
       ▶

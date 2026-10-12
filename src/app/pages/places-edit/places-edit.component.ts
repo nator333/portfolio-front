@@ -20,6 +20,7 @@ import {
   DraftPin,
   PlacesMapComponent,
 } from "../../components/places-map/places-map.component";
+import { SeasonPickerComponent } from "../../components/season-picker/season-picker.component";
 import { AuthService } from "../../services/auth.service";
 import { PlacesService } from "../../services/places.service";
 import { MediaAsset, MediaService } from "../../services/media.service";
@@ -59,6 +60,7 @@ import { MAP_H, MAP_W, cityForGeo, pinSprite } from "../places/pixel-map";
   imports: [
     ReactiveFormsModule,
     HeroComponent,
+    SeasonPickerComponent,
     ImageUploadComponent,
     PlacesMapComponent,
   ],
