@@ -41,6 +41,34 @@ describe("pixel-map", () => {
     }
   });
 
+  it("draws Vancouver and Montréal true to scale: each landmark sits on its real coordinates", () => {
+    const real: Record<string, [number, number]> = {
+      "Canada Place": [49.2888, -123.1111],
+      "Science World": [49.2734, -123.1038],
+      UBC: [49.2606, -123.246],
+      "Olympic Stadium": [45.5579, -73.5515],
+      "McGill University": [45.5048, -73.5772],
+      Biosphère: [45.5141, -73.5313],
+    };
+    for (const id of ["vancouver", "montreal"]) {
+      const city = cityById(id)!;
+      for (const landmark of city.landmarks) {
+        const [lat, lng] = real[landmark.label];
+        const t = geoToTile(city, lat, lng);
+        // The sprite is 2 tiles square; its real point is within it.
+        expect(t.x).toBeGreaterThanOrEqual(landmark.x);
+        expect(t.x).toBeLessThanOrEqual(landmark.x + 2);
+        expect(t.y).toBeGreaterThanOrEqual(landmark.y);
+        expect(t.y).toBeLessThanOrEqual(landmark.y + 2);
+      }
+      // The frame's corners fit exactly: no distortion left to absorb.
+      for (const [la, ln, x, y] of city.geo) {
+        const t = geoToTile(city, la, ln);
+        expect(Math.hypot(t.x - x, t.y - y)).toBeLessThan(1e-6);
+      }
+    }
+  });
+
   it("finds the town a coordinate belongs to", () => {
     expect(cityForGeo(CITIES, 35.6556, 139.339)?.city.id).toBe("hachioji");
     expect(cityForGeo(CITIES, 49.2734, -123.1038)?.city.id).toBe("vancouver");

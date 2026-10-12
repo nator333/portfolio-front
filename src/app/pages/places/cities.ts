@@ -1,13 +1,86 @@
 /**
- * The five towns: each a hand-built 48×32 tile world (shapes softened with
- * noise), place-name labels, fixed landmark sprites, seasonal exceptions and
- * the control points that tie the stylised map to real coordinates.
+ * The five towns: each a 48×32 tile world (shapes softened with noise),
+ * place-name labels, fixed landmark sprites, seasonal exceptions and the
+ * control points that tie the map to real coordinates.
  *
- * North is up. Positions are rough: the maps are drawn to read as a picture
- * of each town, not as cartography — the geo control points absorb the
- * distortion when a pin is placed from a Google Maps link.
+ * North is up. Minamiuonuma, Hachioji and Ichikawa are drawn as pictures of
+ * each town, and their control points absorb the distortion when a pin is
+ * placed from a Google Maps link. Vancouver and Montréal are drawn true to
+ * scale inside a real latitude/longitude frame (see `frame`), so a pasted
+ * coordinate lands exactly where the drawing shows it.
  */
-import { CityDef, T } from "./pixel-map";
+import {
+  CityDef,
+  GeoControlPoint,
+  LANDMARK_SPRITES,
+  Landmark,
+  LandmarkKind,
+  LabelClass,
+  MAP_H,
+  MAP_W,
+  MapLabel,
+  Point,
+  TILE_PX,
+  T,
+} from "./pixel-map";
+
+type LatLng = [number, number];
+
+/**
+ * A true-to-scale frame: the map spans this box of real coordinates, mapped
+ * linearly onto the 48×32 tiles (pick the box so tiles come out square).
+ * Shapes, landmarks and labels are written in latitude/longitude and placed
+ * through it, and its corners are the town's geo control points, so the
+ * Google Maps fit reproduces the drawing exactly.
+ */
+function frame(north: number, south: number, west: number, east: number) {
+  const at = ([lat, lng]: LatLng): Point => [
+    ((lng - west) / (east - west)) * MAP_W,
+    ((north - lat) / (north - south)) * MAP_H,
+  ];
+  const geo: GeoControlPoint[] = [
+    [north, west, 0, 0],
+    [north, east, MAP_W, 0],
+    [south, west, 0, MAP_H],
+    [south, east, MAP_W, MAP_H],
+  ];
+  return {
+    at,
+    geo,
+    /** A polyline or polygon given in real coordinates. */
+    path: (...points: LatLng[]): Point[] => points.map(at),
+    /** A landmark sprite centred on a real place. */
+    landmark: (
+      kind: LandmarkKind,
+      place: LatLng,
+      label: string,
+      extra: Partial<Landmark> = {},
+    ): Landmark => {
+      const [x, y] = at(place);
+      const sprite = LANDMARK_SPRITES[kind];
+      return {
+        kind,
+        x: Math.round(x - sprite.w / TILE_PX / 2),
+        y: Math.round(y - sprite.h / TILE_PX / 2),
+        label,
+        ...extra,
+      };
+    },
+    /** A place-name label centred on a real place. */
+    label: (text: string, place: LatLng, cls?: LabelClass): MapLabel => {
+      const [x, y] = at(place);
+      return cls ? [text, x, y, cls] : [text, x, y];
+    },
+  };
+}
+
+// Vancouver from Point Grey to Burnaby, the North Shore mountains to the
+// Fraser: 28.3 × 18.9 km, 0.59 km a tile.
+const VAN = frame(49.365, 49.195, -123.27, -122.88);
+
+// Montréal from Côte-des-Neiges to Longueuil, Verdun to the Olympic Stadium:
+// 15.9 × 10.6 km, 0.33 km a tile.
+const MTL = frame(45.565, 45.47, -73.685, -73.481);
 
 export const CITIES: readonly CityDef[] = [
   {
@@ -424,153 +497,255 @@ export const CITIES: readonly CityDef[] = [
     },
     build(m) {
       m.fill(T.water);
+      // North Shore: forest rising to the mountains, West and North Vancouver
+      // along the water.
       m.poly(
-        [
-          [-1, -1],
-          [49, -1],
-          [49, 6.2],
-          [36, 6.6],
-          [26, 5.6],
-          [16, 5.1],
-          [8, 5.6],
-          [-1, 5],
-        ],
+        VAN.path(
+          [49.38, -123.29],
+          [49.38, -122.86],
+          [49.308, -122.86],
+          [49.306, -122.9],
+          [49.304, -122.95],
+          [49.302, -122.99],
+          [49.301, -123.025],
+          [49.305, -123.045],
+          [49.31, -123.083],
+          [49.318, -123.12],
+          [49.323, -123.139],
+          [49.327, -123.16],
+          [49.331, -123.2],
+          [49.336, -123.24],
+          [49.339, -123.29],
+        ),
         T.forest,
-        { r: 0.8 },
+        { r: 0.6 },
       );
       m.when(
-        (x, y, c) => c === T.forest && y + m.n(x, y) * 4 < 3.2,
+        (x, y, c) => c === T.forest && y + m.n(x, y) * 4 < 3.4,
         T.mountain,
       );
       m.when(
-        (x, y, c) => c === T.mountain && y + m.n(x, y, 2) * 4 < 1.6,
+        (x, y, c) => c === T.mountain && y + m.n(x, y, 2) * 3 < 1.4,
         T.snowPeak,
       );
-      m.ellipse(24, 4.4, 7.5, 1, T.urban, { on: [T.forest] });
       m.poly(
-        [
-          [-1, 15],
-          [6, 14],
-          [13, 15.6],
-          [24, 14.2],
-          [24, 8.3],
-          [49, 8.3],
-          [49, 33],
-          [-1, 33],
-        ],
+        VAN.path(
+          [49.329, -123.2],
+          [49.334, -123.1],
+          [49.331, -123.02],
+          [49.318, -122.97],
+          [49.304, -122.98],
+          [49.302, -123.03],
+          [49.31, -123.083],
+          [49.322, -123.137],
+          [49.327, -123.16],
+        ),
         T.urban,
-        { r: 0.8 },
+        { r: 0.5, on: [T.forest] },
       );
+      // The mainland: Point Grey, Kitsilano, downtown's peninsula, east to
+      // Burnaby and south to the Fraser and Richmond.
       m.poly(
-        [
-          [8, 7.6],
-          [13, 6.4],
-          [20, 7.6],
-          [24, 8.3],
-          [26, 10],
-          [25, 13.3],
-          [19, 13.4],
-          [14, 13],
-          [10, 11],
-        ],
+        VAN.path(
+          [49.274, -123.264],
+          [49.278, -123.225],
+          [49.272, -123.2],
+          [49.274, -123.17],
+          [49.276, -123.155],
+          [49.278, -123.146],
+          [49.274, -123.138],
+          [49.271, -123.134],
+          [49.268, -123.12],
+          [49.27, -123.105],
+          [49.2734, -123.1],
+          [49.276, -123.108],
+          [49.276, -123.12],
+          [49.279, -123.135],
+          [49.282, -123.141],
+          [49.286, -123.145],
+          [49.29, -123.15],
+          [49.296, -123.156],
+          [49.303, -123.157],
+          [49.31, -123.152],
+          [49.3135, -123.1414],
+          [49.307, -123.126],
+          [49.3, -123.118],
+          [49.292, -123.124],
+          [49.289, -123.11],
+          [49.286, -123.095],
+          [49.287, -123.06],
+          [49.289, -123.03],
+          [49.292, -123.02],
+          [49.288, -122.99],
+          [49.29, -122.95],
+          [49.292, -122.86],
+          [49.18, -122.86],
+          [49.18, -123.205],
+          [49.215, -123.217],
+          [49.235, -123.228],
+          [49.25, -123.255],
+          [49.262, -123.263],
+        ),
         T.urban,
-        { r: 0.5 },
+        { r: 0.4 },
       );
+      // The Fraser's north arm, with Richmond's fields beyond.
       m.band(
-        [
-          [12, 14.2],
-          [18, 14.4],
-          [24.5, 13.9],
-        ],
-        1.1,
-        T.water,
-      );
-      m.ellipse(11.3, 8.6, 3.6, 2.4, T.forest, { r: 0.4, on: [T.urban] });
-      m.ellipse(19.4, 10.6, 4.4, 2.5, T.downtown, { on: [T.urban] });
-      m.ellipse(4.5, 21.5, 3.6, 4.2, T.forest, { r: 0.5, on: [T.urban] });
-      m.ellipse(2.4, 16.6, 2.2, 1.5, T.campus, { on: [T.urban, T.forest] });
-      m.ellipse(23.6, 21.2, 1.6, 1.1, T.park, { on: [T.urban] });
-      m.ellipse(44, 20, 2, 2.4, T.park, { on: [T.urban] });
-      m.band(
-        [
-          [-1, 29.2],
-          [16, 29.7],
-          [32, 29],
-          [49, 28],
-        ],
-        1.9,
+        VAN.path(
+          [49.217, -123.225],
+          [49.208, -123.18],
+          [49.205, -123.14],
+          [49.204, -123.1],
+          [49.202, -123.06],
+          [49.199, -123.02],
+          [49.197, -122.97],
+          [49.193, -122.86],
+        ),
+        1.4,
         T.river,
         { r: 0.3 },
       );
-      m.when((x, y, c) => c === T.urban && y > 30, T.field);
+      m.when((x, y, c) => c === T.urban && y > 31, T.field);
+      m.poly(
+        VAN.path(
+          [49.3135, -123.142],
+          [49.31, -123.153],
+          [49.297, -123.156],
+          [49.292, -123.148],
+          [49.293, -123.128],
+          [49.3, -123.12],
+          [49.307, -123.128],
+        ),
+        T.forest,
+        { r: 0.3, on: [T.urban] },
+      );
+      m.poly(
+        VAN.path(
+          [49.29, -123.128],
+          [49.287, -123.1],
+          [49.277, -123.105],
+          [49.276, -123.125],
+          [49.283, -123.137],
+        ),
+        T.downtown,
+        { on: [T.urban] },
+      );
+      // Pacific Spirit's forest and the UBC campus on Point Grey.
+      m.poly(
+        VAN.path(
+          [49.272, -123.222],
+          [49.268, -123.19],
+          [49.235, -123.19],
+          [49.23, -123.215],
+          [49.245, -123.235],
+        ),
+        T.forest,
+        { r: 0.4, on: [T.urban] },
+      );
+      m.poly(
+        VAN.path(
+          [49.274, -123.26],
+          [49.27, -123.235],
+          [49.253, -123.233],
+          [49.248, -123.25],
+          [49.262, -123.262],
+        ),
+        T.campus,
+        { on: [T.urban, T.forest] },
+      );
+      m.ellipse(...VAN.at([49.2418, -123.1126]), 1.3, 1, T.park, {
+        on: [T.urban],
+      });
+      m.ellipse(...VAN.at([49.2565, -123.064]), 1, 0.8, T.park, {
+        on: [T.urban],
+      });
+      m.ellipse(...VAN.at([49.229, -123.017]), 1.6, 1.2, T.park, {
+        on: [T.urban],
+      });
+      m.ellipse(...VAN.at([49.2265, -123.0]), 1.3, 0.9, T.downtown, {
+        on: [T.urban],
+      });
+      // Burnaby Mountain at the east edge.
+      m.ellipse(...VAN.at([49.279, -122.917]), 2.6, 2.2, T.forest, {
+        r: 0.5,
+        on: [T.urban],
+      });
       m.beach();
-      m.road([
-        [15, 8],
-        [15, 29],
-      ]);
-      m.road([
-        [21, 10],
-        [21, 28],
-      ]);
-      m.road([
-        [27, 9],
-        [27, 28],
-      ]);
-      m.road([
-        [34, 9],
-        [34, 28],
-      ]);
-      m.road([
-        [4, 18],
-        [48, 18],
-      ]);
-      m.road([
-        [6, 24],
-        [48, 24],
-      ]);
-      m.road([
-        [24, 10],
-        [48, 10],
-      ]);
-      m.road([
-        [11, 10],
-        [11, 6],
-        [12, 3],
-      ]);
-      m.rail([
-        [20, 9],
-        [25, 12],
-        [30, 15],
-        [40, 16],
-        [48, 17],
-      ]);
+      // Granville, Cambie, Main and Commercial; Broadway, 41st and Hastings;
+      // the Lions Gate causeway and the Second Narrows.
+      m.road(
+        VAN.path(
+          [49.285, -123.118],
+          [49.276, -123.132],
+          [49.265, -123.139],
+          [49.206, -123.139],
+        ),
+      );
+      m.road(
+        VAN.path([49.278, -123.115], [49.266, -123.115], [49.207, -123.117]),
+      );
+      m.road(VAN.path([49.285, -123.1], [49.205, -123.101]));
+      m.road(VAN.path([49.284, -123.069], [49.222, -123.069]));
+      m.road(
+        VAN.path(
+          [49.264, -123.245],
+          [49.263, -123.1],
+          [49.262, -123.02],
+          [49.266, -122.88],
+        ),
+      );
+      m.road(VAN.path([49.234, -123.215], [49.234, -123.02]));
+      m.road(VAN.path([49.285, -123.11], [49.281, -123.02], [49.281, -122.88]));
+      m.road(
+        VAN.path(
+          [49.291, -123.134],
+          [49.3, -123.138],
+          [49.314, -123.139],
+          [49.326, -123.139],
+        ),
+      );
+      m.road(VAN.path([49.289, -123.025], [49.304, -123.026]));
+      // SkyTrain: the Expo Line east to Metrotown, the Canada Line south.
+      m.rail(
+        VAN.path(
+          [49.2856, -123.1116],
+          [49.273, -123.1],
+          [49.2626, -123.0692],
+          [49.238, -123.032],
+          [49.226, -123.004],
+          [49.204, -122.912],
+        ),
+      );
+      m.rail(
+        VAN.path(
+          [49.2856, -123.1116],
+          [49.275, -123.121],
+          [49.266, -123.112],
+          [49.208, -123.114],
+        ),
+      );
     },
     labels: [
-      ["North Shore", 30, 2.2, "mtn"],
-      ["Burrard Inlet", 39, 7.4, "water"],
-      ["Stanley Park", 10.4, 7.4],
-      ["Downtown", 19.6, 12.2],
-      ["English Bay", 4.6, 10.6, "water"],
-      ["False Creek", 19.5, 15.1, "water minor"],
-      ["Kitsilano", 10, 16.8],
-      ["Mount Pleasant", 24.5, 16.3, "minor"],
-      ["Commercial Dr", 37.5, 21.2, "minor"],
-      ["Fraser River", 30, 31, "water"],
+      VAN.label("North Shore", [49.357, -123.08], "mtn"),
+      VAN.label("Burrard Inlet", [49.296, -123.06], "water"),
+      VAN.label("Stanley Park", [49.307, -123.153]),
+      VAN.label("Downtown", [49.283, -123.138]),
+      VAN.label("English Bay", [49.3, -123.22], "water"),
+      VAN.label("Kitsilano", [49.267, -123.168]),
+      VAN.label("Pacific Spirit", [49.243, -123.205], "mtn minor"),
+      VAN.label("Mount Pleasant", [49.251, -123.1], "minor"),
+      VAN.label("Commercial Dr", [49.245, -123.055], "minor"),
+      VAN.label("Burnaby", [49.248, -122.97], "minor"),
+      VAN.label("Fraser River", [49.2055, -123.05], "water"),
     ],
     landmarks: [
-      { kind: "airport", x: 13, y: 30, label: "YVR Airport", labelAbove: true },
-      { kind: "dome", x: 25, y: 12, label: "Science World" },
-      { kind: "port", x: 19, y: 7, label: "Canada Place" },
-      { kind: "university", x: 3, y: 19, label: "UBC" },
+      VAN.landmark("port", [49.2888, -123.1111], "Canada Place", {
+        labelAbove: true,
+      }),
+      VAN.landmark("dome", [49.2734, -123.1038], "Science World"),
+      VAN.landmark("university", [49.2606, -123.246], "UBC"),
     ],
-    geo: [
-      [49.2888, -123.1111, 20, 8],
-      [49.2734, -123.1038, 26, 13],
-      [49.2606, -123.246, 4, 20],
-      [49.1947, -123.1792, 14.5, 31],
-      [49.275, -123.155, 10, 16],
-      [49.296, -123.14, 12, 8.5],
-    ],
+    geo: VAN.geo,
   },
   {
     id: "montreal",
@@ -584,112 +759,195 @@ export const CITIES: readonly CityDef[] = [
       spring: { blossom: 0, crown: "#5aa048", crownL: "#8ccb64" },
       winter: { frozen: true },
     },
+    // True north: the Saint Lawrence runs up the east side, so the city's own
+    // "north" (along Saint-Laurent Boulevard) points north-west here.
     build(m) {
-      m.fill(T.water);
+      m.fill(T.urban);
+      // The Saint Lawrence between the island and Longueuil.
       m.poly(
-        [
-          [-1, -1],
-          [22, -1],
-          [-1, 3],
-        ],
-        T.grass,
-        { r: 0.6 },
+        MTL.path(
+          [45.46, -73.557],
+          [45.475, -73.549],
+          [45.485, -73.546],
+          [45.497, -73.543],
+          [45.503, -73.549],
+          [45.51, -73.546],
+          [45.52, -73.545],
+          [45.535, -73.539],
+          [45.548, -73.532],
+          [45.56, -73.525],
+          [45.575, -73.518],
+          [45.575, -73.488],
+          [45.555, -73.493],
+          [45.535, -73.503],
+          [45.52, -73.51],
+          [45.505, -73.512],
+          [45.49, -73.509],
+          [45.475, -73.505],
+          [45.46, -73.503],
+        ),
+        T.water,
+        { r: 0.5 },
       );
+      // Parc Jean-Drapeau: Île Sainte-Hélène and Île Notre-Dame.
       m.poly(
-        [
-          [-1, 6.5],
-          [14, 4.2],
-          [30, 1.6],
-          [49, 0.4],
-          [49, 8],
-          [40, 14],
-          [34, 19],
-          [28, 25],
-          [18, 29.2],
-          [-1, 30.5],
-        ],
-        T.urban,
-        { r: 0.8 },
-      );
-      m.poly(
-        [
-          [49, 16],
-          [49, 33],
-          [25, 33],
-          [36, 24],
-        ],
-        T.urban,
-        { r: 0.8 },
-      );
-      m.ellipse(20, 14, 4.6, 3.6, T.forest, { r: 0.5, on: [T.urban] });
-      m.ellipse(19.8, 13.4, 2.6, 2, T.mountain, { r: 0.3, on: [T.forest] });
-      m.ellipse(25, 19.4, 3.4, 2.3, T.downtown, { on: [T.urban] });
-      m.ellipse(28.6, 12.6, 1.6, 1.1, T.park, { on: [T.urban] });
-      m.ellipse(35.2, 22.2, 1.6, 1.2, T.park);
-      m.band(
-        [
-          [30.5, 24.8],
-          [33, 21.5],
-        ],
-        0.8,
+        MTL.path(
+          [45.512, -73.538],
+          [45.522, -73.533],
+          [45.525, -73.527],
+          [45.516, -73.524],
+          [45.509, -73.53],
+        ),
         T.park,
+        { r: 0.3 },
+      );
+      m.poly(
+        MTL.path(
+          [45.509, -73.531],
+          [45.505, -73.521],
+          [45.497, -73.522],
+          [45.5, -73.531],
+        ),
+        T.park,
+        { r: 0.3 },
+      );
+      // Rivière des Prairies in the north-west corner, Laval beyond.
+      m.poly(
+        MTL.path([45.58, -73.7], [45.58, -73.645], [45.546, -73.7]),
+        T.grass,
+        { r: 0.4 },
+      );
+      m.band(
+        MTL.path(
+          [45.544, -73.7],
+          [45.553, -73.675],
+          [45.561, -73.663],
+          [45.572, -73.648],
+        ),
+        1.6,
+        T.river,
+        { r: 0.3 },
+      );
+      // Mont Royal with its cemeteries, and the summit.
+      m.poly(
+        MTL.path(
+          [45.497, -73.597],
+          [45.502, -73.583],
+          [45.508, -73.579],
+          [45.514, -73.588],
+          [45.515, -73.606],
+          [45.508, -73.616],
+          [45.5, -73.612],
+        ),
+        T.forest,
+        { r: 0.5, on: [T.urban] },
+      );
+      m.ellipse(...MTL.at([45.5055, -73.59]), 1.8, 1.4, T.mountain, {
+        r: 0.3,
+        on: [T.forest],
+      });
+      m.poly(
+        MTL.path(
+          [45.49, -73.58],
+          [45.497, -73.585],
+          [45.504, -73.577],
+          [45.509, -73.566],
+          [45.506, -73.56],
+          [45.499, -73.561],
+          [45.493, -73.57],
+        ),
+        T.downtown,
         { on: [T.urban] },
       );
+      // The Old Port's promenade, Parc La Fontaine, Jarry, and the Botanical
+      // Garden beside the Olympic Stadium.
+      m.band(MTL.path([45.5, -73.552], [45.512, -73.5465]), 0.8, T.park, {
+        on: [T.urban],
+      });
+      m.ellipse(...MTL.at([45.5268, -73.5692]), 1.3, 1, T.park, {
+        on: [T.urban],
+      });
+      m.ellipse(...MTL.at([45.5345, -73.6285]), 1.2, 0.9, T.park, {
+        on: [T.urban],
+      });
+      m.ellipse(...MTL.at([45.5605, -73.5625]), 2.6, 1.4, T.park, {
+        on: [T.urban],
+      });
       m.band(
-        [
-          [2, 28.4],
-          [14, 25.6],
-          [24, 24.6],
-          [28.5, 25],
-        ],
+        MTL.path(
+          [45.46, -73.632],
+          [45.469, -73.606],
+          [45.478, -73.584],
+          [45.486, -73.566],
+          [45.494, -73.555],
+          [45.497, -73.551],
+        ),
         0.8,
         T.river,
       );
-      m.when((x, y, c) => c === T.urban && x + y * 1.2 > 79, T.grass);
-      m.road([
-        [2, 24],
-        [44, 8],
-      ]);
-      m.road([
-        [25, 25],
-        [27, 0],
-      ]);
-      m.road([
-        [31, 18],
-        [35, 21],
-        [43, 21],
-      ]);
-      m.road([
-        [10, 26],
-        [10, 4],
-      ]);
+      // Sherbrooke, Saint-Laurent and Décarie; the Jacques Cartier and
+      // Victoria bridges.
+      m.road(
+        MTL.path(
+          [45.47, -73.628],
+          [45.4885, -73.5875],
+          [45.5045, -73.576],
+          [45.5115, -73.5685],
+          [45.5257, -73.56],
+          [45.5536, -73.545],
+          [45.566, -73.54],
+        ),
+      );
+      m.road(
+        MTL.path(
+          [45.506, -73.554],
+          [45.511, -73.564],
+          [45.523, -73.59],
+          [45.536, -73.616],
+          [45.548, -73.64],
+          [45.566, -73.668],
+        ),
+      );
+      m.road(
+        MTL.path(
+          [45.47, -73.603],
+          [45.49, -73.63],
+          [45.515, -73.656],
+          [45.53, -73.672],
+        ),
+      );
+      m.road(
+        MTL.path(
+          [45.5195, -73.549],
+          [45.5205, -73.54],
+          [45.522, -73.53],
+          [45.525, -73.512],
+          [45.527, -73.5],
+        ),
+      );
+      m.road(
+        MTL.path([45.4868, -73.5452], [45.49, -73.525], [45.4925, -73.508]),
+      );
     },
     labels: [
-      ["Mont Royal", 20, 11.6, "mtn"],
-      ["Centre-ville", 25, 22.2],
-      ["Vieux-Montréal", 28.4, 26.6],
-      ["Plateau", 31, 11],
-      ["Mile End", 22.6, 6.6],
-      ["Fleuve Saint-Laurent", 41, 26.4, "water"],
-      ["Rivière des Prairies", 10.5, 2.6, "water minor"],
-      ["Parc Jean-Drapeau", 39, 19.6, "minor"],
-      ["Canal de Lachine", 10, 24.4, "water minor"],
-      ["Longueuil", 44, 29.6, "minor"],
+      MTL.label("Mont Royal", [45.511, -73.597], "mtn"),
+      MTL.label("Centre-ville", [45.494, -73.574]),
+      MTL.label("Vieux-Montréal", [45.5068, -73.555]),
+      MTL.label("Plateau", [45.523, -73.578]),
+      MTL.label("Mile End", [45.527, -73.604]),
+      MTL.label("Outremont", [45.519, -73.616], "minor"),
+      MTL.label("Fleuve Saint-Laurent", [45.48, -73.525], "water"),
+      MTL.label("Rivière des Prairies", [45.5625, -73.652], "water minor"),
+      MTL.label("Parc Jean-Drapeau", [45.497, -73.527], "minor"),
+      MTL.label("Canal de Lachine", [45.475, -73.583], "water minor"),
+      MTL.label("Longueuil", [45.54, -73.497], "minor"),
     ],
     landmarks: [
-      { kind: "airport", x: 3, y: 16, label: "YUL Airport" },
-      { kind: "stadium", x: 41, y: 4, label: "Olympic Stadium" },
-      { kind: "university", x: 22, y: 17, label: "McGill University" },
-      { kind: "dome", x: 34, y: 21, label: "Biosphère" },
+      MTL.landmark("stadium", [45.5579, -73.5515], "Olympic Stadium"),
+      MTL.landmark("university", [45.5048, -73.5772], "McGill University"),
+      MTL.landmark("dome", [45.5141, -73.5313], "Biosphère"),
     ],
-    geo: [
-      [45.5041, -73.5747, 23, 18],
-      [45.4578, -73.7498, 4.5, 17],
-      [45.5579, -73.5515, 42, 5],
-      [45.5141, -73.5313, 35, 22],
-      [45.5077, -73.5533, 28.5, 26],
-      [45.5225, -73.595, 23, 7],
-    ],
+    geo: MTL.geo,
   },
 ];
 

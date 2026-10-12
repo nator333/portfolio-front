@@ -449,7 +449,6 @@ export type MapLabel = [string, number, number, LabelClass?];
 
 export type LandmarkKind =
   | "station"
-  | "airport"
   | "ski"
   | "mall"
   | "university"
@@ -521,27 +520,6 @@ export const LANDMARK_SPRITES: Record<LandmarkKind, LandmarkSprite> = {
       p("#6b4a2a", X + 7, Y + 8, 2, 4);
       p("#9a9a9a", X + 1, Y + 12, 14, 3);
       p("#ffffff", X + 1, Y + 12, 14, 1);
-    },
-  },
-  airport: {
-    w: 24,
-    h: 16,
-    draw(p, X, Y) {
-      p("#8e8f9c", X, Y, 24, 16);
-      p("#5a5c66", X, Y + 10, 24, 5);
-      for (const x of [1, 5, 9, 13, 17, 21]) {
-        p("#ffffff", X + x, Y + 12, 2, 1);
-      }
-      p("#cfd3d8", X + 1, Y + 2, 10, 7);
-      p("#6b7d9c", X + 1, Y + 2, 10, 1);
-      for (const x of [2, 4, 6, 8]) {
-        p("#4a6fa5", X + x, Y + 5, 1, 2);
-      }
-      p("#9db3d1", X + 12, Y + 2, 2, 7);
-      p("#2f6fc2", X + 11, Y + 1, 4, 2);
-      p("#ffffff", X + 15, Y + 4, 8, 2);
-      p("#ffffff", X + 17, Y + 2, 3, 6);
-      p("#d9473a", X + 15, Y + 3, 1, 1);
     },
   },
   ski: {
