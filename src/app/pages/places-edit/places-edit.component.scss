@@ -92,3 +92,14 @@
   display: grid;
   gap: 0.75rem;
 }
+
+.maps-public {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+
+  input {
+    accent-color: #ffd700;
+  }
+}

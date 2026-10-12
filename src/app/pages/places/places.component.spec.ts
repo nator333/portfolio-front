@@ -137,6 +137,40 @@ describe("PlacesComponent", () => {
     );
   });
 
+  it("shows the Google Maps link only for a memory made public", async () => {
+    const url = "https://www.google.com/maps?q=37.0666,138.8809";
+    const memories = SAMPLE.memories!;
+    fixture.componentInstance.season.set("winter");
+    await flush({
+      ...SAMPLE,
+      memories: [
+        { ...memories[0], mapsUrl: url, lat: 37.0666, lng: 138.8809 },
+        { ...memories[1], mapsUrl: url, mapsPublic: true },
+      ],
+    });
+    const open = async (index: number): Promise<HTMLElement> => {
+      (
+        fixture.nativeElement.querySelectorAll(".list li button")[
+          index
+        ] as HTMLButtonElement
+      ).click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector(".panel");
+    };
+
+    const privatePanel = await open(0);
+    expect(privatePanel.querySelector("a.textlink")).toBeNull();
+    (privatePanel.querySelector(".back") as HTMLButtonElement).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const publicPanel = await open(1);
+    expect(publicPanel.querySelector("a.textlink")?.getAttribute("href")).toBe(
+      url,
+    );
+  });
+
   it("renders the facts card from the town info", async () => {
     await flush(SAMPLE);
     const card: HTMLElement =

@@ -50,6 +50,12 @@ export interface Memory {
   /** Real coordinates the pin is derived from; null when placed by hand. */
   lat: number | null;
   lng: number | null;
+  /**
+   * Whether the public page may show the "Open in Google Maps" link. Absent
+   * means no; the public API then also withholds the link and coordinates and
+   * snaps the pin to its map tile. Keep in sync with the API-side zod schema.
+   */
+  mapsPublic?: boolean;
   /** Epoch milliseconds; orders the list. */
   createdAt: number;
 }
@@ -142,8 +148,11 @@ export function inSeason(memory: Memory, season: Season): boolean {
  * otherwise a search for the stored coordinates, otherwise nothing.
  */
 export function mapsUrlFor(
-  memory: Pick<Memory, "mapsUrl" | "lat" | "lng">,
+  memory: Pick<Memory, "mapsUrl" | "lat" | "lng" | "mapsPublic">,
 ): string {
+  if (!memory.mapsPublic) {
+    return "";
+  }
   if (memory.mapsUrl) {
     return memory.mapsUrl;
   }

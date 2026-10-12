@@ -88,7 +88,10 @@ describe("PlacesService", () => {
     expect(received).toEqual(apiDocument);
   });
 
-  it("saves with the Cognito token and refreshes the cache", () => {
+  it("saves with the Cognito token and drops the public cache", () => {
+    service.getPlaces().subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/places`).flush(apiDocument);
+
     let saved: PlacesData | undefined;
     service.updatePlaces(apiDocument).subscribe((data) => (saved = data));
 
@@ -97,11 +100,26 @@ describe("PlacesService", () => {
     expect(req.request.headers.get("Authorization")).toBe("test-id-token");
     expect(req.request.body).toEqual(apiDocument);
     req.flush(apiDocument);
-
     expect(saved).toEqual(apiDocument);
-    let cached: PlacesData | undefined;
-    service.getPlaces().subscribe((data) => (cached = data));
-    httpMock.expectNone(`${environment.apiBaseUrl}/places`);
-    expect(cached).toEqual(apiDocument);
+
+    // The saved document holds private links, so it is not cached: the next
+    // public read refetches the sanitised version.
+    service.getPlaces().subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/places`).flush(apiDocument);
+  });
+
+  it("reads the editor's copy from /places/all with the token and no api key, uncached", () => {
+    let received: PlacesData | undefined;
+    service.getPlacesForEdit().subscribe((data) => (received = data));
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/places/all`);
+    expect(req.request.method).toBe("GET");
+    expect(req.request.headers.get("Authorization")).toBe("test-id-token");
+    expect(req.request.headers.has("X-Api-Key")).toBe(false);
+    req.flush(apiDocument);
+    expect(received).toEqual(apiDocument);
+
+    service.getPlaces().subscribe();
+    httpMock.expectOne(`${environment.apiBaseUrl}/places`).flush(apiDocument);
   });
 });
