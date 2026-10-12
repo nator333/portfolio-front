@@ -20,7 +20,6 @@ import {
   Memory,
   MemoryKind,
   SEASONS,
-  SEASON_LABELS,
   Season,
   seasonOf,
 } from "../../models/places-data";
@@ -69,14 +68,16 @@ const AUTO_CYCLE_MS = 4000;
 const RIPPLE_MS = 750;
 
 /**
- * One town's pixel map: the painted canvas, place-name labels, memory pins,
- * the season toggle and the kind legend. Shared by the public Places page
+ * One town's pixel map: the painted canvas, place-name labels, memory pins
+ * and the kind legend. The season comes from the page (its season row sits
+ * above the town tabs, as one setting for every town). Shared by the public Places page
  * and the editor; the editor sets `editing` to get crosshair taps and a
  * blinking draft pin.
  *
- * Until the viewer taps the map or a season, the seasons can auto-advance
- * (`autoCycle`) as bait, only while the map is on screen; one tap stops it
- * for the rest of the visit.
+ * Until the viewer taps the map or a season (the page's season row calls
+ * `stopAutoCycle`), the seasons can auto-advance (`autoCycle`) as bait, only
+ * while the map is on screen. A tap pauses it; the season row's play button
+ * calls `resumeAutoCycle` to start it again.
  */
 @Component({
   selector: "app-places-map",
@@ -110,9 +111,6 @@ export class PlacesMapComponent {
 
   readonly mapWidth = MAP_W * TILE_PX;
   readonly mapHeight = MAP_H * TILE_PX;
-  readonly seasons = SEASONS;
-  readonly seasonLabels = SEASON_LABELS;
-  readonly today = seasonOf();
   readonly kinds = MEMORY_KINDS;
   readonly kindLabels = KIND_LABELS;
 
@@ -240,7 +238,7 @@ export class PlacesMapComponent {
   }
 
   onMapClick(event: MouseEvent): void {
-    this.stopCycle();
+    this.stopAutoCycle();
     const target = event.target as HTMLElement;
     const pin = target.closest<HTMLElement>("[data-pin]");
     if (pin) {
@@ -264,16 +262,28 @@ export class PlacesMapComponent {
     this.mapTap.emit({ x, y });
   }
 
-  pickSeason(season: Season): void {
-    this.stopCycle();
-    this.season.set(season);
-  }
-
-  /** The viewer interacted: the bait cycle is over for this visit. */
-  private stopCycle(): void {
+  /**
+   * The viewer interacted (tapped the map, or picked a season in the page's
+   * season row): the bait cycle is over for this visit.
+   */
+  stopAutoCycle(): void {
     this.stopped = true;
     this.cycling.set(false);
     this.pauseCycle();
+  }
+
+  /**
+   * The viewer pressed play: advance the seasons again. This is an explicit
+   * request, so it runs even under prefers-reduced-motion, where the cycle
+   * never starts on its own.
+   */
+  resumeAutoCycle(): void {
+    if (!this.autoCycle()) {
+      return;
+    }
+    this.stopped = false;
+    this.cycling.set(true);
+    this.startCycle();
   }
 
   private startCycle(): void {

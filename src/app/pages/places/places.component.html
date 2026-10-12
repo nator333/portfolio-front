@@ -5,6 +5,14 @@
 
 <section class="section places-section">
   <div class="container places">
+    <app-season-picker
+      [season]="season()"
+      [canPlay]="true"
+      [playing]="map.isCycling()"
+      (picked)="map.stopAutoCycle(); season.set($event)"
+      (toggled)="map.isCycling() ? map.stopAutoCycle() : map.resumeAutoCycle()"
+    ></app-season-picker>
+
     <div class="bar">
       <nav class="cities" aria-label="Choose a town">
         @for (c of cities; track c.id) {
@@ -28,6 +36,7 @@
 
     <div class="main">
       <app-places-map
+        #map
         [city]="city()"
         [(season)]="season"
         [memories]="visibleMemories()"
@@ -115,9 +124,7 @@
           @if (hiddenCount()) {
             <p class="hidden-note">
               {{ hiddenCount() }}
-              {{
-                hiddenCount() === 1 ? "memory belongs" : "memories belong"
-              }}
+              {{ hiddenCount() === 1 ? "memory belongs" : "memories belong" }}
               to other seasons.
             </p>
           }

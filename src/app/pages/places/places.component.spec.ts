@@ -171,6 +171,56 @@ describe("PlacesComponent", () => {
     );
   });
 
+  it("puts one season row above the town tabs, and it filters the memories", async () => {
+    fixture.componentInstance.season.set("summer");
+    await flush(SAMPLE);
+    const el: HTMLElement = fixture.nativeElement;
+    const rows = el.querySelectorAll("app-season-picker");
+    expect(rows.length).toBe(1);
+    expect(
+      rows[0].compareDocumentPosition(el.querySelector(".cities")!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(el.querySelector("app-places-map .seasons")).toBeNull();
+
+    (
+      el.querySelector('button[data-season="winter"]') as HTMLButtonElement
+    ).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.season()).toBe("winter");
+    expect(el.querySelectorAll(".list li").length).toBe(2);
+  });
+
+  it("pauses and resumes the season preview from the play button", async () => {
+    await flush(SAMPLE);
+    const el: HTMLElement = fixture.nativeElement;
+    const play = (): HTMLButtonElement => el.querySelector("button.play")!;
+    const settle = async (): Promise<void> => {
+      await fixture.whenStable();
+      fixture.detectChanges();
+    };
+
+    // The preview plays from the start, so the button offers to pause it.
+    expect(play().getAttribute("aria-label")).toBe("Pause the seasons");
+
+    play().click();
+    await settle();
+    expect(play().getAttribute("aria-label")).toBe("Play the seasons");
+
+    play().click();
+    await settle();
+    expect(play().getAttribute("aria-label")).toBe("Pause the seasons");
+
+    // Picking a season pauses it again.
+    (
+      el.querySelector('button[data-season="spring"]') as HTMLButtonElement
+    ).click();
+    await settle();
+    expect(play().getAttribute("aria-label")).toBe("Play the seasons");
+    expect(fixture.componentInstance.season()).toBe("spring");
+  });
+
   it("renders the facts card from the town info", async () => {
     await flush(SAMPLE);
     const card: HTMLElement =
