@@ -51,6 +51,8 @@ const MUSCLE_COLORS: Record<string, string> = {
   Other: "#5f5e5a",
 };
 const MUSCLE_ORDER = Object.keys(MUSCLE_COLORS);
+/** Muscles charted in the weekly bars but left out of that chart's legend. */
+const LEGEND_HIDDEN_MUSCLES = new Set(["Abs"]);
 
 /** Distinct line colours for the strength chart, in fixed order. */
 const LINE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#9085e9", "#37a0d6", "#e34948"];
@@ -1318,7 +1320,12 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12 }, onClick: onFilterLegendClick },
+          legend: {
+            position: "bottom",
+            // Abs stay in the bars and tooltip but out of the legend.
+            labels: { boxWidth: 12, boxHeight: 12, filter: (item) => !LEGEND_HIDDEN_MUSCLES.has(item.text) },
+            onClick: onFilterLegendClick,
+          },
           tooltip: { mode: "index", intersect: false },
         },
         scales: {
