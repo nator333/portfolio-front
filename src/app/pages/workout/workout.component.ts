@@ -51,8 +51,8 @@ const MUSCLE_COLORS: Record<string, string> = {
   Other: "#5f5e5a",
 };
 const MUSCLE_ORDER = Object.keys(MUSCLE_COLORS);
-/** Muscles left out of the weekly sets chart altogether. */
-const WEEKLY_EXCLUDED_MUSCLES = new Set(["Abs"]);
+/** Muscles left out of the weekly sets and muscle balance charts altogether. */
+const HIDDEN_MUSCLES = new Set(["Abs"]);
 
 /** Distinct line colours for the strength chart, in fixed order. */
 const LINE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#9085e9", "#37a0d6", "#e34948"];
@@ -1305,7 +1305,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     const shown = weeks.slice(-WEEKS_CHARTED);
     this.weeksShown.set(shown.length);
     const groups = MUSCLE_ORDER.filter((m) =>
-      !WEEKLY_EXCLUDED_MUSCLES.has(m) && shown.some((w) => (w.muscles?.[m] ?? 0) > 0),
+      !HIDDEN_MUSCLES.has(m) && shown.some((w) => (w.muscles?.[m] ?? 0) > 0),
     );
     const datasets = groups.map((m) => ({
       label: m,
@@ -1335,7 +1335,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     const shown = MUSCLE_ORDER.map((m) => ({
       muscle: m,
       sets: muscles.find((x) => x.muscle === m)?.sets ?? 0,
-    })).filter((x) => x.sets > 0);
+    })).filter((x) => x.sets > 0 && !HIDDEN_MUSCLES.has(x.muscle));
     this.make("chart-radar", {
       type: "radar",
       data: {
