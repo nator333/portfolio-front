@@ -51,7 +51,10 @@ const MUSCLE_COLORS: Record<string, string> = {
   Other: "#5f5e5a",
 };
 const MUSCLE_ORDER = Object.keys(MUSCLE_COLORS);
-/** Muscles left out of the weekly sets and muscle balance charts altogether. */
+/**
+ * Muscles left out of every per-muscle chart on the page, even where the plan
+ * sets them a target.
+ */
 const HIDDEN_MUSCLES = new Set(["Abs"]);
 
 /** Distinct line colours for the strength chart, in fixed order. */
@@ -844,6 +847,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
   ): void {
     const rows = status
       ? status.muscles
+          .filter((m) => !HIDDEN_MUSCLES.has(m.muscle))
           .map((m) => ({
             muscle: m.muscle,
             sets: m.sets,
@@ -1011,7 +1015,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
       }
     }
 
-    return MUSCLE_ORDER.filter((m) => (sets.get(m) ?? 0) > 0)
+    return MUSCLE_ORDER.filter((m) => !HIDDEN_MUSCLES.has(m) && (sets.get(m) ?? 0) > 0)
       .map((muscle) => ({
         muscle,
         sets: sets.get(muscle) as number,
@@ -1054,9 +1058,10 @@ export class WorkoutComponent implements OnInit, OnDestroy {
     // Muscles not trained anywhere in the loaded window sink to the bottom,
     // capped so one dormant group doesn't blow out the axis.
     const CAP = 30;
-    const tracked = status
+    const tracked = (status
       ? status.muscles.map((m) => m.muscle)
-      : MUSCLE_ORDER.filter((m) => lastSeen.has(m));
+      : MUSCLE_ORDER.filter((m) => lastSeen.has(m))
+    ).filter((m) => !HIDDEN_MUSCLES.has(m));
     const rows = tracked.map((m) => {
       const seen = lastSeen.get(m);
       const since = seen
