@@ -69,7 +69,7 @@ const LIFTS_CHARTED = LINE_COLORS.length;
 const EARLIER_LIFT_COLOR = "#6b6b66";
 /** Plan-change markers on the strength chart. */
 const PLAN_MARKER = "rgba(232,232,227,0.35)";
-/** The API reports strength in kg; the strength chart shows pounds. */
+/** Fallback for strength points from an API that sends kg only; the chart shows pounds. */
 const LB_PER_KG = 2.20462;
 /** Months of bodyweight drawn; the API keeps more history than this. */
 const BODYWEIGHT_MONTHS_CHARTED = 36;
@@ -1151,7 +1151,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
       ...new Set(shown.flatMap((s) => s.points.map((p) => p.month))),
     ].sort();
     const datasets = shown.map((s, i) => {
-      const byMonth = new Map(s.points.map((p) => [p.month, Math.round(p.e1rmKg * LB_PER_KG * 10) / 10]));
+      const byMonth = new Map(s.points.map((p) => [p.month, Math.round((p.e1rmLb ?? p.e1rmKg * LB_PER_KG) * 10) / 10]));
       const isEarlier = s.tracked === false;
       const color = isEarlier ? EARLIER_LIFT_COLOR : LINE_COLORS[i % LINE_COLORS.length];
       return {
