@@ -69,6 +69,8 @@ const LIFTS_CHARTED = LINE_COLORS.length;
 const EARLIER_LIFT_COLOR = "#6b6b66";
 /** Plan-change markers on the strength chart. */
 const PLAN_MARKER = "rgba(232,232,227,0.35)";
+/** The API reports strength in kg; the strength chart shows pounds. */
+const LB_PER_KG = 2.20462;
 /** Months of bodyweight drawn; the API keeps more history than this. */
 const BODYWEIGHT_MONTHS_CHARTED = 36;
 /** The site's accent: one series, so it needs no categorical slot. */
@@ -423,7 +425,7 @@ export function planVersionsFrom(latest: number): number[] {
             <div class="chart-block">
               <h2 class="chart-title">Strength progression</h2>
               <p class="chart-sub">
-                Estimated 1-rep max by month, kg, for the main lifts of the current training plan. Grey dashed lines are
+                Estimated 1-rep max by month, lb, for the main lifts of the current training plan. Grey dashed lines are
                 earlier lifts no longer being logged; vertical markers show when each plan version began. Machine lifts
                 show stack load, not a true 1RM.
               </p>
@@ -431,7 +433,7 @@ export function planVersionsFrom(latest: number): number[] {
                 <canvas
                   id="chart-strength"
                   role="img"
-                  aria-label="Estimated 1-rep max in kilograms per month for the main lifts of the current training plan, with earlier lifts in grey and plan changes marked."
+                  aria-label="Estimated 1-rep max in pounds per month for the main lifts of the current training plan, with earlier lifts in grey and plan changes marked."
                 ></canvas>
               </div>
             </div>
@@ -1149,7 +1151,7 @@ export class WorkoutComponent implements OnInit, OnDestroy {
       ...new Set(shown.flatMap((s) => s.points.map((p) => p.month))),
     ].sort();
     const datasets = shown.map((s, i) => {
-      const byMonth = new Map(s.points.map((p) => [p.month, p.e1rmKg]));
+      const byMonth = new Map(s.points.map((p) => [p.month, Math.round(p.e1rmKg * LB_PER_KG * 10) / 10]));
       const isEarlier = s.tracked === false;
       const color = isEarlier ? EARLIER_LIFT_COLOR : LINE_COLORS[i % LINE_COLORS.length];
       return {
@@ -1217,10 +1219,10 @@ export class WorkoutComponent implements OnInit, OnDestroy {
         interaction: { mode: "index", intersect: false },
         plugins: {
           legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true }, onClick: onFilterLegendClick },
-          tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y} kg` } },
+          tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y} lb` } },
         },
         scales: {
-          y: { title: { display: true, text: "est. 1RM (kg)" }, grid: { color: GRID } },
+          y: { title: { display: true, text: "est. 1RM (lb)" }, grid: { color: GRID } },
           x: { grid: { display: false }, ticks: { maxTicksLimit: 10, maxRotation: 45 } },
         },
       },
