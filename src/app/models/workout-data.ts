@@ -35,6 +35,8 @@ export interface WorkoutLift {
 
 export interface StrengthPoint {
   month: string;
+  /** In pounds, the unit lifts are logged in; absent from APIs older than the field. */
+  e1rmLb?: number;
   e1rmKg: number;
 }
 
